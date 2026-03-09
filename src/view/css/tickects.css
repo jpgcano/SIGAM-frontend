@@ -147,3 +147,7 @@ color:#c81e1e;
 background:#e0ecff;
 color:#1d4ed8;
 }
+
+.resolved { background: rgb(48, 255, 48); }
+.in-progress {background: yellow;}
+.open { background: rgb(255, 8, 8); }
