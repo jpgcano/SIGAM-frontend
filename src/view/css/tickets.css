@@ -290,3 +290,24 @@ select{
     font-size: 22px;
     cursor: pointer;
 }
+
+
+.delete-btn{
+    margin-top:10px;
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.delete-btn:hover{
+    background:#dc2626;
+}
+
+.delete-btn:active{
+    transform:scale(0.95);
+}
