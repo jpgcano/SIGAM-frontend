@@ -35,28 +35,14 @@
             <button id="newTicketBtn" class="btn-nuevo">
                 + Nuevo Ticket
             </button>
-
         </div>
-
-
         <div class="filters">
-
-            <input 
-                type="text"
-                placeholder="Buscar tickets..."
-                class="search"
-            >
-
-            <select>
-                <option>Todos los estados</option>
-            </select>
-
-            <select>
-                <option>Todas las prioridades</option>
-            </select>
-
-            <select>
-                <option>Todas las categorías</option>
+            <input id="searchInput" type="text"placeholder="Buscar tickets..."class="search">
+            <select id="statusFilter">
+                <option value="all">Todos los estados</option>
+                <option value="En progreso">En progreso</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Completado">Completado</option>
             </select>
         </div>
         <p id="contadorTickets" class="contador"></p>
@@ -82,12 +68,9 @@
             </div>
         </div>
     </div>
-</div>
-        </div>
-        <!-- LISTA DE TICKETS -->
-        <div id="ticketList"></div>
 
-    </div>
+    <!-- LISTA DE TICKETS -->
+    <div id="ticketList"></div>
 
 
     <script src="../js/tickets.js"></script>

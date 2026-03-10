@@ -1,3 +1,7 @@
+let tickets = [];
+let ticketCounter = 1;
+
+const statusFilter = document.getElementById("statusFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
 const closeBtn = document.querySelector(".close");
@@ -5,7 +9,7 @@ const closeBtn = document.querySelector(".close");
 const addTicketBtn = document.getElementById("addTicket");
 const ticketList = document.getElementById("ticketList");
 
-let ticketCounter = 1;
+const searchInput = document.getElementById("searchInput");
 
 /* abrir modal */
 openBtn.onclick = () => {
@@ -35,32 +39,109 @@ addTicketBtn.addEventListener("click", () => {
     const assignedTo = document.getElementById("assignedTo").value;
     const estimate = document.getElementById("estimate").value;
     const status = document.getElementById("status").value;
-
     const date = new Date().toLocaleDateString();
 
-    const ticket = document.createElement("div");
+    const ticketData = {
+        id: ticketCounter,
+        title,
+        description,
+        device,
+        category,
+        createdBy,
+        assignedTo,
+        estimate,
+        status,
+        date
+    };
 
-    ticket.classList.add("ticket");
+tickets.push(ticketData);
 
-    ticket.innerHTML = `
-        <div class="ticket-status">${status}</div>
-        <div class="ticket-title">
-            ${title}
-        </div>
-        <div class="ticket-info">
-            ${description}
-        </div>
-        <div class="ticket-info">
-            TK-${ticketCounter} • ${device} • ${category}
-        </div>
-        <div class="ticket-info">
-            Creado por: ${createdBy} • Asignado a: ${assignedTo} • ${date} • ${estimate} estimadas
-        </div>
-    `;
-
-    ticketList.appendChild(ticket);
-
-    ticketCounter++;
-
-    modal.style.display = "none";
+ticketCounter++;
+applyFilters();
+modal.style.display = "none";
 });
+
+function renderTickets(list) {
+
+    ticketList.innerHTML = "";
+
+    if(list.length === 0){
+    ticketList.innerHTML = "<p>No hay tickets que coincidan</p>";
+    return;
+    }
+
+    list.forEach((ticket, index) => {
+
+        const div = document.createElement("div");
+
+        div.classList.add("ticket");
+
+        div.innerHTML = `
+            <div class="ticket-status">${ticket.status}</div>
+
+            <div class="ticket-title">
+                ${ticket.title}
+            </div>
+
+            <div class="ticket-info">
+                ${ticket.description}
+            </div>
+
+            <div class="ticket-info">
+                TK-${ticket.id} • ${ticket.device} • ${ticket.category}
+            </div>
+
+            <div class="ticket-info">
+                Creado por: ${ticket.createdBy} • 
+                Asignado a: ${ticket.assignedTo} • 
+                ${ticket.date} • 
+                ${ticket.estimate} estimadas
+            </div>
+
+            <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
+        `;
+
+        ticketList.appendChild(div);
+
+    });
+
+}
+
+
+/* BORRAR TICKET */
+
+function deleteTicket(index) {
+
+    tickets.splice(index, 1);
+
+    applyFilters();
+
+}
+
+
+function applyFilters(){
+
+    const search = searchInput.value.toLowerCase();
+    const status = statusFilter.value;
+
+    const filtered = tickets.filter(ticket => {
+
+        const matchSearch =
+            ticket.title.toLowerCase().includes(search) ||
+            ticket.description.toLowerCase().includes(search) ||
+            ticket.device.toLowerCase().includes(search) ||
+            ticket.category.toLowerCase().includes(search);
+
+        const matchStatus =
+            status === "all" || ticket.status === status;
+
+        return matchSearch && matchStatus;
+
+    });
+
+    renderTickets(filtered);
+}
+
+searchInput.addEventListener("input", applyFilters);
+
+statusFilter.addEventListener("change", applyFilters);
