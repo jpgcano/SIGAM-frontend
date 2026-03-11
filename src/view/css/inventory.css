@@ -191,3 +191,12 @@ font-size:13px;
 color:#6b7280;
 margin-bottom:10px;
 }
+
+/* detail page tweaks */
+#mainContent img {
+    max-width: 100%;
+    height: auto;
+}
+#mainContent .card p {
+    margin-bottom: 0.5rem;
+}
