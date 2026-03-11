@@ -6,9 +6,8 @@
 <title>Maintenance Calendar</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/src/css/calendar.css">
+<link rel="stylesheet" href="/SIGAM-frontend/src/view/css/calendar.css">
 </head>
-
 <body>
 
 <!-- NAVBAR -->
@@ -137,7 +136,7 @@ Scheduling preventive maintenance and inspections
 <div class="stat-card">
 <i class="bi bi-calendar-event"></i>
 <h6 class="text-muted">Scheduled</h6>
-<h3>0</h3>
+<h3 id="scheduledCount">0</h3>
 
 </div>
 
@@ -148,7 +147,7 @@ Scheduling preventive maintenance and inspections
 <div class="stat-card">
 <i class="bi bi-exclamation-triangle"></i>
 <h6 class="text-muted text-danger">Overdue</h6>
-<h3>0</h3>
+<h3 id="overdueCount">0</h3>
 
 </div>
 
@@ -157,9 +156,9 @@ Scheduling preventive maintenance and inspections
 <div class="col-md-4">
 
 <div class="stat-card">
-
+<i class="bi bi-wrench"></i>
 <h6 class="text-muted text-success">Assets in Plan</h6>
-<h3>0</h3>
+<h3 id="assetsCount">0</h3>
 
 </div>
 
@@ -327,7 +326,7 @@ Save Schedule
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/src/js/calendar.js"></script>
+<script src="/SIGAM-frontend/src/view/js/calendar.js"></script>
 
 </body>
 </html>

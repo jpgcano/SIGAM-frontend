@@ -19,7 +19,7 @@ table.innerHTML +=`
 
 <td>${badgeStatus(user.status)}</td>
 
-<td>${user.lastAccess || "-"}</td>
+<td>${timeAgo(user.lastAccess)}</td>
 
 
 <td>
@@ -72,7 +72,26 @@ return `<span class="badge bg-secondary">User</span>`
 
 }
 
+function timeAgo(date){
 
+if(!date) return "-"
+
+let now = new Date()
+let past = new Date(date)
+
+let seconds = Math.floor((now - past) / 1000)
+
+let minutes = Math.floor(seconds / 60)
+let hours = Math.floor(minutes / 60)
+let days = Math.floor(hours / 24)
+
+if(seconds < 60) return "Just now"
+if(minutes < 60) return minutes + " min ago"
+if(hours < 24) return hours + " hours ago"
+
+return days + " days ago"
+
+}
 
 function saveUser(){
 
@@ -84,6 +103,13 @@ let editIndex=document.getElementById("editIndex").value
 const now = new Date().toLocaleString()
 
 if(editIndex===""){
+
+let exists = users.some(user => user.email === email)
+
+if(exists && editIndex===""){
+alert("User with this email already exists")
+return
+}
 
 users.push({
     name,
@@ -104,6 +130,9 @@ users[editIndex].role=role
 localStorage.setItem("users",JSON.stringify(users))
 
 renderUsers()
+
+let modal = bootstrap.Modal.getInstance(document.getElementById("userModal"))
+modal.hide()
 
 }
 
@@ -173,3 +202,5 @@ if(searchInput){
 }
 
 renderUsers()
+
+setInterval(renderUsers,60000)
