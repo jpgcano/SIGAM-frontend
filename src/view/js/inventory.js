@@ -1,4 +1,7 @@
-const assets = [
+// load the assets array from browser storage; if nothing is stored yet, fall back
+// to a hard‑coded default list. using `let` because we will reassign when pushing new
+// assets later. this ensures persistence across page reloads.
+let assets = JSON.parse(localStorage.getItem("assets")) || [
 
 {
 name:"Dell Latitude 7420 Laptop",
@@ -36,8 +39,9 @@ type:"server",
 warranty:"3 days"
 }
 
-]
+];
 
+// grab references to important DOM elements that we will update/interact with
 const grid = document.getElementById("assetGrid")
 const searchInput = document.getElementById("searchInput")
 const statusFilter = document.getElementById("statusFilter")
@@ -45,9 +49,12 @@ const typeFilter = document.getElementById("typeFilter")
 const resultCount = document.getElementById("resultCount")
 
 
+// renderAssets builds the grid of cards from a given list of asset objects.
+// it empties the container then appends a bootstrap card for each asset, also
+// updating the counter showing how many assets are currently visible vs total.
 function renderAssets(list){
 
-grid.innerHTML=""
+    grid.innerHTML=""
 
 list.forEach(asset=>{
 
@@ -106,6 +113,8 @@ resultCount.innerText=`Showing ${list.length} of ${assets.length} assets`
 }
 
 
+// filterAssets reads the search and filter inputs, applies them to the global
+// `assets` array, and calls renderAssets with the filtered results.
 function filterAssets(){
 
 const search = searchInput.value.toLowerCase()
@@ -133,18 +142,33 @@ renderAssets(filtered)
 
 }
 
+// wire up input events so that the list refreshes whenever the user types or
+// changes a filter dropdown.
 searchInput.addEventListener("input",filterAssets)
 statusFilter.addEventListener("change",filterAssets)
 typeFilter.addEventListener("change",filterAssets)
 
+// initial rendering of whatever is currently in the array
 renderAssets(assets)
- 
 
+// if the page loaded and storage was empty (first visit), save the default
+// list so subsequent reloads honour persistence
+if(!localStorage.getItem("assets")){
+    localStorage.setItem("assets", JSON.stringify(assets));
+}
+
+
+
+// wait for the DOM to finish loading before accessing form fields, then
+// set up the submission handler for adding new assets.
 document.addEventListener("DOMContentLoaded", function(){
 
 const form = document.getElementById("assetForm")
 
-form.addEventListener("submit", function(e){
+    // when the new-asset form is submitted, build an object out of the inputs,
+    // push it to the assets array, save the updated array to storage, re-render
+    // the grid and reset/close the modal.
+    form.addEventListener("submit", function(e){
 
 e.preventDefault()
 
@@ -163,6 +187,7 @@ warranty: document.getElementById("warranty").value
 }
 
 assets.push(newAsset)
+localStorage.setItem("assets", JSON.stringify(assets))
 
 renderAssets(assets)
 
