@@ -1,0 +1,71 @@
+body{
+background:#f5f6f8;
+font-family:system-ui;
+}
+
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:15px;
+}
+
+.day{
+background:white;
+border-radius:10px;
+min-height:120px;
+padding:10px;
+border:1px solid #eee;
+}
+
+.day-number{
+font-size:14px;
+font-weight:600;
+}
+
+.stat-card{
+background:white;
+padding:20px;
+border-radius:12px;
+border:1px solid #eee;
+}
+
+.week-days{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+margin-bottom:10px;
+font-weight:600;
+color:#6c757d;
+}
+
+.event{
+font-size:11px;
+padding:3px 6px;
+border-radius:6px;
+margin-top:4px;
+color:white;
+cursor:pointer;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+/* Preventive */
+.event.preventive{
+background:#2563eb;
+}
+
+/* Inspection */
+.event.inspection{
+background:#22c55e;
+}
+
+/* Repair */
+.event.repair{
+background:#ef4444;
+}
+
+.event:hover{
+opacity:0.85;
+transform:scale(1.02);
+transition:0.15s;
+}
