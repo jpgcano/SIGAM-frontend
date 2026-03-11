@@ -478,6 +478,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 })
 
+
 if (supplierCards) {
     supplierCards.addEventListener("click", function (event) {
         const button = event.target.closest(".supplier-edit")
