@@ -16,12 +16,12 @@ body{
 /* NAVBAR */
 
 .navbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:14px 40px;
-    background:#f3f4f6;
-    border-bottom:1px solid #e5e7eb;
+    background: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .logo{
@@ -151,7 +151,8 @@ select{
     background:white;
     padding:20px;
     border-radius:14px;
-    border:1px solid #e5e7eb;
+    border:1px solid #c1c1c2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
 
 
