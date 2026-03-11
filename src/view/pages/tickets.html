@@ -13,7 +13,7 @@
 
         <nav>
             <a href="./dashboard.html">Dashboard</a>
-            <a href="./inventory.html">Inventary</a>
+            <a href="./inventory.html">Inventory</a>
             <a href="./tickets.html">Tickets</a>
             <a href="#">Reports</a>
             <a href="./admin.html">Admin</a>
@@ -26,23 +26,19 @@
         <div class="header">
 
             <div>
-                <h1>Tickets de Soporte</h1>
-                <p class="subtitle">
-                    Gestión de incidencias y solicitudes técnicas
-                </p>
+                <h1>soport ticket</h1>
+                <p class="subtitle">Management of incidents and technical requests</p>
             </div>
 
-            <button id="newTicketBtn" class="btn-nuevo">
-                + Nuevo Ticket
-            </button>
+            <button id="newTicketBtn" class="btn-nuevo">+ New Ticket</button>
         </div>
         <div class="filters">
             <input id="searchInput" type="text"placeholder="Buscar tickets..."class="search">
             <select id="statusFilter">
-                <option value="all">Todos los estados</option>
-                <option value="En progreso">En progreso</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Completado">Completado</option>
+                <option value="all">All the states</option>
+                <option value="En progreso">In progress</option>
+                <option value="Pendiente">Pending</option>
+                <option value="Completado">Completed</option>
             </select>
         </div>
         <p id="contadorTickets" class="contador"></p>
@@ -51,7 +47,7 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
 
-                <h2>Crear Nuevo Ticket</h2>
+                <h2>Create New Ticket</h2>
                 <input id="title" placeholder="Titulo del ticket">
                 <textarea id="description" placeholder="Descripcion"></textarea>
                 <input id="device" placeholder="Dispositivo">
@@ -60,11 +56,11 @@
                 <input id="assignedTo" placeholder="Asignado a">
                 <input id="estimate" placeholder="Tiempo estimado (ej: 2h)">
                 <select id="status">
-                    <option value="En progreso">En progreso</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Completado">Completado</option>
+                    <option value="En progreso">In progress</option>
+                    <option value="Pendiente">Pending</option>
+                    <option value="Completado">Completed</option>
                 </select>
-                <button id="addTicket">Agregar Ticket</button>
+                <button id="addTicket">Add Ticket</button>
             </div>
         </div>
     </div>
