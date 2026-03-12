@@ -1,19 +1,34 @@
 let tickets = [];
-let ticketCounter = 1;
+
+const api = window.SIGAM_API;
 
 const statusFilter = document.getElementById("statusFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
 const closeBtn = document.querySelector(".close");
 
+const ticketForm = document.getElementById("ticketForm");
 const addTicketBtn = document.getElementById("addTicket");
 const ticketList = document.getElementById("ticketList");
 
 const searchInput = document.getElementById("searchInput");
+const ticketStatusEl = document.getElementById("ticketStatus");
+const ticketsCount = document.getElementById("contadorTickets");
+
+const titleInput = document.getElementById("title");
+const descriptionInput = document.getElementById("description");
+const deviceInput = document.getElementById("device");
+const categoryInput = document.getElementById("category");
+const createdByInput = document.getElementById("createdBy");
+const assignedToInput = document.getElementById("assignedTo");
+const estimateInput = document.getElementById("estimate");
+const statusInput = document.getElementById("status");
 
 /* abrir modal */
 openBtn.onclick = () => {
     modal.style.display = "flex";
+    setTicketStatus("");
+    clearFormErrors();
 };
 
 /* cerrar modal */
@@ -27,57 +42,202 @@ window.onclick = (e) => {
     }
 };
 
-/* crear ticket */
+function setTicketStatus(message, type) {
+    if (!ticketStatusEl) {
+        return;
+    }
+    ticketStatusEl.textContent = message || "";
+    ticketStatusEl.style.color = "#6b7280";
+    if (type === "error") {
+        ticketStatusEl.style.color = "#dc2626";
+    }
+    if (type === "success") {
+        ticketStatusEl.style.color = "#059669";
+    }
+}
 
-addTicketBtn.addEventListener("click", () => {
+function setSubmitting(isSubmitting) {
+    if (!addTicketBtn) {
+        return;
+    }
+    addTicketBtn.disabled = isSubmitting;
+    addTicketBtn.textContent = isSubmitting ? "Saving..." : "Add Ticket";
+}
 
-    const title = document.getElementById("title").value;
-    const description = document.getElementById("description").value;
-    const device = document.getElementById("device").value;
-    const category = document.getElementById("category").value;
-    const createdBy = document.getElementById("createdBy").value;
-    const assignedTo = document.getElementById("assignedTo").value;
-    const estimate = document.getElementById("estimate").value;
-    const status = document.getElementById("status").value;
-    const date = new Date().toLocaleDateString();
+function setFieldError(input, message) {
+    if (!input) {
+        return;
+    }
+    const errorEl = document.getElementById(`${input.id}Error`);
+    if (message) {
+        input.classList.add("input-error");
+        if (errorEl) {
+            errorEl.textContent = message;
+        }
+    } else {
+        input.classList.remove("input-error");
+        if (errorEl) {
+            errorEl.textContent = "";
+        }
+    }
+}
 
-    const ticketData = {
-        id: ticketCounter,
-        title,
-        description,
-        device,
-        category,
-        createdBy,
-        assignedTo,
-        estimate,
-        status,
-        date
+function validateTicketForm() {
+    let isValid = true;
+
+    if (!titleInput.value.trim()) {
+        isValid = false;
+        setFieldError(titleInput, "Title is required.");
+    } else {
+        setFieldError(titleInput, "");
+    }
+
+    if (!descriptionInput.value.trim()) {
+        isValid = false;
+        setFieldError(descriptionInput, "Description is required.");
+    } else {
+        setFieldError(descriptionInput, "");
+    }
+
+    if (!deviceInput.value.trim()) {
+        isValid = false;
+        setFieldError(deviceInput, "Device is required.");
+    } else {
+        setFieldError(deviceInput, "");
+    }
+
+    if (!categoryInput.value.trim()) {
+        isValid = false;
+        setFieldError(categoryInput, "Category is required.");
+    } else {
+        setFieldError(categoryInput, "");
+    }
+
+    if (!createdByInput.value.trim()) {
+        isValid = false;
+        setFieldError(createdByInput, "Created by is required.");
+    } else {
+        setFieldError(createdByInput, "");
+    }
+
+    if (!statusInput.value) {
+        isValid = false;
+        setFieldError(statusInput, "Status is required.");
+    } else {
+        setFieldError(statusInput, "");
+    }
+
+    setFieldError(assignedToInput, "");
+    setFieldError(estimateInput, "");
+
+    return isValid;
+}
+
+function clearFormErrors() {
+    setFieldError(titleInput, "");
+    setFieldError(descriptionInput, "");
+    setFieldError(deviceInput, "");
+    setFieldError(categoryInput, "");
+    setFieldError(createdByInput, "");
+    setFieldError(assignedToInput, "");
+    setFieldError(estimateInput, "");
+    setFieldError(statusInput, "");
+}
+
+function normalizeTicket(raw) {
+    const createdAt = raw.createdAt || raw.date || raw.created_at || raw.created_on;
+    return {
+        id: raw.id || raw._id || raw.ticketId || raw.codigo,
+        title: raw.title || raw.titulo || "",
+        description: raw.description || raw.descripcion || "",
+        device: raw.device || raw.dispositivo || "",
+        category: raw.category || raw.categoria || "",
+        createdBy: raw.createdBy || raw.creadoPor || raw.created_by || "",
+        assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || "",
+        estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
+        status: raw.status || raw.estado || "",
+        date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
     };
+}
 
-tickets.push(ticketData);
+async function loadTickets() {
+    if (!api || !api.getTickets) {
+        setTicketStatus("API not available.", "error");
+        return;
+    }
+    try {
+        const data = await api.getTickets();
+        tickets = (data || []).map(normalizeTicket);
+        localStorage.setItem("tickets", JSON.stringify(tickets));
+        applyFilters();
+    } catch (error) {
+        setTicketStatus("Unable to load tickets from API.", "error");
+        const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
+        tickets = cached.map(normalizeTicket);
+        applyFilters();
+    }
+}
 
-ticketCounter++;
-applyFilters();
-modal.style.display = "none";
-});
+if (ticketForm) {
+    ticketForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setTicketStatus("", "loading");
+
+        if (!validateTicketForm()) {
+            setTicketStatus("Please fix the highlighted fields.", "error");
+            return;
+        }
+
+        if (!api || !api.createTicket) {
+            setTicketStatus("API not available.", "error");
+            return;
+        }
+
+        setSubmitting(true);
+
+        const ticketPayload = {
+            title: titleInput.value.trim(),
+            description: descriptionInput.value.trim(),
+            device: deviceInput.value.trim(),
+            category: categoryInput.value.trim(),
+            createdBy: createdByInput.value.trim(),
+            assignedTo: assignedToInput.value.trim(),
+            estimate: estimateInput.value.trim(),
+            status: statusInput.value,
+            date: new Date().toISOString()
+        };
+
+        try {
+            const response = await api.createTicket(ticketPayload);
+            const created = normalizeTicket(response || ticketPayload);
+            tickets.unshift(created);
+            localStorage.setItem("tickets", JSON.stringify(tickets));
+            applyFilters();
+            ticketForm.reset();
+            clearFormErrors();
+            setTicketStatus("Ticket created successfully.", "success");
+            modal.style.display = "none";
+        } catch (error) {
+            setTicketStatus("Unable to create ticket. Please try again.", "error");
+        } finally {
+            setSubmitting(false);
+        }
+    });
+}
 
 function renderTickets(list) {
-
     ticketList.innerHTML = "";
 
-    if(list.length === 0){
-    ticketList.innerHTML = "<p>No hay tickets que coincidan</p>";
-    return;
+    if (list.length === 0) {
+        ticketList.innerHTML = "<p>No hay tickets que coincidan</p>";
+        return;
     }
 
     list.forEach((ticket, index) => {
-
         const div = document.createElement("div");
-
         div.classList.add("ticket");
-
         div.innerHTML = `
-            <div class="ticket-status">${ticket.status}</div>
+            <div class="ticket-status">${ticket.status || "Pending"}</div>
 
             <div class="ticket-title">
                 ${ticket.title}
@@ -88,60 +248,72 @@ function renderTickets(list) {
             </div>
 
             <div class="ticket-info">
-                TK-${ticket.id} • ${ticket.device} • ${ticket.category}
+                TK-${ticket.id || index + 1} - ${ticket.device} - ${ticket.category}
             </div>
 
             <div class="ticket-info">
-                Creado por: ${ticket.createdBy} • 
-                Asignado a: ${ticket.assignedTo} • 
-                ${ticket.date} • 
-                ${ticket.estimate} estimadas
+                Creado por: ${ticket.createdBy} -
+                Asignado a: ${ticket.assignedTo || "Sin asignar"} -
+                ${ticket.date} -
+                ${ticket.estimate || "Sin estimado"}
             </div>
 
             <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
         `;
-
         ticketList.appendChild(div);
-
     });
-
 }
-
 
 /* BORRAR TICKET */
+async function deleteTicket(index) {
+    const ticket = tickets[index];
+    if (!ticket) {
+        return;
+    }
 
-function deleteTicket(index) {
+    if (api && api.deleteTicket && ticket.id) {
+        try {
+            await api.deleteTicket(ticket.id);
+        } catch (error) {
+            setTicketStatus("Unable to delete ticket from API.", "error");
+            return;
+        }
+    }
 
     tickets.splice(index, 1);
-
+    localStorage.setItem("tickets", JSON.stringify(tickets));
     applyFilters();
-
 }
 
-
-function applyFilters(){
-
+function applyFilters() {
     const search = searchInput.value.toLowerCase();
     const status = statusFilter.value;
 
     const filtered = tickets.filter(ticket => {
+        const title = (ticket.title || "").toLowerCase();
+        const description = (ticket.description || "").toLowerCase();
+        const device = (ticket.device || "").toLowerCase();
+        const category = (ticket.category || "").toLowerCase();
 
         const matchSearch =
-            ticket.title.toLowerCase().includes(search) ||
-            ticket.description.toLowerCase().includes(search) ||
-            ticket.device.toLowerCase().includes(search) ||
-            ticket.category.toLowerCase().includes(search);
+            title.includes(search) ||
+            description.includes(search) ||
+            device.includes(search) ||
+            category.includes(search);
 
         const matchStatus =
             status === "all" || ticket.status === status;
 
         return matchSearch && matchStatus;
-
     });
 
     renderTickets(filtered);
+    if (ticketsCount) {
+        ticketsCount.textContent = `${filtered.length} tickets`;
+    }
 }
 
 searchInput.addEventListener("input", applyFilters);
-
 statusFilter.addEventListener("change", applyFilters);
+
+loadTickets();
