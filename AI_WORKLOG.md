@@ -25,3 +25,7 @@
 - Scope: Actualicé endpoints en config/api, agregué carga de activos para select, mapeo de IDs en tickets y ajuste de dashboard para datos derivados.
 - Files: src/view/js/config.js, src/view/js/api.js, src/view/pages/tickets.html, src/view/js/tickets.js, src/view/js/charts.js.
 - Evidence: Tickets crean con id_activo e id_usuario_reporta, activos cargan en el select, dashboard muestra métricas básicas sin endpoint dedicado.
+- Task: Guard de autenticación y roles en vistas protegidas.
+- Scope: Añadí auth-guard central, configuré roles por vista y eliminé redirección local en tickets.
+- Files: src/view/services/auth-guard.js, src/view/pages/dashboard.html, src/view/pages/tickets.html, src/view/pages/inventory.html, src/view/pages/calendar.html, src/view/pages/reports.html, src/view/pages/admin.html, src/view/js/tickets.js.
+- Evidence: Vistas redirigen a login sin token y validan rol según configuración de cada página.

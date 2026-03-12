@@ -3,10 +3,6 @@ let activosMap = new Map();
 let activosList = [];
 
 const api = window.SIGAM_API;
-
-if (api && api.getToken && !api.getToken()) {
-    window.location.href = "login.html";
-}
 const statusFilter = document.getElementById("statusFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
