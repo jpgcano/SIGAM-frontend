@@ -6,12 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadDashboardData() {
-    if (!api || !api.getDashboard) {
-        console.error("Dashboard API not available.");
-        return;
-    }
     try {
-        const data = await api.getDashboard();
+        if (!api || !api.getActivos || !api.getTickets) {
+            console.error("Dashboard API not available.");
+            return;
+        }
+        const [activos, tickets] = await Promise.all([
+            api.getActivos(),
+            api.getTickets()
+        ]);
+        const data = buildDashboardData(activos, tickets);
         if (!data) {
             return;
         }
@@ -42,11 +46,16 @@ async function loadRecentTickets() {
 }
 
 function normalizeTicket(raw) {
-    const createdAt = raw.createdAt || raw.date || raw.created_at || raw.created_on;
+    const createdAt =
+        raw.createdAt ||
+        raw.date ||
+        raw.created_at ||
+        raw.created_on ||
+        raw.fecha_creacion;
     const createdDate = createdAt ? new Date(createdAt) : null;
     return {
-        id: raw.id || raw._id || raw.ticketId || raw.codigo,
-        title: raw.title || raw.titulo || "",
+        id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
+        title: raw.title || raw.titulo || raw.asunto || "",
         device: raw.device || raw.dispositivo || "",
         category: raw.category || raw.categoria || "",
         status: raw.status || raw.estado || "",
@@ -98,6 +107,44 @@ function mapStatus(status) {
         return { dot: "open", badge: "alert-open", label: status || "open" };
     }
     return { dot: "open", badge: "alert-open", label: status || "open" };
+}
+
+function buildDashboardData(activos, tickets) {
+    const safeActivos = Array.isArray(activos) ? activos : [];
+    const safeTickets = Array.isArray(tickets) ? tickets : [];
+    const openTickets = safeTickets.filter((ticket) => {
+        const status = (ticket.estado || ticket.status || "").toLowerCase();
+        return !status.includes("cerrad") && !status.includes("complet");
+    }).length;
+
+    const ticketsByCategory = safeTickets.reduce(
+        (acc, ticket) => {
+            const category = (ticket.categoria || ticket.category || "").toLowerCase();
+            if (category.includes("hard")) {
+                acc.hardware += 1;
+            } else if (category.includes("soft")) {
+                acc.software += 1;
+            }
+            return acc;
+        },
+        { hardware: 0, software: 0 }
+    );
+
+    return {
+        assets: safeActivos.length,
+        openTickets,
+        scheduledMaintenance: 0,
+        totalCost: 0,
+        assetsByType: {
+            laptops: 0,
+            desktops: 0,
+            servers: 0,
+            printers: 0,
+            monitors: 0
+        },
+        ticketsByCategory,
+        maintenanceCost: []
+    };
 }
 
 // actualizar tarjetas del dashboard

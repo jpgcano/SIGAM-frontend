@@ -50,11 +50,13 @@
                     <div class="field-error" id="titleError"></div>
                     <textarea id="description" placeholder="Descripcion" required></textarea>
                     <div class="field-error" id="descriptionError"></div>
-                    <input id="device" placeholder="Dispositivo" required>
+                    <select id="device" required>
+                        <option value="">Selecciona un activo</option>
+                    </select>
                     <div class="field-error" id="deviceError"></div>
                     <input id="category" placeholder="Categoria" required>
                     <div class="field-error" id="categoryError"></div>
-                    <input id="createdBy" placeholder="Creado por" required>
+                    <input id="createdBy" placeholder="Creado por" required readonly>
                     <div class="field-error" id="createdByError"></div>
                     <input id="assignedTo" placeholder="Asignado a">
                     <div class="field-error" id="assignedToError"></div>
