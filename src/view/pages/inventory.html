@@ -32,99 +32,7 @@
   <!-- navbar-expand-lg: navbar responsive -->
   <!-- bg-white: fondo blanco -->
   <!-- border-bottom: línea inferior -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-
-    <!-- container: centra el contenido -->
-    <div class="container">
-
-      <!-- Logo y nombre del sistema -->
-      <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.html">
-
-        <!-- Icono del sistema -->
-        <div
-          class="bg-primary text-white rounded d-flex justify-content-center align-items-center"
-          style="width: 35px; height: 35px"
-        >
-          J
-        </div>
-
-        <!-- Nombre de la plataforma -->
-        <div>
-          <strong>J-AXON</strong><br />
-          <small class="text-muted">Anticipate the failure</small>
-        </div>
-
-      </a>
-
-      <!-- Botón para abrir menú en móviles -->
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#menu"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <!-- Menú de navegación -->
-      <div class="collapse navbar-collapse" id="menu">
-
-        <!-- Links del sistema -->
-        <ul class="navbar-nav ms-4">
-
-          <!-- Dashboard -->
-          <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2" href="dashboard.html">
-              <i class="bi bi-speedometer2"></i>
-              Dashboard
-            </a>
-          </li>
-
-          <!-- Inventory (página actual) -->
-          <li class="nav-item">
-            <a class="nav-link active fw-bold text-primary d-flex align-items-center gap-2" href="inventory.html">
-              <i class="bi bi-box-seam"></i>
-              Inventory
-            </a>
-          </li>
-
-          <!-- Tickets -->
-          <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2" href="tickets.html">
-              <i class="bi bi-ticket"></i>
-              Tickets
-            </a>
-          </li>
-
-          <!-- Calendar -->
-          <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2" href="calendar.html">
-              <i class="bi bi-calendar-event"></i>
-              Calendar
-            </a>
-          </li>
-
-          <!-- Reports -->
-          <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2" href="reports.html">
-              <i class="bi bi-bar-chart"></i>
-              Reports
-            </a>
-          </li>
-
-          <!-- Administración -->
-          <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2" href="admin.html">
-              <i class="bi bi-gear"></i>
-              Admin
-            </a>
-          </li>
-
-        </ul>
-
-      </div>
-    </div>
-  </nav>
+  <div id="app-navbar"></div>
 
   <!-- ========================= -->
   <!-- CONTENIDO PRINCIPAL -->
@@ -535,7 +443,8 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS (necesario para modals, dropdowns, etc.) -->
+    <script src="../services/navbar.js"></script>
+<!-- Bootstrap JS (necesario para modals, dropdowns, etc.) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Script donde está la lógica del inventario -->
