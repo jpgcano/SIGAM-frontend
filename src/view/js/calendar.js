@@ -229,8 +229,9 @@ renderCalendar()
 const scheduleForm = document.getElementById("scheduleForm")
 
 // handle form submissions for adding/editing maintenance entries
-scheduleForm.addEventListener("submit", function (e) {
-  e.preventDefault()
+if (scheduleForm) {
+  scheduleForm.addEventListener("submit", function (e) {
+    e.preventDefault()
 
   const maintenance = {
     asset: document.getElementById("assetName").value,
@@ -251,15 +252,16 @@ scheduleForm.addEventListener("submit", function (e) {
   renderCalendar()
   scheduleForm.reset()
 
-  const modal = bootstrap.Modal.getInstance(
-    document.getElementById("scheduleModal")
-  )
-  if (modal) {
-    modal.hide()
-  }
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("scheduleModal")
+    )
+    if (modal) {
+      modal.hide()
+    }
 
-  alert("Maintenance scheduled!")
-})
+    alert("Maintenance scheduled!")
+  })
+}
 
 // when a day event is clicked, show the details modal and populate it
 // using the index of the maintenance entry in the array. also store the index
@@ -286,7 +288,15 @@ function showMaintenance(index) {
 function loadAssets() {
   const assets = JSON.parse(localStorage.getItem("assets")) || []
   const select = document.getElementById("assetName")
+  if (!select) {
+    return
+  }
   select.innerHTML = ""
+
+  if (assets.length === 0) {
+    select.innerHTML = '<option value="">No assets available</option>'
+    return
+  }
 
   assets.forEach((asset) => {
     select.innerHTML += `

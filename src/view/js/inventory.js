@@ -62,6 +62,7 @@ const grid = document.getElementById("assetGrid")
 const searchInput = document.getElementById("searchInput")
 const statusFilter = document.getElementById("statusFilter")
 const typeFilter = document.getElementById("typeFilter")
+const locationFilter = document.getElementById("locationFilter")
 const resultCount = document.getElementById("resultCount")
 const stockTableBody = document.getElementById("stockTableBody")
 const supplierCards = document.getElementById("supplierCards")
@@ -69,6 +70,8 @@ const supplierForm = document.getElementById("supplierForm")
 const supplierEditName = document.getElementById("supplierEditName")
 const supplierEditRows = document.getElementById("supplierEditRows")
 let editingSupplierName = null
+const assetFormStatus = document.getElementById("assetFormStatus")
+const assetSubmitBtn = document.getElementById("assetSubmitBtn")
 
 const assetEditForm = document.getElementById("assetEditForm")
 const editName = document.getElementById("editName")
@@ -200,6 +203,34 @@ function renderStockTable(list) {
           </tr>
         `
     })
+}
+
+function buildLocationOptions(list) {
+    if (!locationFilter) {
+        return
+    }
+    const current = locationFilter.value
+    const locations = Array.from(
+        new Set(
+            list
+                .map(asset => (asset.location || "").trim())
+                .filter(location => location.length)
+        )
+    ).sort((a, b) => a.localeCompare(b))
+
+    locationFilter.innerHTML = '<option value="all">All Locations</option>'
+    locations.forEach(location => {
+        const option = document.createElement("option")
+        option.value = location
+        option.textContent = location
+        locationFilter.appendChild(option)
+    })
+
+    if (current && locations.includes(current)) {
+        locationFilter.value = current
+    } else {
+        locationFilter.value = "all"
+    }
 }
 
 function renderSupplierCards(list) {
@@ -383,6 +414,7 @@ function filterAssets() {
     const search = searchInput.value.toLowerCase()
     const status = statusFilter.value
     const type = typeFilter.value
+    const location = locationFilter ? locationFilter.value : "all"
 
     let filtered = assets.filter(asset => {
 
@@ -397,7 +429,10 @@ function filterAssets() {
         const matchType =
             type === "all" || asset.type === type
 
-        return matchSearch && matchStatus && matchType
+        const matchLocation =
+            location === "all" || (asset.location || "") === location
+
+        return matchSearch && matchStatus && matchType && matchLocation
 
     })
 
@@ -412,11 +447,15 @@ function filterAssets() {
 searchInput.addEventListener("input", filterAssets)
 statusFilter.addEventListener("change", filterAssets)
 typeFilter.addEventListener("change", filterAssets)
+if (locationFilter) {
+    locationFilter.addEventListener("change", filterAssets)
+}
 
 // initial rendering of whatever is currently in the array
 renderAssets(assets)
 renderStockTable(assets)
 renderSupplierCards(assets)
+buildLocationOptions(assets)
 
 // if the page loaded and storage was empty (first visit), save the default
 // list so subsequent reloads honour persistence
@@ -431,6 +470,205 @@ if (!localStorage.getItem("assets")) {
 document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.getElementById("assetForm")
+    const nameInput = document.getElementById("name")
+    const brandInput = document.getElementById("brand")
+    const serialInput = document.getElementById("serial")
+    const assignedInput = document.getElementById("assigned")
+    const locationInput = document.getElementById("location")
+    const statusInput = document.getElementById("status")
+    const typeInput = document.getElementById("type")
+    const warrantyInput = document.getElementById("warranty")
+    const stockInput = document.getElementById("stock")
+    const minStockInput = document.getElementById("minStock")
+    const supplierNameInput = document.getElementById("supplierName")
+    const supplierPriceInput = document.getElementById("supplierPrice")
+    const supplierLeadInput = document.getElementById("supplierLeadTime")
+
+    function setFieldValidity(input, isValid, message) {
+        if (!input) {
+            return
+        }
+        if (isValid) {
+            input.classList.remove("is-invalid")
+            return
+        }
+        input.classList.add("is-invalid")
+        if (message) {
+            const feedback = input.parentElement.querySelector(".invalid-feedback")
+            if (feedback) {
+                feedback.textContent = message
+            }
+        }
+    }
+
+    function setFormStatus(message, type) {
+        if (!assetFormStatus) {
+            return
+        }
+        assetFormStatus.textContent = message || ""
+        assetFormStatus.className = "me-auto small"
+        if (type === "error") {
+            assetFormStatus.classList.add("text-danger")
+        }
+        if (type === "success") {
+            assetFormStatus.classList.add("text-success")
+        }
+        if (type === "loading") {
+            assetFormStatus.classList.add("text-muted")
+        }
+    }
+
+    function setSubmitting(isSubmitting) {
+        if (!assetSubmitBtn) {
+            return
+        }
+        assetSubmitBtn.disabled = isSubmitting
+        assetSubmitBtn.textContent = isSubmitting ? "Saving..." : "Save Asset"
+    }
+
+    function validateAssetForm() {
+        let isValid = true
+
+        const nameValue = nameInput.value.trim()
+        const brandValue = brandInput.value.trim()
+        const serialValue = serialInput.value.trim()
+        const locationValue = locationInput.value.trim()
+        const warrantyValue = warrantyInput.value.trim()
+        const stockValue = stockInput.value
+        const minStockValue = minStockInput.value
+
+        if (nameValue.length < 3) {
+            isValid = false
+            setFieldValidity(nameInput, false, "Name is required (min 3 characters).")
+        } else {
+            setFieldValidity(nameInput, true)
+        }
+
+        if (!brandValue) {
+            isValid = false
+            setFieldValidity(brandInput, false, "Brand / Model is required.")
+        } else {
+            setFieldValidity(brandInput, true)
+        }
+
+        if (!serialValue) {
+            isValid = false
+            setFieldValidity(serialInput, false, "Serial is required.")
+        } else {
+            const duplicate = assets.some(asset =>
+                (asset.serial || "").trim().toLowerCase() === serialValue.toLowerCase()
+            )
+            if (duplicate) {
+                isValid = false
+                setFieldValidity(serialInput, false, "Serial must be unique.")
+            } else {
+                setFieldValidity(serialInput, true)
+            }
+        }
+
+        if (!locationValue) {
+            isValid = false
+            setFieldValidity(locationInput, false, "Location is required.")
+        } else {
+            setFieldValidity(locationInput, true)
+        }
+
+        if (!statusInput.value) {
+            isValid = false
+            setFieldValidity(statusInput, false, "Status is required.")
+        } else {
+            setFieldValidity(statusInput, true)
+        }
+
+        if (!typeInput.value) {
+            isValid = false
+            setFieldValidity(typeInput, false, "Type is required.")
+        } else {
+            setFieldValidity(typeInput, true)
+        }
+
+        if (!warrantyValue) {
+            isValid = false
+            setFieldValidity(warrantyInput, false, "Warranty is required.")
+        } else {
+            setFieldValidity(warrantyInput, true)
+        }
+
+        const stockNumber = Number.parseInt(stockValue || "0", 10)
+        if (!Number.isFinite(stockNumber) || stockNumber < 0) {
+            isValid = false
+            setFieldValidity(stockInput, false, "Stock must be 0 or greater.")
+        } else {
+            setFieldValidity(stockInput, true)
+        }
+
+        const minStockNumber = Number.parseInt(minStockValue || "0", 10)
+        if (!Number.isFinite(minStockNumber) || minStockNumber < 0) {
+            isValid = false
+            setFieldValidity(minStockInput, false, "Minimum Stock must be 0 or greater.")
+        } else if (Number.isFinite(stockNumber) && minStockNumber > stockNumber) {
+            isValid = false
+            setFieldValidity(minStockInput, false, "Minimum Stock cannot exceed Stock.")
+        } else {
+            setFieldValidity(minStockInput, true)
+        }
+
+        const supplierNameValue = supplierNameInput.value.trim()
+        const supplierPriceValue = supplierPriceInput.value.trim()
+        const supplierLeadValue = supplierLeadInput.value.trim()
+        const supplierTouched = Boolean(
+            supplierNameValue || supplierPriceValue || supplierLeadValue
+        )
+
+        if (supplierTouched) {
+            if (!supplierNameValue) {
+                isValid = false
+                setFieldValidity(
+                    supplierNameInput,
+                    false,
+                    "Supplier name is required when supplier data is provided."
+                )
+            } else {
+                setFieldValidity(supplierNameInput, true)
+            }
+
+            const supplierPriceNumber = Number.parseInt(supplierPriceValue || "0", 10)
+            if (!supplierPriceValue || !Number.isFinite(supplierPriceNumber) || supplierPriceNumber < 0) {
+                isValid = false
+                setFieldValidity(
+                    supplierPriceInput,
+                    false,
+                    "Supplier price must be 0 or greater."
+                )
+            } else {
+                setFieldValidity(supplierPriceInput, true)
+            }
+
+            if (supplierLeadValue) {
+                const supplierLeadNumber = Number.parseInt(supplierLeadValue, 10)
+                if (!Number.isFinite(supplierLeadNumber) || supplierLeadNumber < 0) {
+                    isValid = false
+                    setFieldValidity(
+                        supplierLeadInput,
+                        false,
+                        "Lead time must be 0 or greater."
+                    )
+                } else {
+                    setFieldValidity(supplierLeadInput, true)
+                }
+            } else {
+                setFieldValidity(supplierLeadInput, true)
+            }
+        } else {
+            setFieldValidity(supplierNameInput, true)
+            setFieldValidity(supplierPriceInput, true)
+            setFieldValidity(supplierLeadInput, true)
+        }
+
+        form.classList.add("was-validated")
+
+        return isValid
+    }
 
     // when the new-asset form is submitted, build an object out of the inputs,
     // push it to the assets array, save the updated array to storage, re-render
@@ -438,25 +676,33 @@ document.addEventListener("DOMContentLoaded", function () {
     form.addEventListener("submit", function (e) {
 
         e.preventDefault()
+        setFormStatus("", "loading")
+
+        if (!validateAssetForm()) {
+            setFormStatus("Please fix the highlighted fields.", "error")
+            return
+        }
+
+        setSubmitting(true)
 
         const newAsset = {
 
-            name: document.getElementById("name").value,
+            name: nameInput.value.trim(),
             id: "AST-" + (assets.length + 1).toString().padStart(3, "0"),
-            brand: document.getElementById("brand").value,
-            serial: document.getElementById("serial").value,
-            assigned: document.getElementById("assigned").value,
-            location: document.getElementById("location").value,
-            status: document.getElementById("status").value,
-            type: document.getElementById("type").value,
-            warranty: document.getElementById("warranty").value,
-            stock: Number.parseInt(document.getElementById("stock").value || "0", 10) || 0,
-            minStock: Number.parseInt(document.getElementById("minStock").value || "0", 10) || 0,
+            brand: brandInput.value.trim(),
+            serial: serialInput.value.trim(),
+            assigned: assignedInput.value.trim(),
+            location: locationInput.value.trim(),
+            status: statusInput.value,
+            type: typeInput.value,
+            warranty: warrantyInput.value.trim(),
+            stock: Number.parseInt(stockInput.value || "0", 10) || 0,
+            minStock: Number.parseInt(minStockInput.value || "0", 10) || 0,
             suppliers: [
                 {
-                    name: document.getElementById("supplierName").value || "Unknown",
-                    price: Number.parseInt(document.getElementById("supplierPrice").value || "0", 10) || 0,
-                    leadTime: Number.parseInt(document.getElementById("supplierLeadTime").value || "0", 10) || 0
+                    name: supplierNameInput.value.trim() || "Unknown",
+                    price: Number.parseInt(supplierPriceInput.value || "0", 10) || 0,
+                    leadTime: Number.parseInt(supplierLeadInput.value || "0", 10) || 0
                 }
             ]
 
@@ -468,8 +714,12 @@ document.addEventListener("DOMContentLoaded", function () {
         renderAssets(assets)
         renderStockTable(assets)
         renderSupplierCards(assets)
+        buildLocationOptions(assets)
 
         form.reset()
+        form.classList.remove("was-validated")
+        setFormStatus("Asset saved successfully.", "success")
+        setSubmitting(false)
 
         const modal = bootstrap.Modal.getInstance(document.getElementById("assetModal"))
         modal.hide()
@@ -537,6 +787,7 @@ if (supplierForm) {
         renderAssets(assets)
         renderStockTable(assets)
         renderSupplierCards(assets)
+        buildLocationOptions(assets)
 
         const modal = bootstrap.Modal.getInstance(
             document.getElementById("supplierModal")

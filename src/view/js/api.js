@@ -1,6 +1,8 @@
 (function () {
     const config = window.SIGAM_CONFIG || {};
-    const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '') || 'http://localhost:4000/';
+    const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');
+    const ticketsEndpoint = config.TICKETS_ENDPOINT || '/tickets';
+    const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
 
     function getToken() {
         return localStorage.getItem('sigam_token');
@@ -37,6 +39,9 @@
     }
 
     async function apiRequest(path, options = {}) {
+        if (!baseUrl) {
+            throw new Error('API base URL is not configured.');
+        }
         const url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
         const method = (options.method || 'GET').toUpperCase();
         const headers = Object.assign({}, options.headers || {});
@@ -70,8 +75,43 @@
         return payload;
     }
 
+    function normalizeCollection(payload) {
+        if (Array.isArray(payload)) {
+            return payload;
+        }
+        if (payload && Array.isArray(payload.data)) {
+            return payload.data;
+        }
+        if (payload && Array.isArray(payload.tickets)) {
+            return payload.tickets;
+        }
+        return [];
+    }
+
+    async function getTickets() {
+        const payload = await apiRequest(ticketsEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function createTicket(body) {
+        return apiRequest(ticketsEndpoint, { method: 'POST', body });
+    }
+
+    async function deleteTicket(ticketId) {
+        const safeId = encodeURIComponent(ticketId);
+        return apiRequest(`${ticketsEndpoint}/${safeId}`, { method: 'DELETE' });
+    }
+
+    async function getDashboard() {
+        return apiRequest(dashboardEndpoint);
+    }
+
     window.SIGAM_API = {
         apiRequest,
+        getTickets,
+        createTicket,
+        deleteTicket,
+        getDashboard,
         getToken,
         setToken,
         clearToken,
