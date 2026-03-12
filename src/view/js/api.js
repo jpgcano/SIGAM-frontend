@@ -1,7 +1,8 @@
 (function () {
     const config = window.SIGAM_CONFIG || {};
     const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');
-    const ticketsEndpoint = config.TICKETS_ENDPOINT || '/tickets';
+    const ticketsEndpoint = config.TICKETS_ENDPOINT || '/api/tickets';
+    const activosEndpoint = config.ACTIVOS_ENDPOINT || '/api/activos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
 
     function getToken() {
@@ -85,6 +86,9 @@
         if (payload && Array.isArray(payload.tickets)) {
             return payload.tickets;
         }
+        if (payload && Array.isArray(payload.activos)) {
+            return payload.activos;
+        }
         return [];
     }
 
@@ -106,12 +110,18 @@
         return apiRequest(dashboardEndpoint);
     }
 
+    async function getActivos() {
+        const payload = await apiRequest(activosEndpoint);
+        return normalizeCollection(payload);
+    }
+
     window.SIGAM_API = {
         apiRequest,
         getTickets,
         createTicket,
         deleteTicket,
         getDashboard,
+        getActivos,
         getToken,
         setToken,
         clearToken,

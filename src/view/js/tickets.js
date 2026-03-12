@@ -1,7 +1,12 @@
 let tickets = [];
+let activosMap = new Map();
+let activosList = [];
 
 const api = window.SIGAM_API;
 
+if (api && api.getToken && !api.getToken()) {
+    window.location.href = "login.html";
+}
 const statusFilter = document.getElementById("statusFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
@@ -62,6 +67,25 @@ function setSubmitting(isSubmitting) {
     }
     addTicketBtn.disabled = isSubmitting;
     addTicketBtn.textContent = isSubmitting ? "Saving..." : "Add Ticket";
+}
+
+function getCurrentUser() {
+    if (!api || !api.getUser) {
+        return null;
+    }
+    return api.getUser();
+}
+
+function setCreatedByFromSession() {
+    const user = getCurrentUser();
+    if (!createdByInput) {
+        return;
+    }
+    if (user && (user.nombre || user.name || user.email)) {
+        createdByInput.value = user.nombre || user.name || user.email;
+        return;
+    }
+    createdByInput.value = "Usuario";
 }
 
 function setFieldError(input, message) {
@@ -145,19 +169,65 @@ function clearFormErrors() {
 }
 
 function normalizeTicket(raw) {
-    const createdAt = raw.createdAt || raw.date || raw.created_at || raw.created_on;
+    const createdAt =
+        raw.createdAt ||
+        raw.date ||
+        raw.created_at ||
+        raw.created_on ||
+        raw.fecha_creacion;
+    const idActivo = raw.id_activo || raw.activoId || raw.assetId;
+    const activoInfo = activosMap.get(String(idActivo)) || {};
     return {
-        id: raw.id || raw._id || raw.ticketId || raw.codigo,
-        title: raw.title || raw.titulo || "",
+        id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
+        title: raw.title || raw.titulo || raw.asunto || "",
         description: raw.description || raw.descripcion || "",
-        device: raw.device || raw.dispositivo || "",
+        device: raw.device || raw.dispositivo || activoInfo.label || "",
         category: raw.category || raw.categoria || "",
-        createdBy: raw.createdBy || raw.creadoPor || raw.created_by || "",
-        assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || "",
+        createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
+        assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || "",
         estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
         status: raw.status || raw.estado || "",
+        assetId: idActivo || "",
         date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
     };
+}
+
+async function loadActivos() {
+    if (!api || !api.getActivos) {
+        return;
+    }
+    try {
+        const data = await api.getActivos();
+        activosList = Array.isArray(data) ? data : [];
+        activosMap = new Map(
+            activosList.map((activo) => {
+                const id = activo.id_activo || activo.id || activo.idActivo;
+                const labelParts = [
+                    activo.modelo,
+                    activo.serial,
+                    activo.sede,
+                    activo.sala
+                ].filter(Boolean);
+                const label = labelParts.join(" - ");
+                return [String(id), { label, raw: activo }];
+            })
+        );
+
+        if (deviceInput) {
+            const placeholder = '<option value="">Selecciona un activo</option>';
+            const options = activosList
+                .map((activo) => {
+                    const id = activo.id_activo || activo.id || activo.idActivo;
+                    const info = activosMap.get(String(id)) || {};
+                    const label = info.label || String(id || "Activo");
+                    return `<option value="${id}">${label}</option>`;
+                })
+                .join("");
+            deviceInput.innerHTML = placeholder + options;
+        }
+    } catch (error) {
+        setTicketStatus("Unable to load assets from API.", "error");
+    }
 }
 
 async function loadTickets() {
@@ -195,21 +265,33 @@ if (ticketForm) {
 
         setSubmitting(true);
 
+        const user = getCurrentUser() || {};
+        const reporterId = user.id || user.id_usuario || user.userId || "";
+        const assetId = deviceInput.value;
+
+        if (!reporterId) {
+            setTicketStatus("Debes iniciar sesión para crear un ticket.", "error");
+            setSubmitting(false);
+            return;
+        }
+
         const ticketPayload = {
-            title: titleInput.value.trim(),
-            description: descriptionInput.value.trim(),
-            device: deviceInput.value.trim(),
-            category: categoryInput.value.trim(),
-            createdBy: createdByInput.value.trim(),
-            assignedTo: assignedToInput.value.trim(),
-            estimate: estimateInput.value.trim(),
-            status: statusInput.value,
-            date: new Date().toISOString()
+            id_activo: assetId ? Number(assetId) || assetId : "",
+            id_usuario_reporta: reporterId,
+            descripcion: descriptionInput.value.trim()
+        };
+
+        const extraPayload = {
+            titulo: titleInput.value.trim(),
+            categoria: categoryInput.value.trim(),
+            asignadoA: assignedToInput.value.trim(),
+            estimado: estimateInput.value.trim(),
+            estado: statusInput.value
         };
 
         try {
-            const response = await api.createTicket(ticketPayload);
-            const created = normalizeTicket(response || ticketPayload);
+            const response = await api.createTicket({ ...ticketPayload, ...extraPayload });
+            const created = normalizeTicket(response || { ...ticketPayload, ...extraPayload });
             tickets.unshift(created);
             localStorage.setItem("tickets", JSON.stringify(tickets));
             applyFilters();
@@ -240,7 +322,7 @@ function renderTickets(list) {
             <div class="ticket-status">${ticket.status || "Pending"}</div>
 
             <div class="ticket-title">
-                ${ticket.title}
+                ${ticket.title || "Ticket"}
             </div>
 
             <div class="ticket-info">
@@ -248,7 +330,7 @@ function renderTickets(list) {
             </div>
 
             <div class="ticket-info">
-                TK-${ticket.id || index + 1} - ${ticket.device} - ${ticket.category}
+                TK-${ticket.id || index + 1} - ${ticket.device || "Activo"} - ${ticket.category || "Sin categoria"}
             </div>
 
             <div class="ticket-info">
@@ -316,4 +398,5 @@ function applyFilters() {
 searchInput.addEventListener("input", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
 
-loadTickets();
+setCreatedByFromSession();
+loadActivos().then(loadTickets);

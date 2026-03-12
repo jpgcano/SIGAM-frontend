@@ -21,3 +21,7 @@
 - Scope: Added config/api scripts, wired forms to API, removed inline handlers, and added submission feedback with prevention of double submit.
 - Files: src/view/pages/login.html, src/view/pages/register.html, src/view/js/login.js, src/view/js/register.js.
 - Evidence: Forms submit via API client and show status messages without console errors.
+- Task: Tickets integración con activos y IDs requeridos por backend.
+- Scope: Actualicé endpoints en config/api, agregué carga de activos para select, mapeo de IDs en tickets y ajuste de dashboard para datos derivados.
+- Files: src/view/js/config.js, src/view/js/api.js, src/view/pages/tickets.html, src/view/js/tickets.js, src/view/js/charts.js.
+- Evidence: Tickets crean con id_activo e id_usuario_reporta, activos cargan en el select, dashboard muestra métricas básicas sin endpoint dedicado.
