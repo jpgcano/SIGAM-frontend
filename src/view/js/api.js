@@ -93,6 +93,12 @@
         if (payload && Array.isArray(payload.activos)) {
             return payload.activos;
         }
+        if (payload && Array.isArray(payload.categorias)) {
+            return payload.categorias;
+        }
+        if (payload && Array.isArray(payload.categories)) {
+            return payload.categories;
+        }
         return [];
     }
 
