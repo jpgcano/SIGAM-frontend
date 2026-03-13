@@ -90,14 +90,8 @@
         if (payload && Array.isArray(payload.data)) {
             return payload.data;
         }
-        if (payload && payload.data && Array.isArray(payload.data.tickets)) {
-            return payload.data.tickets;
-        }
-        if (payload && payload.data && Array.isArray(payload.data.activos)) {
-            return payload.data.activos;
-        }
-        if (payload && payload.data && Array.isArray(payload.data.repuestos)) {
-            return payload.data.repuestos;
+        if (payload && payload.data && Array.isArray(payload.data.data)) {
+            return payload.data.data;
         }
         if (payload && payload.data && Array.isArray(payload.data.categorias)) {
             return payload.data.categorias;

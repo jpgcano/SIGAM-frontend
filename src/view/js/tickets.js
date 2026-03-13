@@ -266,44 +266,70 @@ async function loadCategorias() {
     }
     try {
         const data = await api.getCategorias();
-        if (Array.isArray(data)) {
-            categoriasList = data;
-        } else if (data && Array.isArray(data.categorias)) {
-            categoriasList = data.categorias;
-        } else if (data && Array.isArray(data.categories)) {
-            categoriasList = data.categories;
-        } else {
-            categoriasList = [];
-        }
-        categoriasMap = new Map(
-            categoriasList.map((categoria) => {
-                const id = categoria.id_categoria || categoria.id || categoria.idCategoria;
-                const label =
-                    categoria.nombre ||
-                    categoria.name ||
-                    categoria.categoria ||
-                    categoria.nombre_categoria ||
-                    String(id || "Categoria");
-                return [String(id), label];
-            })
-        );
-
-        if (categoryInput) {
-            const placeholder = '<option value="">Selecciona categoria</option>';
-            const options = categoriasList
-                .map((categoria) => {
-                    const id = categoria.id_categoria || categoria.id || categoria.idCategoria;
-                    const label = categoriasMap.get(String(id)) || String(id || "Categoria");
-                    return `<option value="${id}">${label}</option>`;
-                })
-                .join("");
-            categoryInput.innerHTML = placeholder + options;
-        }
+        categoriasList = normalizeCategorias(data);
+        renderCategorias();
     } catch (error) {
+        categoriasList = [];
+        renderCategorias();
         setTicketStatus("Unable to load categories from API.", "error");
     }
 }
 
+function normalizeCategorias(data) {
+    if (Array.isArray(data)) {
+        return data;
+    }
+    if (data && Array.isArray(data.categorias)) {
+        return data.categorias;
+    }
+    if (data && Array.isArray(data.categories)) {
+        return data.categories;
+    }
+    return [];
+}
+
+function getCategoriaLabel(categoria) {
+    return (
+        categoria.nombre ||
+        categoria.name ||
+        categoria.categoria ||
+        categoria.nombre_categoria ||
+        ""
+    );
+}
+
+function renderCategorias() {
+    if (!categoryInput) {
+        return;
+    }
+
+    if (!categoriasList.length && activosList.length) {
+        categoriasList = activosList
+            .map((activo) => ({
+                id_categoria: activo.id_categoria || activo.categoria_id || activo.idCategoria,
+                nombre_categoria:
+                    activo.categoria ||
+                    activo.categoria_nombre ||
+                    activo.nombre_categoria ||
+                    ""
+            }))
+            .filter((cat) => cat.nombre_categoria);
+    }
+
+    categoriasMap = new Map(
+        categoriasList.map((categoria) => {
+            const id = categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
+            const label = getCategoriaLabel(categoria) || String(id || "Categoria");
+            return [String(id), label];
+        })
+    );
+
+    const placeholder = '<option value="">Selecciona categoria</option>';
+    const options = Array.from(categoriasMap.entries())
+        .map(([id, label]) => `<option value="${id}">${label}</option>`)
+        .join("");
+    categoryInput.innerHTML = placeholder + options;
+}
 async function loadTickets() {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
@@ -476,5 +502,9 @@ searchInput.addEventListener("input", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
 
 setCreatedByFromSession();
-Promise.all([loadActivos(), loadCategorias()]).then(loadTickets);
-Promise.all([loadActivos(), loadCategorias()]).then(loadTickets);
+Promise.all([loadActivos(), loadCategorias()]).then(() => {
+    if (!categoriasList.length && activosList.length) {
+        renderCategorias();
+    }
+    loadTickets();
+});
