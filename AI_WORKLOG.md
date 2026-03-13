@@ -67,3 +67,15 @@
 - Scope: README ampliado con estructura, rutas, auth, API y contribucion. Comentarios breves en servicios y flujos de auth.
 - Files: README.md, src/view/js/api.js, src/view/js/login.js, src/view/js/register.js, src/view/services/auth-guard.js, src/view/services/navbar.js.
 - Evidence: README incluye secciones de rutas y auth; codigo con comentarios de proposito.
+- Task: Pruebas de tickets por serial y categorias.
+- Scope: Validacion manual de carga de categorias, autocompletado de serial y creacion de ticket.
+- Files: test/tickets-serial-categorias.md.
+- Evidence: Checklist y resultados en test/tickets-serial-categorias.md.
+- Task: Tests automaticos DOM para tickets.
+- Scope: Tests con Vitest + JSDOM para categorias y serial.
+- Files: test/tickets.dom.test.js, vitest.config.js, package.json, README.md.
+- Evidence: Casos automatizados definidos en test/tickets.dom.test.js.
+- Task: Ajuste de carga de categorias desde API.
+- Scope: Soporte para respuestas anidadas y nombres alternativos de campos.
+- Files: src/view/js/api.js, src/view/js/tickets.js.
+- Evidence: Normalizacion extendida para payloads data.categorias y data.categories.

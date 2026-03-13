@@ -87,6 +87,12 @@
         if (payload && Array.isArray(payload.data)) {
             return payload.data;
         }
+        if (payload && payload.data && Array.isArray(payload.data.categorias)) {
+            return payload.data.categorias;
+        }
+        if (payload && payload.data && Array.isArray(payload.data.categories)) {
+            return payload.data.categories;
+        }
         if (payload && Array.isArray(payload.tickets)) {
             return payload.tickets;
         }
