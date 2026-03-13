@@ -107,3 +107,7 @@
 - Scope: Listado ampliado a 1100px/1180px en 1400px+ para evitar layout angosto.
 - Files: src/view/css/tickets.css, test/tickets-density-v3.md.
 - Evidence: Actualizacion en test/tickets-density-v3.md.
+- Task: Layout en grid para tickets.
+- Scope: Grid con 1/2/3 columnas segun 450/750/1400+ para aprovechar espacio.
+- Files: src/view/css/tickets.css, test/tickets-grid-layout.md.
+- Evidence: Checklist en test/tickets-grid-layout.md.
