@@ -87,6 +87,9 @@
         if (payload && Array.isArray(payload.data)) {
             return payload.data;
         }
+        if (payload && payload.data && Array.isArray(payload.data.data)) {
+            return payload.data.data;
+        }
         if (payload && payload.data && Array.isArray(payload.data.categorias)) {
             return payload.data.categorias;
         }

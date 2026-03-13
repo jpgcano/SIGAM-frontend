@@ -17,6 +17,7 @@ body{
 
 .container{
     width:92%;
+    max-width:1200px;
     margin:auto;
     margin-top:35px;
 }
@@ -121,6 +122,8 @@ select{
     border-radius:14px;
     border:1px solid #c1c1c2;
     box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    display:grid;
+    gap:8px;
 }
 
 
@@ -130,6 +133,7 @@ select{
     font-size:18px;
     font-weight:600;
     margin-bottom:8px;
+    word-break:break-word;
 }
 
 
@@ -146,16 +150,22 @@ select{
 .ticket-info{
     font-size:13px;
     color:#6b7280;
+    word-break:break-word;
+    line-height:1.4;
 }
 
 
 /* STATUS */
 
-.status{
-    float:right;
+.ticket-status{
+    justify-self:start;
+    align-self:start;
     font-size:12px;
     padding:6px 10px;
     border-radius:20px;
+    background:#e5e7eb;
+    color:#374151;
+    width:fit-content;
 }
 
 .status.progreso{
@@ -288,6 +298,7 @@ select{
     font-size:13px;
     cursor:pointer;
     transition:0.2s;
+    width:fit-content;
 }
 
 .delete-btn:hover{
@@ -296,4 +307,54 @@ select{
 
 .delete-btn:active{
     transform:scale(0.95);
+}
+
+@media (max-width: 750px){
+    .container{
+        width:94%;
+        margin-top:20px;
+    }
+
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+    }
+
+    .filters{
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .search,
+    select{
+        width:100%;
+        min-width:unset;
+    }
+}
+
+@media (max-width: 450px){
+    .header h1{
+        font-size:24px;
+    }
+
+    .ticket{
+        padding:16px;
+    }
+
+    .modal-content{
+        width:92vw;
+    }
+}
+
+@media (min-width: 1200px){
+    .container{
+        max-width:1200px;
+    }
+}
+
+@media (min-width: 1400px){
+    .container{
+        max-width:1320px;
+    }
 }
