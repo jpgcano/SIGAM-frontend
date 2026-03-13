@@ -26,6 +26,8 @@ async function loadReports() {
         safeFetch(api && api.getMantenimientos)
     ]);
 
+    setStatus(`Assets: ${assets.length} • Tickets: ${tickets.length} • Maintenances: ${maintenances.length}`);
+
     const metrics = buildMetrics(assets, tickets, maintenances);
     renderMetrics(metrics);
 
@@ -33,6 +35,14 @@ async function loadReports() {
     renderComparisonChart(maintenances);
     renderAttentionAssets(assets, maintenances);
     renderExpiringWarranties(assets);
+}
+
+function setStatus(message) {
+    const statusEl = document.getElementById("reportsStatus");
+    if (!statusEl) {
+        return;
+    }
+    statusEl.textContent = message || "";
 }
 
 function buildMetrics(assets, tickets, maintenances) {
