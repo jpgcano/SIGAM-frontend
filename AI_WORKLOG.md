@@ -91,3 +91,7 @@
 - Scope: Filtro por categoria desde API y lineas de meta con wrap para evitar overflow.
 - Files: src/view/pages/tickets.html, src/view/js/tickets.js, src/view/css/tickets.css, test/tickets-filtros-categorias.md.
 - Evidence: Checklist en test/tickets-filtros-categorias.md.
+- Task: Refinamiento de filtros de tickets.
+- Scope: Filtro de estado poblado desde API y normalizacion de textos para busqueda y categorias.
+- Files: src/view/js/tickets.js, src/view/css/tickets.css.
+- Evidence: Pendiente de validacion visual en deploy.

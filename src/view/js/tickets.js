@@ -179,7 +179,7 @@ function normalizeTicket(raw) {
     const idActivo = raw.id_activo || raw.activoId || raw.assetId;
     const activoInfo = activosMap.get(String(idActivo)) || {};
     const rawStatus = raw.status || raw.estado || "";
-    const normalizedStatus = String(rawStatus || "").toLowerCase().trim();
+    const normalizedStatus = normalizeToken(rawStatus);
     const categoryId = raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
         raw.category ||
@@ -202,6 +202,14 @@ function normalizeTicket(raw) {
         assetId: idActivo || "",
         date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
     };
+}
+
+function normalizeToken(value) {
+    return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
 }
 
 function getActivoSerial(activo) {
@@ -304,19 +312,6 @@ function renderCategorias() {
         return;
     }
 
-    if (!categoriasList.length && activosList.length) {
-        categoriasList = activosList
-            .map((activo) => ({
-                id_categoria: activo.id_categoria || activo.categoria_id || activo.idCategoria,
-                nombre_categoria:
-                    activo.categoria ||
-                    activo.categoria_nombre ||
-                    activo.nombre_categoria ||
-                    ""
-            }))
-            .filter((cat) => cat.nombre_categoria);
-    }
-
     categoriasMap = new Map(
         categoriasList.map((categoria) => {
             const id = categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
@@ -334,11 +329,31 @@ function renderCategorias() {
     if (categoryFilter) {
         const filterPlaceholder = '<option value="all">All categories</option>';
         const filterOptions = Array.from(categoriasMap.entries())
-            .map(([id, label]) => `<option value="${String(label).toLowerCase()}">${label}</option>`)
+            .map(([id, label]) => `<option value="${normalizeToken(label)}">${label}</option>`)
             .join("");
         categoryFilter.innerHTML = filterPlaceholder + filterOptions;
     }
 }
+
+function renderStatusFilter() {
+    if (!statusFilter) {
+        return;
+    }
+    const unique = new Map();
+    tickets.forEach((ticket) => {
+        const label = String(ticket.status || "").trim();
+        if (!label) {
+            return;
+        }
+        unique.set(normalizeToken(label), label);
+    });
+    const placeholder = '<option value="all">All the states</option>';
+    const options = Array.from(unique.entries())
+        .map(([value, label]) => `<option value="${value}">${label}</option>`)
+        .join("");
+    statusFilter.innerHTML = placeholder + options;
+}
+
 async function loadTickets() {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
@@ -348,11 +363,13 @@ async function loadTickets() {
         const data = await api.getTickets();
         tickets = (data || []).map(normalizeTicket);
         localStorage.setItem("tickets", JSON.stringify(tickets));
+        renderStatusFilter();
         applyFilters();
     } catch (error) {
         setTicketStatus("Unable to load tickets from API.", "error");
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
+        renderStatusFilter();
         applyFilters();
     }
 }
@@ -482,15 +499,15 @@ async function deleteTicket(index) {
 }
 
 function applyFilters() {
-    const search = searchInput.value.toLowerCase();
-    const status = statusFilter.value.toLowerCase();
-    const category = categoryFilter ? categoryFilter.value.toLowerCase() : "all";
+    const search = normalizeToken(searchInput.value);
+    const status = normalizeToken(statusFilter.value);
+    const category = categoryFilter ? normalizeToken(categoryFilter.value) : "all";
 
     const filtered = tickets.filter(ticket => {
-        const title = (ticket.title || "").toLowerCase();
-        const description = (ticket.description || "").toLowerCase();
-        const device = (ticket.device || "").toLowerCase();
-        const ticketCategory = (ticket.category || "").toLowerCase();
+        const title = normalizeToken(ticket.title);
+        const description = normalizeToken(ticket.description);
+        const device = normalizeToken(ticket.device);
+        const ticketCategory = normalizeToken(ticket.category);
 
         const matchSearch =
             title.includes(search) ||
@@ -521,8 +538,5 @@ if (categoryFilter) {
 
 setCreatedByFromSession();
 Promise.all([loadActivos(), loadCategorias()]).then(() => {
-    if (!categoriasList.length && activosList.length) {
-        renderCategorias();
-    }
     loadTickets();
 });
