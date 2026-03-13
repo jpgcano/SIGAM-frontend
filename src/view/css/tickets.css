@@ -154,6 +154,18 @@ select{
     line-height:1.4;
 }
 
+.ticket-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.ticket-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 16px;
+}
+
 
 /* STATUS */
 

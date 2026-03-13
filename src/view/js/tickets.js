@@ -7,6 +7,7 @@ let categoriasList = [];
 
 const api = window.SIGAM_API;
 const statusFilter = document.getElementById("statusFilter");
+const categoryFilter = document.getElementById("categoryFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
 const closeBtn = document.querySelector(".close");
@@ -329,6 +330,14 @@ function renderCategorias() {
         .map(([id, label]) => `<option value="${id}">${label}</option>`)
         .join("");
     categoryInput.innerHTML = placeholder + options;
+
+    if (categoryFilter) {
+        const filterPlaceholder = '<option value="all">All categories</option>';
+        const filterOptions = Array.from(categoriasMap.entries())
+            .map(([id, label]) => `<option value="${String(label).toLowerCase()}">${label}</option>`)
+            .join("");
+        categoryFilter.innerHTML = filterPlaceholder + filterOptions;
+    }
 }
 async function loadTickets() {
     if (!api || !api.getTickets) {
@@ -432,15 +441,17 @@ function renderTickets(list) {
                 ${ticket.description}
             </div>
 
-            <div class="ticket-info">
-                TK-${ticket.id || index + 1} - ${ticket.device || "Activo"} - ${ticket.category || "Sin categoria"}
+            <div class="ticket-info ticket-line">
+                <span>TK-${ticket.id || index + 1}</span>
+                <span>${ticket.device || "Activo"}</span>
+                <span>${ticket.category || "Sin categoria"}</span>
             </div>
 
-            <div class="ticket-info">
-                Creado por: ${ticket.createdBy} -
-                Asignado a: ${ticket.assignedTo || "Sin asignar"} -
-                ${ticket.date} -
-                ${ticket.estimate || "Sin estimado"}
+            <div class="ticket-info ticket-meta">
+                <span>Creado por: ${ticket.createdBy || "Sin usuario"}</span>
+                <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
+                <span>${ticket.date}</span>
+                <span>${ticket.estimate || "Sin estimado"}</span>
             </div>
 
             <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
@@ -473,23 +484,27 @@ async function deleteTicket(index) {
 function applyFilters() {
     const search = searchInput.value.toLowerCase();
     const status = statusFilter.value.toLowerCase();
+    const category = categoryFilter ? categoryFilter.value.toLowerCase() : "all";
 
     const filtered = tickets.filter(ticket => {
         const title = (ticket.title || "").toLowerCase();
         const description = (ticket.description || "").toLowerCase();
         const device = (ticket.device || "").toLowerCase();
-        const category = (ticket.category || "").toLowerCase();
+        const ticketCategory = (ticket.category || "").toLowerCase();
 
         const matchSearch =
             title.includes(search) ||
             description.includes(search) ||
             device.includes(search) ||
-            category.includes(search);
+            ticketCategory.includes(search);
 
         const matchStatus =
             status === "all" || (ticket.statusNormalized || "").includes(status);
 
-        return matchSearch && matchStatus;
+        const matchCategory =
+            category === "all" || ticketCategory.includes(category);
+
+        return matchSearch && matchStatus && matchCategory;
     });
 
     renderTickets(filtered);
@@ -500,6 +515,9 @@ function applyFilters() {
 
 searchInput.addEventListener("input", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
+if (categoryFilter) {
+    categoryFilter.addEventListener("change", applyFilters);
+}
 
 setCreatedByFromSession();
 Promise.all([loadActivos(), loadCategorias()]).then(() => {

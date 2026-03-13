@@ -87,3 +87,7 @@
 - Scope: Se establece que todas las vistas deben funcionar en 450px, 750px, 1200px y 1400px+.
 - Files: SKILL.md.
 - Evidence: Regla 20 en SKILL.md.
+- Task: Ajuste de filtros y layout de tickets.
+- Scope: Filtro por categoria desde API y lineas de meta con wrap para evitar overflow.
+- Files: src/view/pages/tickets.html, src/view/js/tickets.js, src/view/css/tickets.css, test/tickets-filtros-categorias.md.
+- Evidence: Checklist en test/tickets-filtros-categorias.md.
