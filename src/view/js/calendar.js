@@ -3,13 +3,65 @@
 let currentDate = new Date()
 let viewMode = "month"
 let editIndex = null
+const api = window.SIGAM_API
+let maintenances = []
+let assetsList = []
+let usingApi = false
+const scheduleStatus = document.getElementById("scheduleStatus")
+
+function setScheduleStatus(message, type) {
+  if (!scheduleStatus) {
+    return
+  }
+  scheduleStatus.textContent = message || ""
+  scheduleStatus.className = "me-auto small"
+  if (type === "error") {
+    scheduleStatus.classList.add("text-danger")
+  } else if (type === "success") {
+    scheduleStatus.classList.add("text-success")
+  } else {
+    scheduleStatus.classList.add("text-muted")
+  }
+}
 
 function loadMaintenances() {
-  return JSON.parse(localStorage.getItem("maintenances")) || []
+  return maintenances
 }
 
 function saveMaintenances(list) {
-  localStorage.setItem("maintenances", JSON.stringify(list))
+  maintenances = Array.isArray(list) ? list : []
+  localStorage.setItem("maintenances", JSON.stringify(maintenances))
+}
+
+function normalizeMaintenance(raw) {
+  return {
+    id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
+    ticketId: raw.id_ticket || raw.ticketId || "",
+    technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
+    asset: raw.asset || raw.activo || raw.assetName || "",
+    type: raw.tipo || raw.type || "preventive",
+    date: raw.fecha_inicio || raw.date || "",
+    notes: raw.diagnostico || raw.notes || ""
+  }
+}
+
+async function refreshMaintenances() {
+  if (api && api.getMantenimientos) {
+    try {
+      const data = await api.getMantenimientos()
+      usingApi = true
+      saveMaintenances((data || []).map(normalizeMaintenance))
+      setScheduleStatus("Mantenimientos cargados desde API.", "success")
+      renderCalendar()
+      return
+    } catch (error) {
+      setScheduleStatus("No se pudo cargar mantenimientos desde API.", "error")
+    }
+  }
+  usingApi = false
+  const cached = JSON.parse(localStorage.getItem("maintenances")) || []
+  saveMaintenances(cached.map(normalizeMaintenance))
+  renderCalendar()
 }
 
 function formatDate(date) {
@@ -191,6 +243,16 @@ function wireDragAndDrop() {
       list[index].date = dayEl.dataset.date
       saveMaintenances(list)
       renderCalendar()
+      if (usingApi && api && api.updateMantenimiento && list[index].id) {
+        api.updateMantenimiento(list[index].id, {
+          fecha_inicio: list[index].date,
+          diagnostico: list[index].notes,
+          id_ticket: list[index].ticketId,
+          id_usuario_tecnico: list[index].technicianId
+        }).catch(() => {
+          setScheduleStatus("No se pudo actualizar la fecha en API.", "error")
+        })
+      }
     })
   })
 }
@@ -223,7 +285,7 @@ function setViewMode(mode) {
   renderCalendar()
 }
 
-renderCalendar()
+refreshMaintenances()
 
 // get reference to scheduling form so we can intercept submissions
 const scheduleForm = document.getElementById("scheduleForm")
@@ -233,24 +295,67 @@ if (scheduleForm) {
   scheduleForm.addEventListener("submit", function (e) {
     e.preventDefault()
 
-  const maintenance = {
-    asset: document.getElementById("assetName").value,
-    type: document.getElementById("maintenanceType").value,
-    date: document.getElementById("maintenanceDate").value,
-    notes: document.getElementById("notes").value,
-  }
+    const ticketId = document.getElementById("ticketId").value.trim()
+    const assetValue = document.getElementById("assetName").value
+    const typeValue = document.getElementById("maintenanceType").value
+    const dateValue = document.getElementById("maintenanceDate").value
+    const notesValue = document.getElementById("notes").value
 
-  const maintenances = loadMaintenances()
-  if (editIndex !== null) {
-    maintenances[editIndex] = maintenance
-    editIndex = null
-  } else {
-    maintenances.push(maintenance)
-  }
+    if (!ticketId || !dateValue) {
+      setScheduleStatus("Ticket ID y Date son obligatorios.", "error")
+      return
+    }
 
-  saveMaintenances(maintenances)
-  renderCalendar()
-  scheduleForm.reset()
+    const user = api && api.getUser ? api.getUser() : null
+    const technicianId = user && (user.id || user.id_usuario || user.userId)
+
+    if (!technicianId) {
+      setScheduleStatus("Debes iniciar sesion para programar mantenimiento.", "error")
+      return
+    }
+
+    const maintenance = {
+      id: editIndex !== null ? (maintenances[editIndex] || {}).id : "",
+      ticketId,
+      technicianId,
+      asset: assetValue,
+      type: typeValue,
+      date: dateValue,
+      notes: notesValue
+    }
+
+    const list = loadMaintenances()
+    if (editIndex !== null) {
+      list[editIndex] = maintenance
+      editIndex = null
+    } else {
+      list.push(maintenance)
+    }
+
+    saveMaintenances(list)
+    renderCalendar()
+
+    if (usingApi && api) {
+      const payload = {
+        id_ticket: Number(ticketId) || ticketId,
+        id_usuario_tecnico: technicianId,
+        diagnostico: notesValue,
+        fecha_inicio: dateValue
+      }
+
+      const action = maintenance.id && api.updateMantenimiento
+        ? api.updateMantenimiento(maintenance.id, payload)
+        : api.createMantenimiento(payload)
+
+      action.then(() => {
+        setScheduleStatus("Mantenimiento guardado en API.", "success")
+        refreshMaintenances()
+      }).catch(() => {
+        setScheduleStatus("No se pudo guardar mantenimiento en API.", "error")
+      })
+    }
+
+    scheduleForm.reset()
 
     const modal = bootstrap.Modal.getInstance(
       document.getElementById("scheduleModal")
@@ -258,8 +363,6 @@ if (scheduleForm) {
     if (modal) {
       modal.hide()
     }
-
-    alert("Maintenance scheduled!")
   })
 }
 
@@ -286,13 +389,36 @@ function showMaintenance(index) {
 
 // populate the asset dropdown in the scheduling form from stored assets
 function loadAssets() {
-  const assets = JSON.parse(localStorage.getItem("assets")) || []
   const select = document.getElementById("assetName")
   if (!select) {
     return
   }
   select.innerHTML = ""
 
+  if (api && api.getActivos) {
+    api.getActivos().then((assets) => {
+      assetsList = Array.isArray(assets) ? assets : []
+      if (assetsList.length === 0) {
+        select.innerHTML = '<option value="">No assets available</option>'
+        return
+      }
+      assetsList.forEach((asset) => {
+        const id = asset.id_activo || asset.id || asset.idActivo || ""
+        const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean)
+        const label = labelParts.join(" - ") || asset.nombre || `Activo ${id}`
+        select.innerHTML += `
+          <option value="${label}">
+            ${label}
+          </option>
+        `
+      })
+    }).catch(() => {
+      select.innerHTML = '<option value="">No assets available</option>'
+    })
+    return
+  }
+
+  const assets = JSON.parse(localStorage.getItem("assets")) || []
   if (assets.length === 0) {
     select.innerHTML = '<option value="">No assets available</option>'
     return
@@ -315,6 +441,12 @@ function deleteMaintenance() {
   const maintenances = loadMaintenances()
 
   if (confirm("Delete this maintenance?")) {
+    const target = maintenances[editIndex] || {}
+    if (usingApi && api && api.deleteMantenimiento && target.id) {
+      api.deleteMantenimiento(target.id).catch(() => {
+        setScheduleStatus("No se pudo eliminar en API.", "error")
+      })
+    }
     maintenances.splice(editIndex, 1)
     saveMaintenances(maintenances)
     renderCalendar()
@@ -336,6 +468,7 @@ function editMaintenance() {
     return
   }
 
+  document.getElementById("ticketId").value = m.ticketId || ""
   document.getElementById("assetName").value = m.asset
   document.getElementById("maintenanceType").value = m.type
   document.getElementById("maintenanceDate").value = m.date

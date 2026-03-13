@@ -24,6 +24,8 @@ const assetSubmitBtn = document.getElementById("assetSubmitBtn")
 const assetEditForm = document.getElementById("assetEditForm")
 const editName = document.getElementById("editName")
 const editBrand = document.getElementById("editBrand")
+const editCategoryId = document.getElementById("editCategoryId")
+const editProviderId = document.getElementById("editProviderId")
 const editSerial = document.getElementById("editSerial")
 const editAssigned = document.getElementById("editAssigned")
 const editLocation = document.getElementById("editLocation")
@@ -36,6 +38,8 @@ const editSupplierName = document.getElementById("editSupplierName")
 const editSupplierPrice = document.getElementById("editSupplierPrice")
 const editSupplierLeadTime = document.getElementById("editSupplierLeadTime")
 let editingAssetId = null
+let categories = []
+let providers = []
 
 function normalizeAssets(list) {
     return list.map(asset => {
@@ -89,6 +93,8 @@ function normalizeApiAsset(raw) {
     return {
         name: raw.modelo || raw.nombre || `Activo ${id}`,
         id: id ? String(id) : "",
+        categoryId: raw.id_categoria || raw.categoria_id || raw.idCategoria || "",
+        providerId: raw.id_proveedor || raw.proveedor_id || raw.idProveedor || "",
         brand: raw.modelo || raw.marca || "",
         serial: raw.serial || "",
         assigned: raw.asignado_a || raw.usuario || "",
@@ -110,6 +116,65 @@ function hydrateAssets(list) {
     renderStockTable(assets)
     renderSupplierCards(assets)
     buildLocationOptions(assets)
+}
+
+function getIdValue(item, keys) {
+    for (const key of keys) {
+        if (item && item[key] !== undefined && item[key] !== null && item[key] !== "") {
+            return item[key]
+        }
+    }
+    return ""
+}
+
+function getLabelValue(item, keys) {
+    for (const key of keys) {
+        if (item && item[key]) {
+            return String(item[key])
+        }
+    }
+    return ""
+}
+
+function fillSelect(select, items, placeholder) {
+    if (!select) {
+        return
+    }
+    const options = (items || [])
+        .map(item => {
+            const id = getIdValue(item, ["id_categoria", "id_proveedor", "id", "idCategoria", "idProveedor"])
+            const label = getLabelValue(item, ["nombre", "name", "descripcion", "razon_social", "contacto"])
+            const text = label || (id ? `ID ${id}` : "Sin nombre")
+            return `<option value="${id}">${text}</option>`
+        })
+        .join("")
+
+    select.innerHTML = `<option value="">${placeholder}</option>` + options
+}
+
+async function loadCategoriesAndProviders() {
+    if (!api) {
+        return
+    }
+    try {
+        if (api.getCategorias) {
+            categories = await api.getCategorias()
+            fillSelect(document.getElementById("categoryId"), categories, "Select category")
+            fillSelect(editCategoryId, categories, "Select category")
+        }
+    } catch {
+        // ignore
+    }
+
+    try {
+        if (api.getProveedores) {
+            providers = await api.getProveedores()
+            fillSelect(document.getElementById("providerId"), providers, "Select provider")
+            fillSelect(editProviderId, providers, "Select provider")
+        }
+    } catch {
+        // ignore
+    }
 }
 
 async function loadAssetsFromApi() {
@@ -412,6 +477,12 @@ function openAssetEditor(assetId) {
 
     editName.value = asset.name || ""
     editBrand.value = asset.brand || ""
+    if (editCategoryId) {
+        editCategoryId.value = asset.categoryId || ""
+    }
+    if (editProviderId) {
+        editProviderId.value = asset.providerId || ""
+    }
     editSerial.value = asset.serial || ""
     editAssigned.value = asset.assigned || ""
     editLocation.value = asset.location || ""
@@ -476,6 +547,7 @@ if (locationFilter) {
 
 // initial load from API
 loadAssetsFromApi()
+loadCategoriesAndProviders()
 
 
 
@@ -486,6 +558,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("assetForm")
     const nameInput = document.getElementById("name")
     const brandInput = document.getElementById("brand")
+    const categoryInput = document.getElementById("categoryId")
+    const providerInput = document.getElementById("providerId")
     const serialInput = document.getElementById("serial")
     const assignedInput = document.getElementById("assigned")
     const locationInput = document.getElementById("location")
@@ -563,6 +637,20 @@ document.addEventListener("DOMContentLoaded", function () {
             setFieldValidity(brandInput, false, "Brand / Model is required.")
         } else {
             setFieldValidity(brandInput, true)
+        }
+
+        if (categoryInput && !categoryInput.value) {
+            isValid = false
+            setFieldValidity(categoryInput, false, "Category is required.")
+        } else if (categoryInput) {
+            setFieldValidity(categoryInput, true)
+        }
+
+        if (providerInput && !providerInput.value) {
+            isValid = false
+            setFieldValidity(providerInput, false, "Provider is required.")
+        } else if (providerInput) {
+            setFieldValidity(providerInput, true)
         }
 
         if (!serialValue) {
@@ -730,7 +818,12 @@ document.addEventListener("DOMContentLoaded", function () {
             return
         }
 
+        const categoryValue = categoryInput ? categoryInput.value : ""
+        const providerValue = providerInput ? providerInput.value : ""
+
         const payload = {
+            id_categoria: Number(categoryValue) || categoryValue,
+            id_proveedor: Number(providerValue) || providerValue,
             serial: serialInput.value.trim(),
             modelo: brandInput.value.trim() || nameInput.value.trim(),
             fecha_compra: new Date().toISOString(),
@@ -839,7 +932,7 @@ if (supplierForm) {
 }
 
 if (assetEditForm) {
-    assetEditForm.addEventListener("submit", function (event) {
+    assetEditForm.addEventListener("submit", async function (event) {
         event.preventDefault()
         const asset = assets.find(item => item.id === editingAssetId)
         if (!asset) {
@@ -848,6 +941,12 @@ if (assetEditForm) {
 
         asset.name = editName.value
         asset.brand = editBrand.value
+        if (editCategoryId) {
+            asset.categoryId = editCategoryId.value
+        }
+        if (editProviderId) {
+            asset.providerId = editProviderId.value
+        }
         asset.serial = editSerial.value
         asset.assigned = editAssigned.value
         asset.location = editLocation.value
@@ -876,6 +975,24 @@ if (assetEditForm) {
             asset.suppliers[0].name = supplierNameValue || asset.suppliers[0].name
             asset.suppliers[0].price = supplierPriceValue
             asset.suppliers[0].leadTime = supplierLeadValue
+        }
+
+        const payload = {
+            id_categoria: asset.categoryId,
+            id_proveedor: asset.providerId,
+            serial: asset.serial,
+            modelo: asset.brand || asset.name,
+            vida_util: Number.parseInt((asset.warranty || "").match(/\d+/)?.[0] || "0", 10) || undefined,
+            estado_vida_util: asset.status === "maintenance" ? "En mantenimiento" : "Vigente",
+            sede: asset.location
+        }
+
+        if (api && api.updateActivo && asset.id) {
+            try {
+                await api.updateActivo(asset.id, payload)
+            } catch {
+                // keep local update if API fails
+            }
         }
 
         localStorage.setItem("assets", JSON.stringify(assets))

@@ -5,6 +5,10 @@
     const activosEndpoint = config.ACTIVOS_ENDPOINT || '/api/activos';
     const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
+    const categoriasEndpoint = config.CATEGORIAS_ENDPOINT || '/api/categorias';
+    const proveedoresEndpoint = config.PROVEEDORES_ENDPOINT || '/api/proveedores';
+    const usuariosEndpoint = config.USUARIOS_ENDPOINT || '/api/usuarios';
+    const mantenimientosEndpoint = config.MANTENIMIENTOS_ENDPOINT || '/api/mantenimientos';
 
     function getToken() {
         return localStorage.getItem('sigam_token');
@@ -120,6 +124,65 @@
         return apiRequest(activosEndpoint, { method: 'POST', body });
     }
 
+    async function updateActivo(activoId, body) {
+        const safeId = encodeURIComponent(activoId);
+        return apiRequest(`${activosEndpoint}/${safeId}`, { method: 'PUT', body });
+    }
+
+    async function getCategorias() {
+        const payload = await apiRequest(categoriasEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function getProveedores() {
+        const payload = await apiRequest(proveedoresEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function getUsuarios() {
+        const payload = await apiRequest(usuariosEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function createUsuario(body) {
+        return apiRequest(usuariosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateUsuarioRol(id, rol) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}/rol`, {
+            method: 'PATCH',
+            body: { rol }
+        });
+    }
+
+    async function updateUsuarioPassword(id, password) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}/password`, {
+            method: 'PATCH',
+            body: { password }
+        });
+    }
+
+    async function getMantenimientos() {
+        const payload = await apiRequest(mantenimientosEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function createMantenimiento(body) {
+        return apiRequest(mantenimientosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateMantenimiento(id, body) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${mantenimientosEndpoint}/${safeId}`, { method: 'PUT', body });
+    }
+
+    async function deleteMantenimiento(id) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${mantenimientosEndpoint}/${safeId}`, { method: 'DELETE' });
+    }
+
     async function getRepuestos() {
         const payload = await apiRequest(repuestosEndpoint);
         return normalizeCollection(payload);
@@ -152,6 +215,17 @@
         getDashboard,
         getActivos,
         createActivo,
+        updateActivo,
+        getCategorias,
+        getProveedores,
+        getUsuarios,
+        createUsuario,
+        updateUsuarioRol,
+        updateUsuarioPassword,
+        getMantenimientos,
+        createMantenimiento,
+        updateMantenimiento,
+        deleteMantenimiento,
         getRepuestos,
         getRepuestosBajoStock,
         createRepuesto,

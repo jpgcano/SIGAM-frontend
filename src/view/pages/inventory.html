@@ -100,6 +100,24 @@
                 <div class="invalid-feedback">Brand / Model is required.</div>
               </div>
 
+              <!-- Categoria -->
+              <div class="mb-3">
+                <label class="form-label" for="categoryId">Category</label>
+                <select id="categoryId" class="form-select" required>
+                  <option value="">Select category</option>
+                </select>
+                <div class="invalid-feedback">Category is required.</div>
+              </div>
+
+              <!-- Proveedor -->
+              <div class="mb-3">
+                <label class="form-label" for="providerId">Provider</label>
+                <select id="providerId" class="form-select" required>
+                  <option value="">Select provider</option>
+                </select>
+                <div class="invalid-feedback">Provider is required.</div>
+              </div>
+
               <!-- Número serial -->
               <div class="mb-3">
                 <label class="form-label" for="serial">Serial</label>
@@ -335,6 +353,14 @@
               <div class="col-md-6">
                 <label class="form-label">Brand / Model</label>
                 <input id="editBrand" class="form-control" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Category</label>
+                <select id="editCategoryId" class="form-select"></select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Provider</label>
+                <select id="editProviderId" class="form-select"></select>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Serial</label>

@@ -16,6 +16,10 @@
     DASHBOARD_ENDPOINT: '/api/dashboard',
     TICKETS_ENDPOINT: '/api/tickets',
     ACTIVOS_ENDPOINT: '/api/activos',
-    REPUESTOS_ENDPOINT: '/api/repuestos'
+    REPUESTOS_ENDPOINT: '/api/repuestos',
+    CATEGORIAS_ENDPOINT: '/api/categorias',
+    PROVEEDORES_ENDPOINT: '/api/proveedores',
+    USUARIOS_ENDPOINT: '/api/usuarios',
+    MANTENIMIENTOS_ENDPOINT: '/api/mantenimientos'
   };
 })();
