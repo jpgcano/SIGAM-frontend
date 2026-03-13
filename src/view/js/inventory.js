@@ -1,61 +1,9 @@
 // load the assets array from browser storage; if nothing is stored yet, fall back
 // to a hard‑coded default list. using `let` because we will reassign when pushing new
 // assets later. this ensures persistence across page reloads.
-let assets = JSON.parse(localStorage.getItem("assets")) || [
+const api = window.SIGAM_API
+let assets = []
 
-    {
-        name: "Dell Latitude 7420 Laptop",
-        id: "AST-001",
-        brand: "Dell Latitude 7420",
-        serial: "DL7420-2023-001",
-        assigned: "Maria Garcia",
-        location: "Central Building - Floor 3",
-        status: "active",
-        type: "laptop",
-        warranty: "expired",
-        stock: 8,
-        minStock: 5,
-        suppliers: [
-            { name: "TechSource", price: 1250, leadTime: 5 }
-        ]
-    },
-
-    {
-        name: "HP EliteDesk 800 G6",
-        id: "AST-002",
-        brand: "HP EliteDesk 800 G6",
-        serial: "HP800-2022-045",
-        assigned: "Pedro Ramirez",
-        location: "Central Building - Floor 2",
-        status: "maintenance",
-        type: "desktop",
-        warranty: "expired",
-        stock: 2,
-        minStock: 4,
-        suppliers: [
-            { name: "OfficeParts", price: 980, leadTime: 7 }
-        ]
-    },
-
-    {
-        name: "Dell PowerEdge R740 Server",
-        id: "AST-003",
-        brand: "Dell PowerEdge R740",
-        serial: "DL-R740-2021-001",
-        assigned: "",
-        location: "Data Center - Floor 1",
-        status: "active",
-        type: "server",
-        warranty: "3 days",
-        stock: 1,
-        minStock: 1,
-        suppliers: [
-            { name: "ServerPro", price: 6200, leadTime: 14 },
-            { name: "TechSource", price: 6450, leadTime: 10 }
-        ]
-    }
-
-];
 
 // grab references to important DOM elements that we will update/interact with
 const grid = document.getElementById("assetGrid")
@@ -105,7 +53,82 @@ function normalizeAssets(list) {
     })
 }
 
-assets = normalizeAssets(assets)
+function guessType(modelo) {
+    const value = String(modelo || "").toLowerCase()
+    if (value.includes("laptop") || value.includes("notebook")) {
+        return "laptop"
+    }
+    if (value.includes("server")) {
+        return "server"
+    }
+    if (value.includes("printer") || value.includes("impresora")) {
+        return "printer"
+    }
+    if (value.includes("monitor")) {
+        return "monitor"
+    }
+    if (value.includes("desktop") || value.includes("pc")) {
+        return "desktop"
+    }
+    return "desktop"
+}
+
+function mapStatus(estado) {
+    const value = String(estado || "").toLowerCase()
+    if (value.includes("manten") || value.includes("vencid")) {
+        return "maintenance"
+    }
+    return "active"
+}
+
+function normalizeApiAsset(raw) {
+    const id = raw.id_activo || raw.id || raw.idActivo
+    const locationParts = [raw.sede, raw.piso, raw.sala].filter(Boolean)
+    const location = locationParts.join(" - ") || raw.ubicacion || ""
+    const supplierName = raw.proveedor || raw.proveedor_nombre || ""
+    return {
+        name: raw.modelo || raw.nombre || `Activo ${id}`,
+        id: id ? String(id) : "",
+        brand: raw.modelo || raw.marca || "",
+        serial: raw.serial || "",
+        assigned: raw.asignado_a || raw.usuario || "",
+        location,
+        status: mapStatus(raw.estado_vida_util || raw.estado || ""),
+        type: guessType(raw.modelo || raw.nombre || ""),
+        warranty: raw.vida_util ? `${raw.vida_util} meses` : raw.estado_vida_util || "",
+        stock: Number.parseInt(raw.stock || "0", 10) || 0,
+        minStock: Number.parseInt(raw.stock_minimo || "0", 10) || 0,
+        suppliers: supplierName
+            ? [{ name: supplierName, price: 0, leadTime: 0 }]
+            : []
+    }
+}
+
+function hydrateAssets(list) {
+    assets = normalizeAssets(list)
+    renderAssets(assets)
+    renderStockTable(assets)
+    renderSupplierCards(assets)
+    buildLocationOptions(assets)
+}
+
+async function loadAssetsFromApi() {
+    if (!api || !api.getActivos) {
+        hydrateAssets([])
+        return
+    }
+    try {
+        const data = await api.getActivos()
+        const mapped = (data || []).map(normalizeApiAsset)
+        hydrateAssets(mapped)
+    } catch (error) {
+        hydrateAssets([])
+        if (assetFormStatus) {
+            assetFormStatus.textContent = "No se pudieron cargar activos del servidor."
+            assetFormStatus.className = "me-auto small text-danger"
+        }
+    }
+}
 
 
 // renderAssets builds the grid of cards from a given list of asset objects.
@@ -451,17 +474,8 @@ if (locationFilter) {
     locationFilter.addEventListener("change", filterAssets)
 }
 
-// initial rendering of whatever is currently in the array
-renderAssets(assets)
-renderStockTable(assets)
-renderSupplierCards(assets)
-buildLocationOptions(assets)
-
-// if the page loaded and storage was empty (first visit), save the default
-// list so subsequent reloads honour persistence
-if (!localStorage.getItem("assets")) {
-    localStorage.setItem("assets", JSON.stringify(assets));
-}
+// initial load from API
+loadAssetsFromApi()
 
 
 
@@ -591,7 +605,13 @@ document.addEventListener("DOMContentLoaded", function () {
             isValid = false
             setFieldValidity(warrantyInput, false, "Warranty is required.")
         } else {
-            setFieldValidity(warrantyInput, true)
+            const match = warrantyValue.match(/\d+/)
+            if (!match) {
+                isValid = false
+                setFieldValidity(warrantyInput, false, "Warranty must include months (e.g., 24).")
+            } else {
+                setFieldValidity(warrantyInput, true)
+            }
         }
 
         const stockNumber = Number.parseInt(stockValue || "0", 10)
@@ -673,7 +693,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // when the new-asset form is submitted, build an object out of the inputs,
     // push it to the assets array, save the updated array to storage, re-render
     // the grid and reset/close the modal.
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
 
         e.preventDefault()
         setFormStatus("", "loading")
@@ -685,44 +705,63 @@ document.addEventListener("DOMContentLoaded", function () {
 
         setSubmitting(true)
 
-        const newAsset = {
-
-            name: nameInput.value.trim(),
-            id: "AST-" + (assets.length + 1).toString().padStart(3, "0"),
-            brand: brandInput.value.trim(),
-            serial: serialInput.value.trim(),
-            assigned: assignedInput.value.trim(),
-            location: locationInput.value.trim(),
-            status: statusInput.value,
-            type: typeInput.value,
-            warranty: warrantyInput.value.trim(),
-            stock: Number.parseInt(stockInput.value || "0", 10) || 0,
-            minStock: Number.parseInt(minStockInput.value || "0", 10) || 0,
-            suppliers: [
-                {
-                    name: supplierNameInput.value.trim() || "Unknown",
-                    price: Number.parseInt(supplierPriceInput.value || "0", 10) || 0,
-                    leadTime: Number.parseInt(supplierLeadInput.value || "0", 10) || 0
-                }
-            ]
-
+        if (!api || !api.createActivo) {
+            setFormStatus("API no disponible para crear activos.", "error")
+            setSubmitting(false)
+            return
         }
 
-        assets.push(newAsset)
-        localStorage.setItem("assets", JSON.stringify(assets))
+        const locationValue = locationInput.value.trim()
+        const locationParts = locationValue
+            .split("-")
+            .map(part => part.trim())
+            .filter(Boolean)
 
-        renderAssets(assets)
-        renderStockTable(assets)
-        renderSupplierCards(assets)
-        buildLocationOptions(assets)
+        const sede = locationParts[0] || locationValue
+        const piso = locationParts[1] || ""
+        const sala = locationParts[2] || (locationParts.length > 1 ? locationParts.slice(1).join(" - ") : "")
 
-        form.reset()
-        form.classList.remove("was-validated")
-        setFormStatus("Asset saved successfully.", "success")
-        setSubmitting(false)
+        const warrantyRaw = warrantyInput.value.trim()
+        const warrantyMatch = warrantyRaw.match(/\d+/)
+        const vidaUtil = warrantyMatch ? Number.parseInt(warrantyMatch[0], 10) : null
+        if (!vidaUtil) {
+            setFormStatus("Campos requeridos: vida_util", "error")
+            setSubmitting(false)
+            return
+        }
 
-        const modal = bootstrap.Modal.getInstance(document.getElementById("assetModal"))
-        modal.hide()
+        const payload = {
+            serial: serialInput.value.trim(),
+            modelo: brandInput.value.trim() || nameInput.value.trim(),
+            fecha_compra: new Date().toISOString(),
+            vida_util: vidaUtil,
+            nivel_criticidad: "Media",
+            estado_vida_util: statusInput.value === "maintenance" ? "En mantenimiento" : "Vigente",
+            sede,
+            piso,
+            sala,
+            proveedor: supplierNameInput.value.trim() || undefined
+        }
+
+        try {
+            await api.createActivo(payload)
+            setFormStatus("Asset saved successfully.", "success")
+            await loadAssetsFromApi()
+
+            form.reset()
+            form.classList.remove("was-validated")
+            const modal = bootstrap.Modal.getInstance(document.getElementById("assetModal"))
+            if (modal) {
+                modal.hide()
+            }
+        } catch (error) {
+            const message = error && error.message
+                ? error.message
+                : "No se pudo guardar el activo en el servidor."
+            setFormStatus(message, "error")
+        } finally {
+            setSubmitting(false)
+        }
 
     })
 

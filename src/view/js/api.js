@@ -3,6 +3,7 @@
     const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');
     const ticketsEndpoint = config.TICKETS_ENDPOINT || '/api/tickets';
     const activosEndpoint = config.ACTIVOS_ENDPOINT || '/api/activos';
+    const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
 
     function getToken() {
@@ -115,6 +116,34 @@
         return normalizeCollection(payload);
     }
 
+    async function createActivo(body) {
+        return apiRequest(activosEndpoint, { method: 'POST', body });
+    }
+
+    async function getRepuestos() {
+        const payload = await apiRequest(repuestosEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function getRepuestosBajoStock() {
+        const payload = await apiRequest(`${repuestosEndpoint}/bajo-stock`);
+        return normalizeCollection(payload);
+    }
+
+    async function createRepuesto(body) {
+        return apiRequest(repuestosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateRepuesto(repuestoId, body) {
+        const safeId = encodeURIComponent(repuestoId);
+        return apiRequest(`${repuestosEndpoint}/${safeId}`, { method: 'PUT', body });
+    }
+
+    async function deleteRepuesto(repuestoId) {
+        const safeId = encodeURIComponent(repuestoId);
+        return apiRequest(`${repuestosEndpoint}/${safeId}`, { method: 'DELETE' });
+    }
+
     window.SIGAM_API = {
         apiRequest,
         getTickets,
@@ -122,6 +151,12 @@
         deleteTicket,
         getDashboard,
         getActivos,
+        createActivo,
+        getRepuestos,
+        getRepuestosBajoStock,
+        createRepuesto,
+        updateRepuesto,
+        deleteRepuesto,
         getToken,
         setToken,
         clearToken,

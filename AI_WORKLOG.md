@@ -29,6 +29,26 @@
 - Scope: Añadí auth-guard central, configuré roles por vista y eliminé redirección local en tickets.
 - Files: src/view/services/auth-guard.js, src/view/pages/dashboard.html, src/view/pages/tickets.html, src/view/pages/inventory.html, src/view/pages/calendar.html, src/view/pages/reports.html, src/view/pages/admin.html, src/view/js/tickets.js.
 - Evidence: Vistas redirigen a login sin token y validan rol según configuración de cada página.
+- Task: Ajuste de roles y carga de inventario desde API.
+- Scope: Actualicé roles por vista, eliminé inventario hardcodeado y cargué activos desde backend; agregué soporte de endpoints de repuestos y fecha/hora en tickets recientes.
+- Files: src/view/pages/dashboard.html, src/view/pages/tickets.html, src/view/pages/reports.html, src/view/pages/admin.html, src/view/js/config.js, src/view/js/api.js, src/view/js/inventory.js, src/view/js/charts.js.
+- Evidence: Inventario se llena desde /api/activos, tickets recientes muestran timestamp, roles aplican acceso según rol.
+- Task: Crear activos en backend desde Inventory.
+- Scope: Conecté el submit de “New Asset” a POST /api/activos y recarga de inventario desde API.
+- Files: src/view/js/api.js, src/view/js/inventory.js.
+- Evidence: Al guardar, se envía payload a API y la lista se refresca desde /api/activos.
+- Task: Favicon global y logo de navbar.
+- Scope: Añadí favicon SVG a todas las vistas y actualicé el logo del navbar para usar la imagen de services.
+- Files: src/view/pages/admin.html, src/view/pages/calendar.html, src/view/pages/dashboard.html, src/view/pages/inventory.html, src/view/pages/login.html, src/view/pages/register.html, src/view/pages/reports.html, src/view/pages/tickets.html, src/view/services/navbar.html.
+- Evidence: La pestaña muestra favicon y el navbar usa el SVG en todas las páginas.
+- Task: Reemplazo de logo por logo_j_axon.svg.
+- Scope: Actualicé el favicon y el logo del navbar para usar la nueva imagen.
+- Files: src/view/pages/admin.html, src/view/pages/calendar.html, src/view/pages/inventory.html, src/view/pages/login.html, src/view/pages/register.html, src/view/pages/reports.html, src/view/pages/tickets.html, src/view/services/navbar.html, src/view/services/logo_j_axon.svg.
+- Evidence: La pestaña y el navbar muestran el nuevo logo en todas las vistas.
+- Task: Reemplazo de logo por logo_circular.png.
+- Scope: Actualicé el favicon y el logo del navbar para usar la nueva imagen circular.
+- Files: src/view/pages/admin.html, src/view/pages/calendar.html, src/view/pages/dashboard.html, src/view/pages/inventory.html, src/view/pages/login.html, src/view/pages/register.html, src/view/pages/reports.html, src/view/pages/tickets.html, src/view/services/navbar.html, src/view/services/logo_circular.png.
+- Evidence: La pestaña y el navbar muestran el logo circular en todas las vistas.
 
 ## 2026-03-13
 - Task: Integracion de cambios de compañeros.
