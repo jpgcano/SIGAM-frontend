@@ -58,13 +58,20 @@ function normalizeTicket(raw) {
         raw.created_at ||
         raw.created_on ||
         raw.fecha_creacion;
+    const status =
+        raw.status ||
+        raw.estado ||
+        raw.estado_ticket ||
+        raw.estado_actual ||
+        raw.status_ticket ||
+        "";
     const createdDate = createdAt ? new Date(createdAt) : null;
     return {
         id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
         title: raw.title || raw.titulo || raw.asunto || "",
         device: raw.device || raw.dispositivo || "",
         category: raw.category || raw.categoria || "",
-        status: raw.status || raw.estado || "",
+        status,
         createdAt: createdDate
     };
 }
@@ -90,14 +97,16 @@ function renderRecentTickets(container, list) {
         item.className = "recent-ticket";
         const ui = mapStatus(ticket.status);
         item.innerHTML = `
-            <span class="dot ${ui.dot}"></span>
+            <span class="dot ${ui.dot}" style="background:${ui.dotColor}"></span>
             <div>
                 <strong>${ticket.title || "Untitled ticket"}</strong>
                 <p>${ticket.device || ticket.category || "No details"}</p>
                 <small class="text-muted d-block">
                     ${ticket.createdAt ? ticket.createdAt.toLocaleString() : ""}
                 </small>
-                <span class="badge ${ui.badge}">${ui.label}</span>
+                <span class="badge ${ui.badge}" style="background:${ui.badgeBg};color:${ui.badgeColor}">
+                    ${ui.label}
+                </span>
             </div>
         `;
         container.appendChild(item);
@@ -107,15 +116,43 @@ function renderRecentTickets(container, list) {
 function mapStatus(status) {
     const value = (status || "").toLowerCase();
     if (value.includes("progreso") || value.includes("progress")) {
-        return { dot: "status-progress", badge: "badge-progress", label: status || "in progress" };
+        return {
+            dot: "status-progress",
+            badge: "badge-progress",
+            label: status || "in progress",
+            dotColor: "#f59e0b",
+            badgeBg: "#fef3c7",
+            badgeColor: "#92400e"
+        };
     }
     if (value.includes("complet") || value.includes("resolved") || value.includes("cerrad") || value.includes("resuelt")) {
-        return { dot: "status-resolved", badge: "badge-resolved", label: status || "resolved" };
+        return {
+            dot: "status-resolved",
+            badge: "badge-resolved",
+            label: status || "resolved",
+            dotColor: "#16a34a",
+            badgeBg: "#dcfce7",
+            badgeColor: "#166534"
+        };
     }
     if (value.includes("pend") || value.includes("open") || value.includes("abiert")) {
-        return { dot: "status-open", badge: "badge-open", label: status || "open" };
+        return {
+            dot: "status-open",
+            badge: "badge-open",
+            label: status || "open",
+            dotColor: "#dc2626",
+            badgeBg: "#fee2e2",
+            badgeColor: "#b91c1c"
+        };
     }
-    return { dot: "status-open", badge: "badge-open", label: status || "open" };
+    return {
+        dot: "status-open",
+        badge: "badge-open",
+        label: status || "open",
+        dotColor: "#dc2626",
+        badgeBg: "#fee2e2",
+        badgeColor: "#b91c1c"
+    };
 }
 
 function buildDashboardData(activos, tickets, mantenimientos) {
