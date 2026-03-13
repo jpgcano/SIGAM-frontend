@@ -135,6 +135,17 @@ max-height:520px;
 overflow-y:auto;
 }
 
+.inventory-scroll .table-responsive{
+max-height:480px;
+overflow-y:auto;
+}
+
+#supplierCards{
+max-height:520px;
+overflow-y:auto;
+padding-right:8px;
+}
+
 .card h3{
 font-size:18px;
 margin-bottom:4px;
