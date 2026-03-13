@@ -131,17 +131,12 @@ padding:20px;
 }
 
 .inventory-scroll{
-max-height:520px;
-overflow-y:auto;
-}
-
-.inventory-scroll{
 display:flex;
 flex-direction:column;
 }
 
 .inventory-scroll-body{
-max-height:480px;
+max-height:420px;
 overflow-y:auto;
 padding-right:8px;
 }
