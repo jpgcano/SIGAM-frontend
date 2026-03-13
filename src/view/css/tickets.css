@@ -111,6 +111,9 @@ select{
     display:flex;
     flex-direction:column;
     gap:15px;
+    width:92%;
+    max-width:1200px;
+    margin:0 auto 40px;
 }
 
 
@@ -350,6 +353,10 @@ select{
         width:100%;
         min-width:unset;
     }
+
+    #ticketList{
+        width:94%;
+    }
 }
 
 @media (max-width: 450px){
@@ -370,10 +377,18 @@ select{
     .container{
         max-width:1200px;
     }
+
+    #ticketList{
+        max-width:1200px;
+    }
 }
 
 @media (min-width: 1400px){
     .container{
+        max-width:1320px;
+    }
+
+    #ticketList{
         max-width:1320px;
     }
 }
