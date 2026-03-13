@@ -1,6 +1,9 @@
 let tickets = [];
 let activosMap = new Map();
+let activosBySerial = new Map();
 let activosList = [];
+let categoriasMap = new Map();
+let categoriasList = [];
 
 const api = window.SIGAM_API;
 const statusFilter = document.getElementById("statusFilter");
@@ -19,6 +22,7 @@ const ticketsCount = document.getElementById("contadorTickets");
 const titleInput = document.getElementById("title");
 const descriptionInput = document.getElementById("description");
 const deviceInput = document.getElementById("device");
+const deviceList = document.getElementById("deviceList");
 const categoryInput = document.getElementById("category");
 const createdByInput = document.getElementById("createdBy");
 const assignedToInput = document.getElementById("assignedTo");
@@ -126,7 +130,7 @@ function validateTicketForm() {
         setFieldError(deviceInput, "");
     }
 
-    if (!categoryInput.value.trim()) {
+    if (!categoryInput.value) {
         isValid = false;
         setFieldError(categoryInput, "Category is required.");
     } else {
@@ -173,16 +177,27 @@ function normalizeTicket(raw) {
         raw.fecha_creacion;
     const idActivo = raw.id_activo || raw.activoId || raw.assetId;
     const activoInfo = activosMap.get(String(idActivo)) || {};
+    const rawStatus = raw.status || raw.estado || "";
+    const normalizedStatus = String(rawStatus || "").toLowerCase().trim();
+    const categoryId = raw.id_categoria || raw.categoria_id || raw.categoriaId;
+    const categoryLabel =
+        raw.category ||
+        raw.categoria ||
+        raw.categoria_nombre ||
+        (categoryId ? categoriasMap.get(String(categoryId)) : "") ||
+        (activoInfo.raw && (activoInfo.raw.categoria || activoInfo.raw.categoria_nombre)) ||
+        "";
     return {
         id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
-        title: raw.title || raw.titulo || raw.asunto || "",
+        title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
         description: raw.description || raw.descripcion || "",
         device: raw.device || raw.dispositivo || activoInfo.label || "",
-        category: raw.category || raw.categoria || "",
+        category: categoryLabel,
         createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
         assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || "",
         estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
-        status: raw.status || raw.estado || "",
+        status: rawStatus,
+        statusNormalized: normalizedStatus,
         assetId: idActivo || "",
         date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
     };
@@ -208,21 +223,52 @@ async function loadActivos() {
                 return [String(id), { label, raw: activo }];
             })
         );
+        activosBySerial = new Map(
+            activosList
+                .filter((activo) => activo.serial)
+                .map((activo) => [String(activo.serial).trim().toLowerCase(), activo])
+        );
 
-        if (deviceInput) {
-            const placeholder = '<option value="">Selecciona un activo</option>';
-            const options = activosList
-                .map((activo) => {
-                    const id = activo.id_activo || activo.id || activo.idActivo;
-                    const info = activosMap.get(String(id)) || {};
-                    const label = info.label || String(id || "Activo");
-                    return `<option value="${id}">${label}</option>`;
-                })
+        if (deviceList) {
+            deviceList.innerHTML = activosList
+                .map((activo) => activo.serial)
+                .filter(Boolean)
+                .map((serial) => `<option value="${String(serial).trim()}"></option>`)
                 .join("");
-            deviceInput.innerHTML = placeholder + options;
         }
     } catch (error) {
         setTicketStatus("Unable to load assets from API.", "error");
+    }
+}
+
+async function loadCategorias() {
+    if (!api || !api.getCategorias) {
+        return;
+    }
+    try {
+        const data = await api.getCategorias();
+        categoriasList = Array.isArray(data) ? data : [];
+        categoriasMap = new Map(
+            categoriasList.map((categoria) => {
+                const id = categoria.id_categoria || categoria.id || categoria.idCategoria;
+                const label = categoria.nombre || categoria.name || categoria.categoria || String(id || "Categoria");
+                return [String(id), label];
+            })
+        );
+
+        if (categoryInput) {
+            const placeholder = '<option value="">Selecciona categoria</option>';
+            const options = categoriasList
+                .map((categoria) => {
+                    const id = categoria.id_categoria || categoria.id || categoria.idCategoria;
+                    const label = categoriasMap.get(String(id)) || String(id || "Categoria");
+                    return `<option value="${id}">${label}</option>`;
+                })
+                .join("");
+            categoryInput.innerHTML = placeholder + options;
+        }
+    } catch (error) {
+        setTicketStatus("Unable to load categories from API.", "error");
     }
 }
 
@@ -263,7 +309,11 @@ if (ticketForm) {
 
         const user = getCurrentUser() || {};
         const reporterId = user.id || user.id_usuario || user.userId || "";
-        const assetId = deviceInput.value;
+        const serialValue = deviceInput.value.trim();
+        const matchedActivo = activosBySerial.get(serialValue.toLowerCase());
+        const assetId = matchedActivo
+            ? (matchedActivo.id_activo || matchedActivo.id || matchedActivo.idActivo)
+            : "";
 
         if (!reporterId) {
             setTicketStatus("Debes iniciar sesión para crear un ticket.", "error");
@@ -271,26 +321,25 @@ if (ticketForm) {
             return;
         }
 
+        if (!assetId) {
+            setTicketStatus("Serial no encontrado. Verifica el activo.", "error");
+            setSubmitting(false);
+            return;
+        }
+
         const ticketPayload = {
-            id_activo: assetId ? Number(assetId) || assetId : "",
-            id_usuario_reporta: reporterId,
+            id_activo: Number(assetId) || assetId,
             descripcion: descriptionInput.value.trim()
         };
 
-        const extraPayload = {
-            titulo: titleInput.value.trim(),
-            categoria: categoryInput.value.trim(),
-            asignadoA: assignedToInput.value.trim(),
-            estimado: estimateInput.value.trim(),
-            estado: statusInput.value
-        };
+        const categoryValue = categoryInput.value;
+        if (categoryValue) {
+            ticketPayload.id_categoria = Number(categoryValue) || categoryValue;
+        }
 
         try {
-            const response = await api.createTicket({ ...ticketPayload, ...extraPayload });
-            const created = normalizeTicket(response || { ...ticketPayload, ...extraPayload });
-            tickets.unshift(created);
-            localStorage.setItem("tickets", JSON.stringify(tickets));
-            applyFilters();
+            await api.createTicket(ticketPayload);
+            await loadTickets();
             ticketForm.reset();
             clearFormErrors();
             setTicketStatus("Ticket created successfully.", "success");
@@ -365,7 +414,7 @@ async function deleteTicket(index) {
 
 function applyFilters() {
     const search = searchInput.value.toLowerCase();
-    const status = statusFilter.value;
+    const status = statusFilter.value.toLowerCase();
 
     const filtered = tickets.filter(ticket => {
         const title = (ticket.title || "").toLowerCase();
@@ -380,7 +429,7 @@ function applyFilters() {
             category.includes(search);
 
         const matchStatus =
-            status === "all" || ticket.status === status;
+            status === "all" || (ticket.statusNormalized || "").includes(status);
 
         return matchSearch && matchStatus;
     });
@@ -395,4 +444,4 @@ searchInput.addEventListener("input", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
 
 setCreatedByFromSession();
-loadActivos().then(loadTickets);
+Promise.all([loadActivos(), loadCategorias()]).then(loadTickets);

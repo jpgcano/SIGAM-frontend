@@ -35,9 +35,9 @@
             <input id="searchInput" type="text"placeholder="Buscar tickets..."class="search">
             <select id="statusFilter">
                 <option value="all">All the states</option>
-                <option value="En progreso">In progress</option>
-                <option value="Pendiente">Pending</option>
-                <option value="Completado">Completed</option>
+                <option value="abierto">Abierto</option>
+                <option value="en proceso">En Proceso</option>
+                <option value="cerrado">Cerrado</option>
             </select>
         </div>
         <p id="contadorTickets" class="contador"></p>
@@ -52,11 +52,12 @@
                     <div class="field-error" id="titleError"></div>
                     <textarea id="description" placeholder="Descripcion" required></textarea>
                     <div class="field-error" id="descriptionError"></div>
-                    <select id="device" required>
-                        <option value="">Selecciona un activo</option>
-                    </select>
+                    <input id="device" list="deviceList" placeholder="Serial del activo" required>
+                    <datalist id="deviceList"></datalist>
                     <div class="field-error" id="deviceError"></div>
-                    <input id="category" placeholder="Categoria" required>
+                    <select id="category" required>
+                        <option value="">Selecciona categoria</option>
+                    </select>
                     <div class="field-error" id="categoryError"></div>
                     <input id="createdBy" placeholder="Creado por" required readonly>
                     <div class="field-error" id="createdByError"></div>
@@ -66,9 +67,9 @@
                     <div class="field-error" id="estimateError"></div>
                     <select id="status" required>
                         <option value="">Select status</option>
-                        <option value="En progreso">In progress</option>
-                        <option value="Pendiente">Pending</option>
-                        <option value="Completado">Completed</option>
+                        <option value="Abierto">Abierto</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Cerrado">Cerrado</option>
                     </select>
                     <div class="field-error" id="statusError"></div>
                     <div class="ticket-status" id="ticketStatus" aria-live="polite"></div>
