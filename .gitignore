@@ -1,1 +1,11 @@
 .env
+.env.*
+!.env.example
+
+# Node / tooling
+node_modules/
+dist/
+.vercel/
+
+# OS/editor
+.DS_Store
