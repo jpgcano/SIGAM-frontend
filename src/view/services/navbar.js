@@ -28,7 +28,15 @@
             });
 
             const api = window.SIGAM_API;
-            const user = api && api.getUser ? api.getUser() : null;
+            let user = api && api.getUser ? api.getUser() : null;
+            if (!user) {
+                try {
+                    const raw = localStorage.getItem("sigam_user");
+                    user = raw ? JSON.parse(raw) : null;
+                } catch {
+                    user = null;
+                }
+            }
             if (user) {
                 const nameEl = container.querySelector("#navbar-user-name");
                 const emailEl = container.querySelector("#navbar-user-email");
