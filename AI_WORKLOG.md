@@ -29,3 +29,17 @@
 - Scope: Añadí auth-guard central, configuré roles por vista y eliminé redirección local en tickets.
 - Files: src/view/services/auth-guard.js, src/view/pages/dashboard.html, src/view/pages/tickets.html, src/view/pages/inventory.html, src/view/pages/calendar.html, src/view/pages/reports.html, src/view/pages/admin.html, src/view/js/tickets.js.
 - Evidence: Vistas redirigen a login sin token y validan rol según configuración de cada página.
+
+## 2026-03-13
+- Task: Integracion de cambios de compañeros.
+- Scope: Merge de `origin/feature/inventory` hacia `developer` y verificacion de ramas remotas no integradas.
+- Files: inventory.css, inventory.html, inventory.js.
+- Evidence: `git merge origin/feature/inventory` aplicado y cambios visibles en el repo.
+- Task: Preparacion de despliegue en Vercel y configuracion de entorno runtime.
+- Scope: Agregue `vercel.json`, `package.json`, script de build para `runtime-env.js` y actualice `config.js` para leer `SIGAM_API` desde runtime.
+- Files: vercel.json, package.json, scripts/build-env.js, src/view/js/runtime-env.js, src/view/js/config.js, src/view/pages/*.html.
+- Evidence: Rutas limpias definidas en `vercel.json`; `runtime-env.js` cargado antes de `config.js` en paginas.
+- Task: Documentacion actualizada.
+- Scope: README con estructura, configuracion de entorno y despliegue.
+- Files: README.md.
+- Evidence: README describe flujo de Vercel y variables de entorno.
