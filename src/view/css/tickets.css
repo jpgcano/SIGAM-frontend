@@ -121,7 +121,7 @@ select{
 
 .ticket{
     background:white;
-    padding:20px;
+    padding:16px;
     border-radius:14px;
     border:1px solid #c1c1c2;
     box-shadow: 0 2px 8px rgba(0,0,0,0.10);
@@ -133,9 +133,9 @@ select{
 /* TITULO TICKET */
 
 .ticket-title{
-    font-size:18px;
+    font-size:16px;
     font-weight:600;
-    margin-bottom:8px;
+    margin-bottom:6px;
     word-break:break-word;
 }
 
@@ -151,7 +151,7 @@ select{
 /* INFO EXTRA */
 
 .ticket-info{
-    font-size:13px;
+    font-size:12px;
     color:#6b7280;
     word-break:break-word;
     line-height:1.4;
@@ -160,13 +160,13 @@ select{
 .ticket-line{
     display:flex;
     flex-wrap:wrap;
-    gap:10px;
+    gap:6px 10px;
 }
 
 .ticket-meta{
     display:flex;
     flex-wrap:wrap;
-    gap:10px 16px;
+    gap:6px 12px;
 }
 
 
@@ -315,9 +315,9 @@ select{
     background:#ef4444;
     color:white;
     border:none;
-    padding:8px 14px;
+    padding:6px 12px;
     border-radius:8px;
-    font-size:13px;
+    font-size:12px;
     cursor:pointer;
     transition:0.2s;
     width:fit-content;
@@ -357,6 +357,15 @@ select{
     #ticketList{
         width:94%;
     }
+
+    .ticket{
+        padding:14px;
+        gap:6px;
+    }
+
+    .ticket-title{
+        font-size:15px;
+    }
 }
 
 @media (max-width: 450px){
@@ -365,11 +374,31 @@ select{
     }
 
     .ticket{
-        padding:16px;
+        padding:12px;
+    }
+
+    .ticket-title{
+        font-size:14px;
+    }
+
+    .ticket-line,
+    .ticket-meta{
+        flex-direction:column;
+        gap:4px;
     }
 
     .modal-content{
         width:92vw;
+    }
+}
+
+@media (min-width: 751px) and (max-width: 1199px){
+    .container{
+        max-width:960px;
+    }
+
+    #ticketList{
+        max-width:960px;
     }
 }
 

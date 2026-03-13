@@ -95,3 +95,7 @@
 - Scope: Filtro de estado poblado desde API y normalizacion de textos para busqueda y categorias.
 - Files: src/view/js/tickets.js, src/view/css/tickets.css.
 - Evidence: Pendiente de validacion visual en deploy.
+- Task: Ajuste de densidad visual en tickets.
+- Scope: Tarjetas compactas y layout optimizado para 450px, 750px, 1200px y 1400px+.
+- Files: src/view/css/tickets.css, test/tickets-responsive-v2.md.
+- Evidence: Checklist en test/tickets-responsive-v2.md.
