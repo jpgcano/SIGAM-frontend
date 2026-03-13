@@ -107,15 +107,15 @@ function renderRecentTickets(container, list) {
 function mapStatus(status) {
     const value = (status || "").toLowerCase();
     if (value.includes("progreso") || value.includes("progress")) {
-        return { dot: "in-progress", badge: "progress", label: status || "in progress" };
+        return { dot: "status-progress", badge: "badge-progress", label: status || "in progress" };
     }
-    if (value.includes("complet") || value.includes("resolved") || value.includes("cerrad")) {
-        return { dot: "resolved", badge: "alert-resolved", label: status || "resolved" };
+    if (value.includes("complet") || value.includes("resolved") || value.includes("cerrad") || value.includes("resuelt")) {
+        return { dot: "status-resolved", badge: "badge-resolved", label: status || "resolved" };
     }
-    if (value.includes("pend") || value.includes("open")) {
-        return { dot: "open", badge: "alert-open", label: status || "open" };
+    if (value.includes("pend") || value.includes("open") || value.includes("abiert")) {
+        return { dot: "status-open", badge: "badge-open", label: status || "open" };
     }
-    return { dot: "open", badge: "alert-open", label: status || "open" };
+    return { dot: "status-open", badge: "badge-open", label: status || "open" };
 }
 
 function buildDashboardData(activos, tickets, mantenimientos) {
@@ -313,11 +313,18 @@ function renderUpcomingMaintenance(container, list) {
         container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
         return;
     }
-    const upcoming = maints
-        .map(normalizeMaintenance)
-        .filter((m) => m.date && m.date >= todayISO())
+    const normalized = maints.map(normalizeMaintenance);
+    const withDate = normalized.filter((m) => m.date);
+    const withoutDate = normalized.filter((m) => !m.date);
+
+    let upcoming = withDate
+        .filter((m) => m.date >= todayISO())
         .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
         .slice(0, 5);
+
+    if (!upcoming.length && withoutDate.length) {
+        upcoming = withoutDate.slice(0, 5);
+    }
 
     if (!upcoming.length) {
         container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
@@ -328,7 +335,7 @@ function renderUpcomingMaintenance(container, list) {
     upcoming.forEach((m) => {
         const title = m.asset || (m.ticketId ? `Ticket #${m.ticketId}` : "Maintenance");
         const subtitle = m.notes || m.type || "Maintenance scheduled";
-        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "";
+        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "Sin fecha";
         const item = document.createElement("div");
         item.className = "maintenance-next";
         item.innerHTML = `
@@ -341,18 +348,39 @@ function renderUpcomingMaintenance(container, list) {
 }
 
 function normalizeMaintenance(raw) {
+    const rawDate =
+        raw.fecha_inicio ||
+        raw.fecha_programada ||
+        raw.fecha_mantenimiento ||
+        raw.fecha ||
+        raw.date;
+    const normalizedDate = normalizeDate(rawDate);
     return {
         id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
         ticketId: raw.id_ticket || raw.ticketId || "",
         asset: raw.activo || raw.asset || raw.assetName || "",
         type: raw.tipo || raw.type || "",
-        date: raw.fecha_inicio || raw.fecha_programada || raw.date || "",
+        date: normalizedDate || "",
         notes: raw.diagnostico || raw.notes || ""
     };
 }
 
 function todayISO() {
     return new Date().toISOString().split("T")[0];
+}
+
+function normalizeDate(value) {
+    if (!value) {
+        return "";
+    }
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+        return value.slice(0, 10);
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return "";
+    }
+    return parsed.toISOString().split("T")[0];
 }
 
 function countUpcoming(list, days) {

@@ -173,9 +173,9 @@ canvas {
     margin-top: 8px;
 }
 
-.resolved { background: rgb(48, 255, 48); }
-.in-progress {background: yellow;}
-.open { background: rgb(255, 8, 8); }
+.dot.status-resolved { background: #16a34a; }
+.dot.status-progress { background: #f59e0b; }
+.dot.status-open { background: #dc2626; }
 
 .badge {
     padding: 5px 10px;
@@ -185,19 +185,19 @@ canvas {
     margin-top: 5px;
 }
 
-.progress {
-    background: #fefcdb;
-    color: rgb(153, 151, 17);
+.badge.badge-progress {
+    background: #fef3c7;
+    color: #92400e;
 }
 
-.alert-open {
+.badge.badge-open {
     background: #fee2e2;
-    color: #dc2626;
+    color: #b91c1c;
 }
 
-.alert-resolved{
-    background: rgb(215, 248, 184);
-    color: rgb(9, 133, 9);
+.badge.badge-resolved {
+    background: #dcfce7;
+    color: #166534;
 }
 
 h3 {
