@@ -135,13 +135,13 @@ max-height:520px;
 overflow-y:auto;
 }
 
-.inventory-scroll .table-responsive{
-max-height:480px;
-overflow-y:auto;
+.inventory-scroll{
+display:flex;
+flex-direction:column;
 }
 
-#supplierCards{
-max-height:520px;
+.inventory-scroll-body{
+max-height:480px;
 overflow-y:auto;
 padding-right:8px;
 }
