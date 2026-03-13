@@ -54,6 +54,14 @@ Las paginas son HTML independientes. Con `vercel.json` se habilitan rutas limpia
 ## Evidencia de pruebas
 - Al terminar cada tarea, guardar evidencia en `test/` (capturas, logs o checklist).
 
+## Tests automaticos
+Este repo usa Vitest con entorno JSDOM para pruebas de DOM y funcionalidad.
+Para ejecutar:
+```
+pnpm install
+pnpm test
+```
+
 ## Contribucion rapida
 1. Trabaja por tarea e incluye evidencia en `test/`.
 2. Un commit por tarea.

@@ -266,11 +266,24 @@ async function loadCategorias() {
     }
     try {
         const data = await api.getCategorias();
-        categoriasList = Array.isArray(data) ? data : [];
+        if (Array.isArray(data)) {
+            categoriasList = data;
+        } else if (data && Array.isArray(data.categorias)) {
+            categoriasList = data.categorias;
+        } else if (data && Array.isArray(data.categories)) {
+            categoriasList = data.categories;
+        } else {
+            categoriasList = [];
+        }
         categoriasMap = new Map(
             categoriasList.map((categoria) => {
                 const id = categoria.id_categoria || categoria.id || categoria.idCategoria;
-                const label = categoria.nombre || categoria.name || categoria.categoria || String(id || "Categoria");
+                const label =
+                    categoria.nombre ||
+                    categoria.name ||
+                    categoria.categoria ||
+                    categoria.nombre_categoria ||
+                    String(id || "Categoria");
                 return [String(id), label];
             })
         );
