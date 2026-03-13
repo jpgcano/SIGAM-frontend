@@ -354,14 +354,11 @@ function renderUpcomingMaintenance(container, list) {
     const withDate = normalized.filter((m) => m.date);
     const withoutDate = normalized.filter((m) => !m.date);
 
-    let upcoming = withDate
-        .filter((m) => m.date >= todayISO())
-        .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
-        .slice(0, 5);
-
-    if (!upcoming.length && withoutDate.length) {
-        upcoming = withoutDate.slice(0, 5);
-    }
+    // show all maintenance records from API, ordered by date if present
+    const upcoming = [
+        ...withDate.sort((a, b) => (a.date || "").localeCompare(b.date || "")),
+        ...withoutDate
+    ];
 
     if (!upcoming.length) {
         container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
