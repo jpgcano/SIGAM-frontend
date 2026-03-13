@@ -232,6 +232,7 @@
 
       <!-- Tabla de usuarios -->
       <div class="table-responsive">
+        <div id="adminStatus" class="small text-muted mb-2" aria-live="polite"></div>
 
         <table class="table align-middle">
 
@@ -283,10 +284,14 @@
           <input id="email" class="form-control mb-2" placeholder="Email">
 
           <select id="role" class="form-select">
-            <option>User</option>
-            <option>Technician</option>
-            <option>Administrator</option>
+            <option>Usuario</option>
+            <option>Analista</option>
+            <option>Tecnico</option>
+            <option>Gerente</option>
+            <option>Auditor</option>
           </select>
+
+          <input id="password" type="password" class="form-control mt-2" placeholder="Password">
 
           <!-- Campo oculto usado para editar usuarios -->
           <input type="hidden" id="editIndex">

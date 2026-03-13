@@ -8,6 +8,9 @@
     const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
     const categoriasEndpoint = config.CATEGORIAS_ENDPOINT || '/api/categorias';
+    const proveedoresEndpoint = config.PROVEEDORES_ENDPOINT || '/api/proveedores';
+    const usuariosEndpoint = config.USUARIOS_ENDPOINT || '/api/usuarios';
+    const mantenimientosEndpoint = config.MANTENIMIENTOS_ENDPOINT || '/api/mantenimientos';
 
     function getToken() {
         return localStorage.getItem('sigam_token');
@@ -87,6 +90,15 @@
         if (payload && Array.isArray(payload.data)) {
             return payload.data;
         }
+        if (payload && payload.data && Array.isArray(payload.data.tickets)) {
+            return payload.data.tickets;
+        }
+        if (payload && payload.data && Array.isArray(payload.data.activos)) {
+            return payload.data.activos;
+        }
+        if (payload && payload.data && Array.isArray(payload.data.repuestos)) {
+            return payload.data.repuestos;
+        }
         if (payload && payload.data && Array.isArray(payload.data.categorias)) {
             return payload.data.categorias;
         }
@@ -98,6 +110,9 @@
         }
         if (payload && Array.isArray(payload.activos)) {
             return payload.activos;
+        }
+        if (payload && Array.isArray(payload.repuestos)) {
+            return payload.repuestos;
         }
         if (payload && Array.isArray(payload.categorias)) {
             return payload.categorias;
@@ -131,13 +146,67 @@
         return normalizeCollection(payload);
     }
 
+    async function createActivo(body) {
+        return apiRequest(activosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateActivo(activoId, body) {
+        const safeId = encodeURIComponent(activoId);
+        return apiRequest(`${activosEndpoint}/${safeId}`, { method: 'PUT', body });
+    }
+
     async function getCategorias() {
         const payload = await apiRequest(categoriasEndpoint);
         return normalizeCollection(payload);
     }
 
-    async function createActivo(body) {
-        return apiRequest(activosEndpoint, { method: 'POST', body });
+    async function getProveedores() {
+        const payload = await apiRequest(proveedoresEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function getUsuarios() {
+        const payload = await apiRequest(usuariosEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function createUsuario(body) {
+        return apiRequest(usuariosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateUsuarioRol(id, rol) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}/rol`, {
+            method: 'PATCH',
+            body: { rol }
+        });
+    }
+
+    async function updateUsuarioPassword(id, password) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}/password`, {
+            method: 'PATCH',
+            body: { password }
+        });
+    }
+
+    async function getMantenimientos() {
+        const payload = await apiRequest(mantenimientosEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function createMantenimiento(body) {
+        return apiRequest(mantenimientosEndpoint, { method: 'POST', body });
+    }
+
+    async function updateMantenimiento(id, body) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${mantenimientosEndpoint}/${safeId}`, { method: 'PUT', body });
+    }
+
+    async function deleteMantenimiento(id) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${mantenimientosEndpoint}/${safeId}`, { method: 'DELETE' });
     }
 
     async function getRepuestos() {
@@ -173,6 +242,16 @@
         getActivos,
         getCategorias,
         createActivo,
+        updateActivo,
+        getProveedores,
+        getUsuarios,
+        createUsuario,
+        updateUsuarioRol,
+        updateUsuarioPassword,
+        getMantenimientos,
+        createMantenimiento,
+        updateMantenimiento,
+        deleteMantenimiento,
         getRepuestos,
         getRepuestosBajoStock,
         createRepuesto,
