@@ -1,3 +1,4 @@
+// Login flow: validate inputs, call API, persist token/user, redirect.
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("loginForm")
     const emailInput = document.getElementById("email")

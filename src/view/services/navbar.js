@@ -1,3 +1,4 @@
+// Loads the shared navbar and highlights the active route.
 (() => {
     const container = document.getElementById("app-navbar");
     if (!container) {

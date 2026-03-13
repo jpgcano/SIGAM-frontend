@@ -1,3 +1,5 @@
+// Centralized API client for SIGAM frontend.
+// Handles base URL, auth token, and uniform error parsing.
 (function () {
     const config = window.SIGAM_CONFIG || {};
     const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');

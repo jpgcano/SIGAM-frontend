@@ -1,3 +1,5 @@
+// Simple route guard based on token presence and allowed roles.
+// Pages define window.SIGAM_PAGE_ROLES to restrict access by role.
 (() => {
     const api = window.SIGAM_API;
     const token = api && api.getToken ? api.getToken() : null;
