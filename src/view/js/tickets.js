@@ -203,6 +203,17 @@ function normalizeTicket(raw) {
     };
 }
 
+function getActivoSerial(activo) {
+    return (
+        activo.serial ||
+        activo.serie ||
+        activo.codigo ||
+        activo.codigo_activo ||
+        activo.serial_activo ||
+        ""
+    );
+}
+
 async function loadActivos() {
     if (!api || !api.getActivos) {
         return;
@@ -215,7 +226,7 @@ async function loadActivos() {
                 const id = activo.id_activo || activo.id || activo.idActivo;
                 const labelParts = [
                     activo.modelo,
-                    activo.serial,
+                    getActivoSerial(activo),
                     activo.sede,
                     activo.sala
                 ].filter(Boolean);
@@ -225,15 +236,23 @@ async function loadActivos() {
         );
         activosBySerial = new Map(
             activosList
-                .filter((activo) => activo.serial)
-                .map((activo) => [String(activo.serial).trim().toLowerCase(), activo])
+                .map((activo) => ({
+                    serial: getActivoSerial(activo),
+                    activo
+                }))
+                .filter((item) => item.serial)
+                .map((item) => [String(item.serial).trim().toLowerCase(), item.activo])
         );
 
         if (deviceList) {
-            deviceList.innerHTML = activosList
-                .map((activo) => activo.serial)
-                .filter(Boolean)
-                .map((serial) => `<option value="${String(serial).trim()}"></option>`)
+            const serials = Array.from(new Set(
+                activosList
+                    .map((activo) => getActivoSerial(activo))
+                    .filter(Boolean)
+                    .map((serial) => String(serial).trim())
+            ));
+            deviceList.innerHTML = serials
+                .map((serial) => `<option value="${serial}"></option>`)
                 .join("");
         }
     } catch (error) {
