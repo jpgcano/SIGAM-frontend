@@ -79,3 +79,11 @@
 - Scope: Soporte para respuestas anidadas y nombres alternativos de campos.
 - Files: src/view/js/api.js, src/view/js/tickets.js.
 - Evidence: Normalizacion extendida para payloads data.categorias y data.categories.
+- Task: Ajuste responsive de tarjetas de tickets.
+- Scope: Breakpoints para 450px, 750px, 1200px y 1400px+ con layout estable.
+- Files: src/view/css/tickets.css, test/tickets-responsive.md.
+- Evidence: Checklist en test/tickets-responsive.md.
+- Task: Regla de responsive agregada al skill.
+- Scope: Se establece que todas las vistas deben funcionar en 450px, 750px, 1200px y 1400px+.
+- Files: SKILL.md.
+- Evidence: Regla 20 en SKILL.md.
