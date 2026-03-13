@@ -477,3 +477,4 @@ statusFilter.addEventListener("change", applyFilters);
 
 setCreatedByFromSession();
 Promise.all([loadActivos(), loadCategorias()]).then(loadTickets);
+Promise.all([loadActivos(), loadCategorias()]).then(loadTickets);

@@ -1,47 +1,53 @@
 const api = window.SIGAM_API;
+let pieChartInstance;
+let barChartInstance;
+let lineChartInstance;
 
 document.addEventListener("DOMContentLoaded", () => {
     loadDashboardData();
-    loadRecentTickets();
 });
 
-async function loadDashboardData() {
+async function safeFetch(fn) {
+    if (!fn) {
+        return [];
+    }
     try {
-        if (!api || !api.getActivos || !api.getTickets) {
-            console.error("Dashboard API not available.");
-            return;
-        }
-        const [activos, tickets] = await Promise.all([
-            api.getActivos(),
-            api.getTickets()
-        ]);
-        const data = buildDashboardData(activos, tickets);
-        if (!data) {
-            return;
-        }
-        updateCards(data);
-        createCharts(data);
+        const data = await fn();
+        return Array.isArray(data) ? data : data || [];
     } catch (error) {
-        console.error("Error loading dashboard data:", error);
+        return [];
     }
 }
 
-async function loadRecentTickets() {
-    const container = document.getElementById("recentTickets");
-    if (!container) {
+async function loadDashboardData() {
+    const recentContainer = document.getElementById("recentTickets");
+    const maintenanceContainer = document.getElementById("upcomingMaintenance");
+
+    if (!api) {
+        if (recentContainer) {
+            recentContainer.innerHTML = '<p class="ticket-empty">API not available.</p>';
+        }
+        if (maintenanceContainer) {
+            maintenanceContainer.innerHTML = '<p class="ticket-empty">API not available.</p>';
+        }
         return;
     }
-    if (!api || !api.getTickets) {
-        container.innerHTML = '<p class="ticket-empty">API not available.</p>';
-        return;
+
+    const [activos, tickets, mantenimientos] = await Promise.all([
+        safeFetch(api.getActivos),
+        safeFetch(api.getTickets),
+        safeFetch(api.getMantenimientos)
+    ]);
+
+    const data = buildDashboardData(activos, tickets, mantenimientos);
+    updateCards(data);
+    createCharts(data);
+
+    if (recentContainer) {
+        renderRecentTickets(recentContainer, (tickets || []).map(normalizeTicket));
     }
-    try {
-        const data = await api.getTickets();
-        const tickets = (data || []).map(normalizeTicket);
-        renderRecentTickets(container, tickets);
-    } catch (error) {
-        console.error("Error loading tickets:", error);
-        container.innerHTML = '<p class="ticket-empty">Unable to load tickets.</p>';
+    if (maintenanceContainer) {
+        renderUpcomingMaintenance(maintenanceContainer, mantenimientos);
     }
 }
 
@@ -112,41 +118,67 @@ function mapStatus(status) {
     return { dot: "open", badge: "alert-open", label: status || "open" };
 }
 
-function buildDashboardData(activos, tickets) {
+function buildDashboardData(activos, tickets, mantenimientos) {
     const safeActivos = Array.isArray(activos) ? activos : [];
     const safeTickets = Array.isArray(tickets) ? tickets : [];
+    const safeMaint = Array.isArray(mantenimientos) ? mantenimientos : [];
     const openTickets = safeTickets.filter((ticket) => {
         const status = (ticket.estado || ticket.status || "").toLowerCase();
         return !status.includes("cerrad") && !status.includes("complet");
     }).length;
 
-    const ticketsByCategory = safeTickets.reduce(
-        (acc, ticket) => {
-            const category = (ticket.categoria || ticket.category || "").toLowerCase();
-            if (category.includes("hard")) {
-                acc.hardware += 1;
-            } else if (category.includes("soft")) {
-                acc.software += 1;
-            }
-            return acc;
-        },
-        { hardware: 0, software: 0 }
-    );
+    const ticketsByCategory = {};
+    safeTickets.forEach((ticket) => {
+        const category =
+            ticket.categoria ||
+            ticket.category ||
+            ticket.tipo ||
+            "Sin categoria";
+        const label = String(category || "Sin categoria");
+        ticketsByCategory[label] = (ticketsByCategory[label] || 0) + 1;
+    });
+
+    const assetsByType = {
+        laptops: 0,
+        desktops: 0,
+        servers: 0,
+        printers: 0,
+        monitors: 0,
+        others: 0
+    };
+    safeActivos.forEach((asset) => {
+        const model = String(asset.modelo || asset.nombre || asset.marca || "").toLowerCase();
+        if (model.includes("laptop") || model.includes("notebook")) {
+            assetsByType.laptops += 1;
+        } else if (model.includes("server")) {
+            assetsByType.servers += 1;
+        } else if (model.includes("printer") || model.includes("impresora")) {
+            assetsByType.printers += 1;
+        } else if (model.includes("monitor")) {
+            assetsByType.monitors += 1;
+        } else if (model.includes("desktop") || model.includes("pc")) {
+            assetsByType.desktops += 1;
+        } else {
+            assetsByType.others += 1;
+        }
+    });
+
+    const totalCost = safeMaint.reduce((sum, m) => {
+        const raw = m.costo || m.costo_total || m.costo_mantenimiento || m.total_cost || m.cost;
+        const value = Number.parseFloat(raw || "0");
+        return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
+
+    const scheduledMaintenance = countUpcoming(safeMaint, 30);
 
     return {
         assets: safeActivos.length,
         openTickets,
-        scheduledMaintenance: 0,
-        totalCost: 0,
-        assetsByType: {
-            laptops: 0,
-            desktops: 0,
-            servers: 0,
-            printers: 0,
-            monitors: 0
-        },
+        scheduledMaintenance,
+        totalCost,
+        assetsByType,
         ticketsByCategory,
-        maintenanceCost: []
+        maintenanceCost: buildMaintenanceTrend(safeMaint)
     };
 }
 
@@ -160,7 +192,9 @@ function updateCards(data) {
     if (assetsEl) assetsEl.textContent = data.assets ?? "-";
     if (ticketsEl) ticketsEl.textContent = data.openTickets ?? "-";
     if (scheduledEl) scheduledEl.textContent = data.scheduledMaintenance ?? "-";
-    if (costEl) costEl.textContent = data.totalCost ? `$${data.totalCost}` : "-";
+    if (costEl) {
+        costEl.textContent = data.totalCost ? `$${Math.round(data.totalCost)}` : "-";
+    }
 }
 
 // crear todas las graficas
@@ -179,24 +213,29 @@ function createPieChart(data) {
     if (!footChart) {
         return;
     }
-    new Chart(footChart, {
+    if (pieChartInstance) {
+        pieChartInstance.destroy();
+    }
+    pieChartInstance = new Chart(footChart, {
         type: "pie",
         data: {
-            labels: ["Laptops", "Desktops", "Servers", "Printers", "Monitors"],
+            labels: ["Laptops", "Desktops", "Servers", "Printers", "Monitors", "Others"],
             datasets: [{
                 data: [
                     data.assetsByType?.laptops ?? 0,
                     data.assetsByType?.desktops ?? 0,
                     data.assetsByType?.servers ?? 0,
                     data.assetsByType?.printers ?? 0,
-                    data.assetsByType?.monitors ?? 0
+                    data.assetsByType?.monitors ?? 0,
+                    data.assetsByType?.others ?? 0
                 ],
                 backgroundColor: [
                     "#4e73df",
                     "#1cc88a",
                     "#f6c23e",
                     "#e74a3b",
-                    "#858796"
+                    "#858796",
+                    "#9ca3af"
                 ]
             }]
         },
@@ -212,15 +251,19 @@ function createBarChart(data) {
     if (!barChart) {
         return;
     }
-    new Chart(barChart, {
+    const labels = Object.keys(data.ticketsByCategory || {});
+    const values = labels.map((label) => data.ticketsByCategory[label] || 0);
+    if (barChartInstance) {
+        barChartInstance.destroy();
+    }
+    barChartInstance = new Chart(barChart, {
         type: "bar",
         data: {
-            labels: ["Hardware", "Software"],
+            labels: labels.length ? labels : ["Sin categoria"],
             datasets: [{
                 label: "Tickets",
                 data: [
-                    data.ticketsByCategory?.hardware ?? 0,
-                    data.ticketsByCategory?.software ?? 0
+                    ...(values.length ? values : [0])
                 ],
                 backgroundColor: "#4e73df"
             }]
@@ -237,13 +280,17 @@ function createLineChart(data) {
     if (!lineCtx) {
         return;
     }
-    new Chart(lineCtx, {
+    if (lineChartInstance) {
+        lineChartInstance.destroy();
+    }
+    const trend = Array.isArray(data.maintenanceCost) ? data.maintenanceCost : [];
+    lineChartInstance = new Chart(lineCtx, {
         type: "line",
         data: {
-            labels: ["Ago", "Sep", "Oct", "Nov", "Dic", "Ene", "Feb"],
+            labels: trend.map((item) => item.label),
             datasets: [{
                 label: "Maintenance Cost",
-                data: Array.isArray(data.maintenanceCost) ? data.maintenanceCost : [],
+                data: trend.map((item) => item.value),
                 borderColor: "#4e73df",
                 backgroundColor: "rgba(78,115,223,0.1)",
                 tension: 0.4,
@@ -258,4 +305,94 @@ function createLineChart(data) {
             }
         }
     });
+}
+
+function renderUpcomingMaintenance(container, list) {
+    const maints = Array.isArray(list) ? list : [];
+    if (!maints.length) {
+        container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
+        return;
+    }
+    const upcoming = maints
+        .map(normalizeMaintenance)
+        .filter((m) => m.date && m.date >= todayISO())
+        .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
+        .slice(0, 5);
+
+    if (!upcoming.length) {
+        container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
+        return;
+    }
+
+    container.innerHTML = "";
+    upcoming.forEach((m) => {
+        const title = m.asset || (m.ticketId ? `Ticket #${m.ticketId}` : "Maintenance");
+        const subtitle = m.notes || m.type || "Maintenance scheduled";
+        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "";
+        const item = document.createElement("div");
+        item.className = "maintenance-next";
+        item.innerHTML = `
+            <h4>${title}</h4>
+            <h6>${subtitle}</h6>
+            <h6>${dateLabel}</h6>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function normalizeMaintenance(raw) {
+    return {
+        id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
+        ticketId: raw.id_ticket || raw.ticketId || "",
+        asset: raw.activo || raw.asset || raw.assetName || "",
+        type: raw.tipo || raw.type || "",
+        date: raw.fecha_inicio || raw.fecha_programada || raw.date || "",
+        notes: raw.diagnostico || raw.notes || ""
+    };
+}
+
+function todayISO() {
+    return new Date().toISOString().split("T")[0];
+}
+
+function countUpcoming(list, days) {
+    const today = todayISO();
+    const limit = new Date();
+    limit.setDate(limit.getDate() + days);
+    const limitStr = limit.toISOString().split("T")[0];
+    return (list || [])
+        .map(normalizeMaintenance)
+        .filter((m) => m.date && m.date >= today && m.date <= limitStr).length;
+}
+
+function buildMaintenanceTrend(list) {
+    const months = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i -= 1) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const label = d.toLocaleString("default", { month: "short" });
+        months.push({
+            key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+            label,
+            value: 0
+        });
+    }
+    const monthMap = new Map(months.map((m) => [m.key, m]));
+    (list || []).forEach((m) => {
+        const normalized = normalizeMaintenance(m);
+        if (!normalized.date) {
+            return;
+        }
+        const key = normalized.date.slice(0, 7);
+        if (!monthMap.has(key)) {
+            return;
+        }
+        const costRaw = m.costo || m.costo_total || m.costo_mantenimiento || m.total_cost || m.cost;
+        const cost = Number.parseFloat(costRaw || "0");
+        if (!Number.isFinite(cost)) {
+            return;
+        }
+        monthMap.get(key).value += cost;
+    });
+    return months;
 }

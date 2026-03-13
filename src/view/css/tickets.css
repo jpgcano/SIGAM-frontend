@@ -17,8 +17,8 @@ body{
 
 .container{
     width:92%;
-    margin:auto;
-    margin-top:35px;
+    max-width:1100px;
+    margin:35px auto 0;
 }
 
 
@@ -227,7 +227,8 @@ select{
 .modal-content {
     background: white;
     padding: 25px;
-    width: 400px;
+    width: 92vw;
+    max-width: 520px;
     border-radius: 12px;
 
     display: flex;
@@ -269,6 +270,12 @@ select{
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
+}
+
+#ticketForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .close {
