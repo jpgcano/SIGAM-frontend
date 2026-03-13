@@ -83,3 +83,7 @@
 - Scope: Breakpoints para 450px, 750px, 1200px y 1400px+ con layout estable.
 - Files: src/view/css/tickets.css, test/tickets-responsive.md.
 - Evidence: Checklist en test/tickets-responsive.md.
+- Task: Regla de responsive agregada al skill.
+- Scope: Se establece que todas las vistas deben funcionar en 450px, 750px, 1200px y 1400px+.
+- Files: SKILL.md.
+- Evidence: Regla 20 en SKILL.md.

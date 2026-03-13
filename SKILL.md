@@ -33,6 +33,7 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 17. Prohibido usar emojis en codigo, logs, mensajes de error o textos tecnicos del proyecto.
 18. Hacer pruebas al terminar cada tarea y guardar la evidencia en `test/` (crear la carpeta si no existe).
 19. Crear un commit por tarea (un commit por issue).
+20. Todas las vistas deben ser responsive y funcionar en 450px, 750px, 1200px y 1400px o mas.
 
 ## Flujo de trabajo recomendado
 1. Seleccionar 1 issue frontend.
