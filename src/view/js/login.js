@@ -56,7 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             window.SIGAM_API.setToken(data.token)
-            window.SIGAM_API.setUser(data.user)
+            const userPayload = data.user || data.usuario || data.profile || {}
+            if (userPayload && typeof userPayload === "object") {
+                if (!userPayload.email && data.email) userPayload.email = data.email
+                if (!userPayload.email) userPayload.email = email
+                if (!userPayload.nombre && data.nombre) userPayload.nombre = data.nombre
+                if (!userPayload.name && data.name) userPayload.name = data.name
+                if (!userPayload.rol && data.rol) userPayload.rol = data.rol
+                if (!userPayload.role && data.role) userPayload.role = data.role
+            }
+            window.SIGAM_API.setUser(userPayload)
 
             setStatus("Login correcto. Redirigiendo...", "success")
             window.location.href = "dashboard.html"

@@ -25,6 +25,55 @@
                     link.classList.add("active", "fw-bold", "text-primary");
                 }
             });
+
+            const api = window.SIGAM_API;
+            const user = api && api.getUser ? api.getUser() : null;
+            if (user) {
+                const nameEl = container.querySelector("#navbar-user-name");
+                const emailEl = container.querySelector("#navbar-user-email");
+                const roleEl = container.querySelector("#navbar-user-role");
+                const userBox = container.querySelector("#navbar-user");
+                const logoutBtn = container.querySelector("#navbar-logout");
+
+                const name = user.nombre || user.name || user.fullName || user.full_name || "";
+                const email = user.email || user.correo || "";
+                const role = user.rol || user.role || user.Rol || user.ROLE || "";
+                const normalizedRole = String(role || "").toLowerCase();
+
+                if (userBox && (name || email)) {
+                    userBox.classList.remove("d-none");
+                    if (nameEl) nameEl.textContent = name || "Usuario";
+                    if (emailEl) emailEl.textContent = email;
+                }
+
+                if (roleEl && role) {
+                    roleEl.classList.remove("d-none");
+                    roleEl.textContent = role;
+                    roleEl.classList.remove("bg-primary", "bg-success", "bg-info", "bg-warning", "bg-secondary", "text-dark");
+                    if (normalizedRole.includes("gerente")) {
+                        roleEl.classList.add("bg-success");
+                    } else if (normalizedRole.includes("auditor")) {
+                        roleEl.classList.add("bg-warning", "text-dark");
+                    } else if (normalizedRole.includes("analista")) {
+                        roleEl.classList.add("bg-info", "text-dark");
+                    } else if (normalizedRole.includes("tecnico") || normalizedRole.includes("técnico")) {
+                        roleEl.classList.add("bg-warning", "text-dark");
+                    } else if (normalizedRole.includes("usuario")) {
+                        roleEl.classList.add("bg-secondary");
+                    } else {
+                        roleEl.classList.add("bg-secondary");
+                    }
+                }
+
+                if (logoutBtn) {
+                    logoutBtn.classList.remove("d-none");
+                    logoutBtn.addEventListener("click", () => {
+                        if (api && api.clearToken) api.clearToken();
+                        if (api && api.clearUser) api.clearUser();
+                        window.location.href = "login.html";
+                    });
+                }
+            }
         })
         .catch((error) => {
             console.warn("Navbar load failed:", error);
