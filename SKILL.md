@@ -21,11 +21,7 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 5. Cada tarea/issue debe salir desde `developer` con nomenclatura `feature/task`.
 6. Hacer commits por tarea/issue (cambios pequenos, trazables y con mensaje claro).
 7. Centralizar consumo HTTP en una capa comun (cliente `fetch`) con manejo uniforme de errores.
-<<<<<<< HEAD
-8. No hardcodear URLs de API, secretos o credenciales; usar variables de entorno/config.
-=======
 8. No hardcodear URLs de API, secretos o credenciales; usar configuracion central en `src/view/js/config.js` (objeto `SIGAM_CONFIG`).
->>>>>>> feature/cadena
 9. Toda vista protegida debe validar sesion/token y rol antes de renderizar acciones sensibles.
 10. Toda accion de mutacion debe mostrar feedback visual (`loading`, `success`, `error`) y evitar doble envio.
 11. Priorizar cambios pequenos y verificables; incluir evidencia de prueba por cada issue.
@@ -35,6 +31,8 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 15. Mantener accesibilidad basica: etiquetas de formulario, foco visible y contraste legible.
 16. Registrar obligatoriamente cada tarea/issue en `AI_WORKLOG.md` para evitar trabajo duplicado entre IAs.
 17. Prohibido usar emojis en codigo, logs, mensajes de error o textos tecnicos del proyecto.
+18. Hacer pruebas al terminar cada tarea y guardar la evidencia en `test/` (crear la carpeta si no existe).
+19. Crear un commit por tarea (un commit por issue).
 
 ## Flujo de trabajo recomendado
 1. Seleccionar 1 issue frontend.
@@ -42,10 +40,11 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 3. Definir contrato tecnico con backend: endpoint, payload, respuesta, errores esperados.
 4. Implementar por capas en frontend: view -> component -> service -> state.
 5. Probar: carga inicial, casos exitosos, casos de error, permisos por rol y responsive.
-6. Verificar criterios de aceptacion del issue.
-7. Crear commit del issue/tarea.
-8. Registrar la tarea en `AI_WORKLOG.md` (incluyendo archivos, evidencia y commit).
-9. Documentar resultado y pasar al siguiente issue.
+6. Guardar evidencia de pruebas en `test/`.
+7. Verificar criterios de aceptacion del issue.
+8. Crear commit del issue/tarea.
+9. Registrar la tarea en `AI_WORKLOG.md` (incluyendo archivos, evidencia y commit).
+10. Documentar resultado y pasar al siguiente issue.
 
 ## Backlog frontend (filtrado)
 
@@ -103,7 +102,4 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 - Nombres de funciones en `camelCase`; constantes globales en `UPPER_SNAKE_CASE`.
 - Manejar serializacion de fechas y numeros en una utilidad comun para evitar inconsistencias de formato.
 - En tablas criticas, usar estados visuales consistentes para prioridad, criticidad y disponibilidad.
-<<<<<<< HEAD
-=======
  - Centralizar HTTP en `src/view/js/api.js` y leer la base URL desde `src/view/js/config.js`.
->>>>>>> feature/cadena
