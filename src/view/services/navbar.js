@@ -4,10 +4,22 @@
         return;
     }
 
-    let currentPage = (location.pathname.split("/").pop() || "").toLowerCase();
-    if (!currentPage) {
-        currentPage = "dashboard.html";
-    }
+    const normalizePath = (pathname) => {
+        let page = (pathname || "").toLowerCase().trim();
+        if (!page || page === "/") {
+            return "dashboard";
+        }
+        page = page.replace(/^\/+/, "");
+        if (page.startsWith("pages/")) {
+            page = page.slice("pages/".length);
+        }
+        if (page.endsWith(".html")) {
+            page = page.slice(0, -".html".length);
+        }
+        return page || "dashboard";
+    };
+
+    const currentPage = normalizePath(location.pathname);
 
     fetch("../services/navbar.html")
         .then((response) => {

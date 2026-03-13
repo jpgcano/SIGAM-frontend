@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.SIGAM_API.setUser(data.user)
 
             setStatus("Login correcto. Redirigiendo...", "success")
-            window.location.href = "dashboard.html"
+            window.location.href = "/dashboard"
         } catch (error) {
             setStatus(error.message || "Error de autenticacion.", "error")
         } finally {
