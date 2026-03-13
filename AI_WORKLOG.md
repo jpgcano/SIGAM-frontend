@@ -63,3 +63,7 @@
 - Scope: README con estructura, configuracion de entorno y despliegue.
 - Files: README.md.
 - Evidence: README describe flujo de Vercel y variables de entorno.
+- Task: Documentacion ampliada y comentarios en codigo.
+- Scope: README ampliado con estructura, rutas, auth, API y contribucion. Comentarios breves en servicios y flujos de auth.
+- Files: README.md, src/view/js/api.js, src/view/js/login.js, src/view/js/register.js, src/view/services/auth-guard.js, src/view/services/navbar.js.
+- Evidence: README incluye secciones de rutas y auth; codigo con comentarios de proposito.

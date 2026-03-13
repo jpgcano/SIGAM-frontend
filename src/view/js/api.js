@@ -1,3 +1,5 @@
+// Centralized API client for SIGAM frontend.
+// Handles base URL, auth token, and uniform error parsing.
 (function () {
     const config = window.SIGAM_CONFIG || {};
     const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');
@@ -5,6 +7,7 @@
     const activosEndpoint = config.ACTIVOS_ENDPOINT || '/api/activos';
     const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
+    const categoriasEndpoint = config.CATEGORIAS_ENDPOINT || '/api/categorias';
 
     function getToken() {
         return localStorage.getItem('sigam_token');
@@ -116,6 +119,11 @@
         return normalizeCollection(payload);
     }
 
+    async function getCategorias() {
+        const payload = await apiRequest(categoriasEndpoint);
+        return normalizeCollection(payload);
+    }
+
     async function createActivo(body) {
         return apiRequest(activosEndpoint, { method: 'POST', body });
     }
@@ -151,6 +159,7 @@
         deleteTicket,
         getDashboard,
         getActivos,
+        getCategorias,
         createActivo,
         getRepuestos,
         getRepuestosBajoStock,
