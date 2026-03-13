@@ -86,7 +86,7 @@
 
     <div class="container mt-4">
         <div class="card shadow-sm p-4 mb-4">
-            <h5 class="mb-4">Comparacion: Mantenimiento Preventivo vs Correctivo</h5>
+            <h5 class="mb-4">Comparison: Preventive vs Corrective Maintenance</h5>
             <canvas id="maintenanceChart"></canvas>
         </div>
         <div class="row">
@@ -95,13 +95,8 @@
                     <h6 class="text-warning mb-3">
                         Activos que Requieren Atencion
                     </h6>
-                    <div class="asset-card">
-                        <h6>Server Dell PowerEdge R740</h6>
-                        <small>AST-003</small>
-                        <div class="d-flex justify-content-between mt-3">
-                            <span>Depreciacion: <strong>60%</strong></span>
-                            <span>Costo Mant.: <strong>3.5%</strong></span>
-                        </div>
+                    <div id="attentionAssets" class="report-scroll">
+                        <p class="text-muted small mb-0">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -110,17 +105,8 @@
                     <h6 class="text-primary mb-3">
                         Garantias por Vencer (90 dias)
                     </h6>
-                    <div class="warranty-card">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6>Monitor Dell UltraSharp U2720Q</h6>
-                                <small>AST-006</small>
-                                <p class="mb-0">Vence: 9 de mayo de 2026</p>
-                            </div>
-                            <span class="badge bg-warning text-dark badge-days">
-                                59 days
-                            </span>
-                        </div>
+                    <div id="expiringWarranties" class="report-scroll">
+                        <p class="text-muted small mb-0">Loading...</p>
                     </div>
                 </div>
             </div>
