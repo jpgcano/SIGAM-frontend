@@ -15,6 +15,7 @@
     API_BASE_URL: apiBaseUrl,
     DASHBOARD_ENDPOINT: '/api/dashboard',
     TICKETS_ENDPOINT: '/api/tickets',
-    ACTIVOS_ENDPOINT: '/api/activos'
+    ACTIVOS_ENDPOINT: '/api/activos',
+    REPUESTOS_ENDPOINT: '/api/repuestos'
   };
 })();

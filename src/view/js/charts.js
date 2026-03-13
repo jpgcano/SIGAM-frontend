@@ -88,6 +88,9 @@ function renderRecentTickets(container, list) {
             <div>
                 <strong>${ticket.title || "Untitled ticket"}</strong>
                 <p>${ticket.device || ticket.category || "No details"}</p>
+                <small class="text-muted d-block">
+                    ${ticket.createdAt ? ticket.createdAt.toLocaleString() : ""}
+                </small>
                 <span class="badge ${ui.badge}">${ui.label}</span>
             </div>
         `;
