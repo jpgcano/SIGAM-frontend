@@ -141,6 +141,38 @@ overflow-y:auto;
 padding-right:8px;
 }
 
+/* Force internal scroll for stock table body */
+#stockTableBody{
+display:block;
+max-height:420px;
+overflow-y:auto;
+padding-right:8px;
+}
+
+#stockTableBody tr{
+display:table;
+width:100%;
+table-layout:fixed;
+}
+
+#stockTableBody td{
+word-wrap:break-word;
+}
+
+#stockTable thead{
+display:table;
+width:100%;
+table-layout:fixed;
+}
+
+/* Force internal scroll for suppliers grid */
+#supplierCards{
+max-height:420px;
+overflow-y:auto;
+display:block;
+padding-right:8px;
+}
+
 .card h3{
 font-size:18px;
 margin-bottom:4px;
