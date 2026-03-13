@@ -6,6 +6,8 @@
 
     <!-- Título que aparece en la pestaña del navegador -->
     <title>Maintenance Calendar</title>
+    <link rel="icon" type="image/svg+xml" href="../services/logo_circular.png">
+
 
     <!-- Librería de iconos Bootstrap -->
     <link
@@ -175,6 +177,10 @@
 
           <form id="scheduleForm">
             <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Ticket ID</label>
+                <input id="ticketId" class="form-control" placeholder="e.g. 10" required />
+              </div>
               <!-- Equipo al que se le hará mantenimiento -->
               <div class="mb-3">
                 <label class="form-label">Asset</label>
@@ -210,6 +216,7 @@
                 Cancel
               </button>
 
+              <div id="scheduleStatus" class="me-auto small text-muted" aria-live="polite"></div>
               <button type="submit" class="btn btn-dark">Save Schedule</button>
             </div>
           </form>
