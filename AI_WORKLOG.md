@@ -99,3 +99,11 @@
 - Scope: Tarjetas compactas y layout optimizado para 450px, 750px, 1200px y 1400px+.
 - Files: src/view/css/tickets.css, test/tickets-responsive-v2.md.
 - Evidence: Checklist en test/tickets-responsive-v2.md.
+- Task: Ajuste de ancho y centrado del listado de tickets.
+- Scope: Max-width 900px y menor espacio vertical.
+- Files: src/view/css/tickets.css, test/tickets-density-v3.md.
+- Evidence: Checklist en test/tickets-density-v3.md.
+- Task: Ajuste de ancho para escritorio.
+- Scope: Listado ampliado a 1100px/1180px en 1400px+ para evitar layout angosto.
+- Files: src/view/css/tickets.css, test/tickets-density-v3.md.
+- Evidence: Actualizacion en test/tickets-density-v3.md.
