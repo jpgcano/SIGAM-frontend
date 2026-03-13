@@ -6,7 +6,7 @@
     const user = api && api.getUser ? api.getUser() : null;
 
     if (!token) {
-        window.location.href = "/login";
+        window.location.href = "login.html";
         return;
     }
 
@@ -19,7 +19,7 @@
         const normalizedRole = String(role).toLowerCase();
         const isAllowed = allowedRoles.some((item) => String(item).toLowerCase() === normalizedRole);
         if (!isAllowed) {
-            window.location.href = "/login";
+            window.location.href = "login.html";
         }
     }
 })();
