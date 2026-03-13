@@ -297,3 +297,99 @@ select{
 .delete-btn:active{
     transform:scale(0.95);
 }
+
+/* RESPONSIVE */
+
+@media (max-width: 1024px) {
+    .container {
+        width: 94%;
+        margin-top: 28px;
+    }
+
+    .header h1 {
+        font-size: 28px;
+    }
+
+    .filters {
+        gap: 14px;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .btn-nuevo {
+        width: 100%;
+        text-align: center;
+    }
+
+    .filters {
+        flex-wrap: wrap;
+    }
+
+    .search,
+    select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .ticket {
+        padding: 16px;
+    }
+
+    .ticket-title {
+        font-size: 16px;
+    }
+
+    .modal-content {
+        width: min(92vw, 420px);
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 94%;
+        margin-top: 22px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .filters {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .ticket {
+        padding: 14px;
+    }
+
+    .ticket-desc {
+        font-size: 14px;
+    }
+
+    .ticket-info {
+        font-size: 12px;
+    }
+
+    .status {
+        float: none;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .modal-content {
+        width: 92vw;
+    }
+}

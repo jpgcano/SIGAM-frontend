@@ -1,5 +1,5 @@
 ---
-name: sigam-frontend-execution
+name: SIGAM-frontend
 description: Usa este skill para ejecutar tareas del frontend SIGAM con reglas unificadas para trabajo asistido por IA, enfocadas en HTML, CSS y JavaScript vanilla.
 ---
 
