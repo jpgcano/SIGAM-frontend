@@ -2,6 +2,7 @@
 // to a hard‑coded default list. using `let` because we will reassign when pushing new
 // assets later. this ensures persistence across page reloads.
 const api = window.SIGAM_API
+const apiBaseUrl = window.SIGAM_CONFIG && window.SIGAM_CONFIG.API_BASE_URL
 let assets = []
 
 
@@ -64,7 +65,9 @@ window.addEventListener("error", (event) => {
 })
 
 document.addEventListener("DOMContentLoaded", () => {
-    setInventoryStatus("Inventory script loaded.")
+    const token = localStorage.getItem("sigam_token")
+    const shortToken = token ? `${token.slice(0, 8)}...` : "missing"
+    setInventoryStatus(`Inventory script loaded. API: ${apiBaseUrl || "missing"} | token: ${shortToken}`)
 })
 
 function normalizeAssets(list) {
@@ -219,6 +222,7 @@ async function loadCategoriesAndProviders() {
 
 async function loadAssetsFromApi() {
     if (!api || !api.getActivos) {
+        setInventoryStatus("API client not ready.")
         hydrateAssets([])
         return
     }
