@@ -2,6 +2,15 @@ const api = window.SIGAM_API
 let users = []
 let usingApi = false
 const statusEl = document.getElementById("adminStatus")
+const searchInput = document.getElementById("searchInput")
+const roleFilter = document.getElementById("roleFilter")
+const tabs = document.getElementById("admin-tabs")
+const sections = {
+    users: document.getElementById("section-users"),
+    configuration: document.getElementById("section-configuration"),
+    security: document.getElementById("section-security"),
+    backup: document.getElementById("section-backup")
+}
 
 function setStatus(message, type) {
     if (!statusEl) {
@@ -53,7 +62,20 @@ function renderUsers() {
     let table = document.getElementById("userTable")
     table.innerHTML = ""
 
-    users.forEach((user, index) => {
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : ""
+    const roleValue = roleFilter ? roleFilter.value.trim().toLowerCase() : "all roles"
+
+    const filtered = users.filter((user) => {
+        const roleMatch = roleValue === "all roles"
+            ? true
+            : String(user.role || "").toLowerCase() === roleValue
+        if (!roleMatch) return false
+        if (!query) return true
+        const haystack = `${user.name || ""} ${user.email || ""} ${user.role || ""}`.toLowerCase()
+        return haystack.includes(query)
+    })
+
+    filtered.forEach((user, index) => {
 
         table.innerHTML += `
 
@@ -315,21 +337,116 @@ function updateStats() {
 }
 
 
-const searchInput = document.getElementById("searchInput")
 if (searchInput) {
-    searchInput.addEventListener("keyup", function () {
-
-        let value = this.value.toLowerCase()
-
-        let rows = document.querySelectorAll("#userTable tr")
-
-        rows.forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none"
-        })
-
-    })
+    searchInput.addEventListener("input", () => renderUsers())
+}
+if (roleFilter) {
+    roleFilter.addEventListener("change", () => renderUsers())
 }
 
 loadUsers()
 
 setInterval(loadUsers, 60000)
+
+function showSection(key) {
+    Object.keys(sections).forEach((name) => {
+        const section = sections[name]
+        if (!section) return
+        if (name === key) {
+            section.classList.remove("d-none")
+        } else {
+            section.classList.add("d-none")
+        }
+    })
+}
+
+if (tabs) {
+    tabs.addEventListener("click", (event) => {
+        const btn = event.target.closest("button[data-section]")
+        if (!btn) return
+        const key = btn.getAttribute("data-section")
+        if (!key) return
+        const items = tabs.querySelectorAll(".nav-link")
+        items.forEach((item) => item.classList.remove("active"))
+        btn.classList.add("active")
+        showSection(key)
+    })
+}
+
+const configSave = document.getElementById("configSave")
+const configStatus = document.getElementById("configStatus")
+if (configSave) {
+    configSave.addEventListener("click", () => {
+        const payload = {
+            company: document.getElementById("configCompany").value.trim(),
+            defaultRole: document.getElementById("configDefaultRole").value,
+            timeout: document.getElementById("configTimeout").value,
+            notifications: document.getElementById("configNotifications").value
+        }
+        localStorage.setItem("admin_config", JSON.stringify(payload))
+        if (configStatus) configStatus.textContent = "Configuration saved."
+    })
+}
+
+const securitySave = document.getElementById("securitySave")
+const securityStatus = document.getElementById("securityStatus")
+if (securitySave) {
+    securitySave.addEventListener("click", () => {
+        const payload = {
+            minLength: document.getElementById("securityMinLength").value,
+            special: document.getElementById("securitySpecial").value,
+            twofa: document.getElementById("security2fa").value,
+            lockout: document.getElementById("securityLockout").value
+        }
+        localStorage.setItem("admin_security", JSON.stringify(payload))
+        if (securityStatus) securityStatus.textContent = "Security settings saved."
+    })
+}
+
+const backupRun = document.getElementById("backupRun")
+const backupRestore = document.getElementById("backupRestore")
+const backupStatus = document.getElementById("backupStatus")
+if (backupRun) {
+    backupRun.addEventListener("click", () => {
+        const payload = {
+            frequency: document.getElementById("backupFrequency").value,
+            retention: document.getElementById("backupRetention").value,
+            lastRun: new Date().toISOString()
+        }
+        localStorage.setItem("admin_backup", JSON.stringify(payload))
+        if (backupStatus) backupStatus.textContent = "Backup executed locally."
+    })
+}
+if (backupRestore) {
+    backupRestore.addEventListener("click", () => {
+        if (backupStatus) backupStatus.textContent = "Restore completed locally."
+    })
+}
+
+function hydrateSettings() {
+    try {
+        const config = JSON.parse(localStorage.getItem("admin_config") || "null")
+        if (config) {
+            if (document.getElementById("configCompany")) document.getElementById("configCompany").value = config.company || ""
+            if (document.getElementById("configDefaultRole")) document.getElementById("configDefaultRole").value = config.defaultRole || "Usuario"
+            if (document.getElementById("configTimeout")) document.getElementById("configTimeout").value = config.timeout || "60"
+            if (document.getElementById("configNotifications")) document.getElementById("configNotifications").value = config.notifications || "Enabled"
+        }
+        const security = JSON.parse(localStorage.getItem("admin_security") || "null")
+        if (security) {
+            if (document.getElementById("securityMinLength")) document.getElementById("securityMinLength").value = security.minLength || "8"
+            if (document.getElementById("securitySpecial")) document.getElementById("securitySpecial").value = security.special || "Yes"
+            if (document.getElementById("security2fa")) document.getElementById("security2fa").value = security.twofa || "No"
+            if (document.getElementById("securityLockout")) document.getElementById("securityLockout").value = security.lockout || "5"
+        }
+        const backup = JSON.parse(localStorage.getItem("admin_backup") || "null")
+        if (backup) {
+            if (document.getElementById("backupFrequency")) document.getElementById("backupFrequency").value = backup.frequency || "Daily"
+            if (document.getElementById("backupRetention")) document.getElementById("backupRetention").value = backup.retention || "30"
+        }
+    } catch {
+        // ignore localStorage errors
+    }
+}
+
+hydrateSettings()

@@ -18,3 +18,45 @@ background:#f5f7fb;
 .table td{
 vertical-align:middle;
 }
+
+.admin-stats .card{
+height:100%;
+}
+
+.admin-stats .card .d-flex{
+height:100%;
+}
+
+.admin-stats .card h4,
+.admin-stats .card h5{
+margin-bottom:0;
+}
+
+.admin-container{
+max-width:1200px;
+margin:0 auto;
+}
+
+.admin-section{
+animation:fadeUp .25s ease;
+}
+
+@keyframes fadeUp{
+from{opacity:0;transform:translateY(6px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+@media (max-width:768px){
+  .admin-container{
+    padding:0 6px;
+  }
+  .nav-pills{
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .nav-pills .nav-link{
+    border-radius:999px;
+    font-size:0.9rem;
+    padding:0.4rem 0.8rem;
+  }
+}
