@@ -5,6 +5,19 @@
         return;
     }
 
+    const ensureNavbarStyles = () => {
+        if (document.querySelector('link[data-sigam-navbar="true"]')) {
+            return;
+        }
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "../css/navbar.css";
+        link.setAttribute("data-sigam-navbar", "true");
+        document.head.appendChild(link);
+    };
+
+    ensureNavbarStyles();
+
     let currentPage = (location.pathname.split("/").pop() || "").toLowerCase();
     if (!currentPage) {
         currentPage = "dashboard.html";

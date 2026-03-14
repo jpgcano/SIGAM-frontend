@@ -1,0 +1,46 @@
+#app-navbar .navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 0;
+  min-height: 72px;
+}
+
+#app-navbar .navbar .container {
+  max-width: 1200px;
+}
+
+#app-navbar .navbar-brand {
+  gap: 12px;
+}
+
+#app-navbar .navbar-brand strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+#app-navbar .navbar-brand small {
+  font-size: 12px;
+}
+
+#app-navbar .nav-link {
+  font-size: 14px;
+  padding: 0.5rem 0.75rem;
+}
+
+#app-navbar .navbar .btn {
+  font-size: 13px;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+#app-navbar .navbar .btn.btn-outline-secondary:hover {
+  background: #f3f4f6;
+}
+
+@media (max-width: 768px) {
+  #app-navbar .navbar {
+    padding: 16px 0;
+  }
+}
