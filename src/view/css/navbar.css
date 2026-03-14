@@ -1,5 +1,5 @@
 #app-navbar .navbar {
-  background: #4cee0c;
+  background: #1d4ed8;
   border-bottom: 1px solid #1e40af;
   padding: 12px 0;
   min-height: 72px;
@@ -16,7 +16,7 @@
 #app-navbar .navbar-brand strong {
   font-size: 18px;
   line-height: 1.1;
-  color: #e00c0c;
+  color: #ffffff;
 }
 
 #app-navbar .navbar-brand small {
