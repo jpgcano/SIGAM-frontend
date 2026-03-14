@@ -45,7 +45,7 @@
   <!-- CONTENIDO PRINCIPAL DEL PANEL ADMIN -->
   <!-- ========================================= -->
 
-  <div class="p-4 bg-light min-vh-100">
+  <div class="p-4 bg-light min-vh-100 admin-container">
 
     <!-- Encabezado de la página -->
     <div class="mb-4">
@@ -63,7 +63,7 @@
     <!-- TARJETAS DE ESTADÍSTICAS DEL SISTEMA -->
     <!-- ========================================= -->
 
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4 admin-stats">
 
       <!-- Total de usuarios -->
       <div class="col-md-3">
@@ -148,22 +148,22 @@
     <!-- MENÚ DE CONFIGURACIÓN DEL ADMIN -->
     <!-- ========================================= -->
 
-    <ul class="nav nav-pills mb-4">
+    <ul class="nav nav-pills mb-4" id="admin-tabs">
 
       <li class="nav-item">
-        <button class="nav-link active">Users</button>
+        <button class="nav-link active" data-section="users">Users</button>
       </li>
 
       <li class="nav-item">
-        <button class="nav-link">Configuration</button>
+        <button class="nav-link" data-section="configuration">Configuration</button>
       </li>
 
       <li class="nav-item">
-        <button class="nav-link">Security</button>
+        <button class="nav-link" data-section="security">Security</button>
       </li>
 
       <li class="nav-item">
-        <button class="nav-link">Backup</button>
+        <button class="nav-link" data-section="backup">Backup</button>
       </li>
 
     </ul>
@@ -173,7 +173,7 @@
     <!-- TABLA DE GESTIÓN DE USUARIOS -->
     <!-- ========================================= -->
 
-    <div class="card border-0 shadow-sm rounded-4 p-4">
+    <div id="section-users" class="card border-0 shadow-sm rounded-4 p-4 admin-section">
 
       <!-- Encabezado de la tabla -->
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -216,12 +216,14 @@
         <!-- Filtro por rol -->
         <div class="col-md-3">
 
-          <select class="form-select">
+          <select id="roleFilter" class="form-select">
 
             <option>All Roles</option>
-            <option>Administrator</option>
-            <option>Technician</option>
-            <option>User</option>
+            <option>Gerente</option>
+            <option>Analista</option>
+            <option>Tecnico</option>
+            <option>Auditor</option>
+            <option>Usuario</option>
 
           </select>
 
@@ -256,6 +258,114 @@
 
       </div>
 
+    </div>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN CONFIGURACIÓN -->
+    <!-- ========================================= -->
+
+    <div id="section-configuration" class="card border-0 shadow-sm rounded-4 p-4 admin-section d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0">System Configuration</h6>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Company Name</label>
+          <input id="configCompany" class="form-control" placeholder="J-AXON">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Default Role</label>
+          <select id="configDefaultRole" class="form-select">
+            <option>Usuario</option>
+            <option>Analista</option>
+            <option>Tecnico</option>
+            <option>Gerente</option>
+            <option>Auditor</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Session Timeout (minutes)</label>
+          <input id="configTimeout" type="number" class="form-control" value="60">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Notifications</label>
+          <select id="configNotifications" class="form-select">
+            <option>Enabled</option>
+            <option>Disabled</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4">
+        <button id="configSave" class="btn btn-dark">Save Configuration</button>
+        <span id="configStatus" class="ms-2 small text-muted"></span>
+      </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN SEGURIDAD -->
+    <!-- ========================================= -->
+
+    <div id="section-security" class="card border-0 shadow-sm rounded-4 p-4 admin-section d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0">Security Settings</h6>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Minimum Password Length</label>
+          <input id="securityMinLength" type="number" class="form-control" value="8">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Require Special Characters</label>
+          <select id="securitySpecial" class="form-select">
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Require 2FA</label>
+          <select id="security2fa" class="form-select">
+            <option>No</option>
+            <option>Yes</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Account Lockout (attempts)</label>
+          <input id="securityLockout" type="number" class="form-control" value="5">
+        </div>
+      </div>
+      <div class="mt-4">
+        <button id="securitySave" class="btn btn-dark">Save Security</button>
+        <span id="securityStatus" class="ms-2 small text-muted"></span>
+      </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN BACKUP -->
+    <!-- ========================================= -->
+
+    <div id="section-backup" class="card border-0 shadow-sm rounded-4 p-4 admin-section d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0">Backup Management</h6>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Backup Frequency</label>
+          <select id="backupFrequency" class="form-select">
+            <option>Daily</option>
+            <option>Weekly</option>
+            <option>Monthly</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Retention (days)</label>
+          <input id="backupRetention" type="number" class="form-control" value="30">
+        </div>
+      </div>
+      <div class="mt-4 d-flex flex-wrap gap-2">
+        <button id="backupRun" class="btn btn-dark">Run Backup</button>
+        <button id="backupRestore" class="btn btn-outline-secondary">Restore Last Backup</button>
+        <span id="backupStatus" class="ms-2 small text-muted"></span>
+      </div>
     </div>
 
   </div>

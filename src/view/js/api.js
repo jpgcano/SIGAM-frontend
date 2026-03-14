@@ -177,6 +177,14 @@
         return apiRequest(usuariosEndpoint, { method: 'POST', body });
     }
 
+    async function updateUsuario(id, body) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}`, {
+            method: 'PATCH',
+            body
+        });
+    }
+
     async function updateUsuarioRol(id, rol) {
         const safeId = encodeURIComponent(id);
         return apiRequest(`${usuariosEndpoint}/${safeId}/rol`, {
@@ -191,6 +199,11 @@
             method: 'PATCH',
             body: { password }
         });
+    }
+
+    async function deleteUsuario(id) {
+        const safeId = encodeURIComponent(id);
+        return apiRequest(`${usuariosEndpoint}/${safeId}`, { method: 'DELETE' });
     }
 
     async function getMantenimientos() {
@@ -249,8 +262,10 @@
         getProveedores,
         getUsuarios,
         createUsuario,
+        updateUsuario,
         updateUsuarioRol,
         updateUsuarioPassword,
+        deleteUsuario,
         getMantenimientos,
         createMantenimiento,
         updateMantenimiento,
