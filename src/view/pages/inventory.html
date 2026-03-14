@@ -56,14 +56,24 @@
         </p>
       </div>
 
-      <!-- Botón que abre el modal para crear un nuevo activo -->
-      <button
-        class="btn btn-dark"
-        data-bs-toggle="modal"
-        data-bs-target="#assetModal"
-      >
-        + New Asset
-      </button>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="btn-group" role="group" aria-label="Asset view toggle">
+          <button id="assetViewGrid" type="button" class="btn btn-outline-dark active">
+            Grid
+          </button>
+          <button id="assetViewList" type="button" class="btn btn-outline-dark">
+            List
+          </button>
+        </div>
+        <!-- Botón que abre el modal para crear un nuevo activo -->
+        <button
+          class="btn btn-dark"
+          data-bs-toggle="modal"
+          data-bs-target="#assetModal"
+        >
+          + New Asset
+        </button>
+      </div>
 
     </div>
 
@@ -101,15 +111,6 @@
                 <label class="form-label" for="brand">Brand / Model</label>
                 <input id="brand" class="form-control" required />
                 <div class="invalid-feedback">Brand / Model is required.</div>
-              </div>
-
-              <!-- Categoria -->
-              <div class="mb-3">
-                <label class="form-label" for="categoryId">Category</label>
-                <select id="categoryId" class="form-select" required>
-                  <option value="">Select category</option>
-                </select>
-                <div class="invalid-feedback">Category is required.</div>
               </div>
 
               <!-- Proveedor -->
@@ -160,6 +161,8 @@
                   <option value="server">Server</option>
                   <option value="printer">Printer</option>
                   <option value="monitor">Monitor</option>
+                  <option value="tv">TV</option>
+                  <option value="router">Router</option>
                 </select>
                 <div class="invalid-feedback">Type is required.</div>
               </div>
@@ -176,34 +179,6 @@
                 <label class="form-label" for="stock">Stock</label>
                 <input id="stock" type="number" min="0" class="form-control" required />
                 <div class="invalid-feedback">Stock must be 0 or greater.</div>
-              </div>
-
-              <!-- Stock mínimo -->
-              <div class="mb-3">
-                <label class="form-label" for="minStock">Minimum Stock</label>
-                <input id="minStock" type="number" min="0" class="form-control" required />
-                <div class="invalid-feedback">Minimum Stock must be 0 or greater and not exceed Stock.</div>
-              </div>
-
-              <!-- Proveedor principal -->
-              <div class="mb-3">
-                <label class="form-label" for="supplierName">Supplier</label>
-                <input id="supplierName" class="form-control" />
-                <div class="invalid-feedback">Supplier name is required when supplier data is provided.</div>
-              </div>
-
-              <!-- Precio proveedor -->
-              <div class="mb-3">
-                <label class="form-label" for="supplierPrice">Supplier Price</label>
-                <input id="supplierPrice" type="number" min="0" class="form-control" />
-                <div class="invalid-feedback">Supplier price must be 0 or greater.</div>
-              </div>
-
-              <!-- Lead time proveedor -->
-              <div class="mb-3">
-                <label class="form-label" for="supplierLeadTime">Supplier Lead Time (days)</label>
-                <input id="supplierLeadTime" type="number" min="0" class="form-control" />
-                <div class="invalid-feedback">Lead time must be 0 or greater.</div>
               </div>
 
 </div>
@@ -267,6 +242,8 @@
             <option value="server">Server</option>
             <option value="printer">Printer</option>
             <option value="monitor">Monitor</option>
+            <option value="tv">TV</option>
+            <option value="router">Router</option>
           </select>
         </div>
 
@@ -288,7 +265,7 @@
     <!-- TABLA DE STOCK -->
     <!-- ========================= -->
 
-    <div class="card p-3 mb-4">
+    <div class="card p-3 mb-4" id="stockTableCard">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Stock Table</h5>
         <small class="text-muted">Alert when stock is below minimum</small>
@@ -318,11 +295,18 @@
     <div class="card p-3 mb-4 inventory-scroll">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Suppliers Comparison</h5>
-        <small class="text-muted">Cards by supplier</small>
+        <div class="d-flex align-items-center gap-2">
+          <small class="text-muted">Cards by supplier</small>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Supplier view toggle">
+            <button id="supplierViewGrid" type="button" class="btn btn-outline-dark active">Cards</button>
+            <button id="supplierViewList" type="button" class="btn btn-outline-dark">List</button>
+          </div>
+        </div>
       </div>
 
       <div class="inventory-scroll-body" style="max-height:420px; overflow-y:auto; padding-right:8px;">
         <div class="row g-3" id="supplierCards"></div>
+        <div class="d-none" id="supplierListView"></div>
       </div>
     </div>
 
@@ -332,6 +316,22 @@
 
     <!-- Aquí JavaScript renderiza dinámicamente las tarjetas de equipos -->
     <div class="row g-4" id="assetGrid"></div>
+    <div class="card p-3 mb-4 d-none" id="assetListView">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th class="text-end">Stock</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="assetListBody"></tbody>
+        </table>
+      </div>
+    </div>
 
   </div>
 
@@ -394,6 +394,8 @@
                   <option value="server">Server</option>
                   <option value="printer">Printer</option>
                   <option value="monitor">Monitor</option>
+                  <option value="tv">TV</option>
+                  <option value="router">Router</option>
                 </select>
               </div>
               <div class="col-md-6">

@@ -14,12 +14,20 @@ const locationFilter = document.getElementById("locationFilter")
 const resultCount = document.getElementById("resultCount")
 const stockTableBody = document.getElementById("stockTableBody")
 const supplierCards = document.getElementById("supplierCards")
+const supplierListView = document.getElementById("supplierListView")
+const supplierViewGridBtn = document.getElementById("supplierViewGrid")
+const supplierViewListBtn = document.getElementById("supplierViewList")
 const supplierForm = document.getElementById("supplierForm")
 const supplierEditName = document.getElementById("supplierEditName")
 const supplierEditRows = document.getElementById("supplierEditRows")
 let editingSupplierName = null
 const assetFormStatus = document.getElementById("assetFormStatus")
 const assetSubmitBtn = document.getElementById("assetSubmitBtn")
+const assetViewGridBtn = document.getElementById("assetViewGrid")
+const assetViewListBtn = document.getElementById("assetViewList")
+const assetListView = document.getElementById("assetListView")
+const assetListBody = document.getElementById("assetListBody")
+const stockTableCard = document.getElementById("stockTableCard")
 
 const assetEditForm = document.getElementById("assetEditForm")
 const editName = document.getElementById("editName")
@@ -265,7 +273,40 @@ Warranty ${asset.warranty}
     })
 
     resultCount.innerText = `Showing ${list.length} of ${assets.length} assets`
+    renderAssetList(list)
 
+}
+
+function renderAssetList(list) {
+    if (!assetListBody) {
+        return
+    }
+    assetListBody.innerHTML = ""
+    list.forEach(asset => {
+        const statusBadge = asset.status === "maintenance"
+            ? '<span class="badge bg-warning text-dark">Maintenance</span>'
+            : '<span class="badge bg-success">Active</span>'
+        assetListBody.innerHTML += `
+          <tr>
+            <td>${asset.name}</td>
+            <td class="text-muted">${asset.type}</td>
+            <td class="text-muted">${asset.location}</td>
+            <td class="text-end fw-semibold">${asset.stock}</td>
+            <td>${statusBadge}</td>
+          </tr>
+        `
+    })
+}
+
+function setAssetView(mode) {
+    if (!assetViewGridBtn || !assetViewListBtn || !assetListView || !grid) {
+        return
+    }
+    const showList = mode === "list"
+    assetListView.classList.toggle("d-none", !showList)
+    grid.classList.toggle("d-none", showList)
+    assetViewGridBtn.classList.toggle("active", !showList)
+    assetViewListBtn.classList.toggle("active", showList)
 }
 
 function renderStockTable(list) {
@@ -423,6 +464,42 @@ function renderSupplierCards(list) {
           </div>
         `
     })
+
+    renderSupplierList(suppliers)
+}
+
+function renderSupplierList(suppliersMap) {
+    if (!supplierListView) {
+        return
+    }
+    const suppliers = Object.values(suppliersMap || {})
+    if (!suppliers.length) {
+        supplierListView.innerHTML = '<p class="text-muted mb-0">No suppliers available.</p>'
+        return
+    }
+    supplierListView.innerHTML = suppliers.map(supplier => {
+        const items = supplier.assets
+            .map(item => `<li class="mb-1">${item.assetName} <span class="text-muted">$${item.price || 0}</span></li>`)
+            .join("")
+        return `
+          <div class="mb-3">
+            <div class="fw-semibold">${supplier.name}</div>
+            <small class="text-muted">Assets supplied: ${supplier.items}</small>
+            <ul class="mt-2 mb-0 ps-3">${items}</ul>
+          </div>
+        `
+    }).join("")
+}
+
+function setSupplierView(mode) {
+    if (!supplierCards || !supplierListView || !supplierViewGridBtn || !supplierViewListBtn) {
+        return
+    }
+    const showList = mode === "list"
+    supplierCards.classList.toggle("d-none", showList)
+    supplierListView.classList.toggle("d-none", !showList)
+    supplierViewGridBtn.classList.toggle("active", !showList)
+    supplierViewListBtn.classList.toggle("active", showList)
 }
 
 function openSupplierEditor(supplierName) {
@@ -545,6 +622,19 @@ if (locationFilter) {
     locationFilter.addEventListener("change", filterAssets)
 }
 
+if (assetViewGridBtn) {
+    assetViewGridBtn.addEventListener("click", () => setAssetView("grid"))
+}
+if (assetViewListBtn) {
+    assetViewListBtn.addEventListener("click", () => setAssetView("list"))
+}
+if (supplierViewGridBtn) {
+    supplierViewGridBtn.addEventListener("click", () => setSupplierView("grid"))
+}
+if (supplierViewListBtn) {
+    supplierViewListBtn.addEventListener("click", () => setSupplierView("list"))
+}
+
 // initial load from API
 loadAssetsFromApi()
 loadCategoriesAndProviders()
@@ -558,7 +648,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("assetForm")
     const nameInput = document.getElementById("name")
     const brandInput = document.getElementById("brand")
-    const categoryInput = document.getElementById("categoryId")
     const providerInput = document.getElementById("providerId")
     const serialInput = document.getElementById("serial")
     const assignedInput = document.getElementById("assigned")
@@ -568,9 +657,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const warrantyInput = document.getElementById("warranty")
     const stockInput = document.getElementById("stock")
     const minStockInput = document.getElementById("minStock")
-    const supplierNameInput = document.getElementById("supplierName")
-    const supplierPriceInput = document.getElementById("supplierPrice")
-    const supplierLeadInput = document.getElementById("supplierLeadTime")
 
     function setFieldValidity(input, isValid, message) {
         if (!input) {
@@ -639,18 +725,16 @@ document.addEventListener("DOMContentLoaded", function () {
             setFieldValidity(brandInput, true)
         }
 
-        if (categoryInput && !categoryInput.value) {
-            isValid = false
-            setFieldValidity(categoryInput, false, "Category is required.")
-        } else if (categoryInput) {
-            setFieldValidity(categoryInput, true)
-        }
-
         if (providerInput && !providerInput.value) {
             isValid = false
             setFieldValidity(providerInput, false, "Provider is required.")
         } else if (providerInput) {
             setFieldValidity(providerInput, true)
+        }
+
+        if (!providerInput) {
+            isValid = false
+            setFormStatus("Provider is required.", "error")
         }
 
         if (!serialValue) {
@@ -710,67 +794,17 @@ document.addEventListener("DOMContentLoaded", function () {
             setFieldValidity(stockInput, true)
         }
 
-        const minStockNumber = Number.parseInt(minStockValue || "0", 10)
-        if (!Number.isFinite(minStockNumber) || minStockNumber < 0) {
-            isValid = false
-            setFieldValidity(minStockInput, false, "Minimum Stock must be 0 or greater.")
-        } else if (Number.isFinite(stockNumber) && minStockNumber > stockNumber) {
-            isValid = false
-            setFieldValidity(minStockInput, false, "Minimum Stock cannot exceed Stock.")
-        } else {
-            setFieldValidity(minStockInput, true)
-        }
-
-        const supplierNameValue = supplierNameInput.value.trim()
-        const supplierPriceValue = supplierPriceInput.value.trim()
-        const supplierLeadValue = supplierLeadInput.value.trim()
-        const supplierTouched = Boolean(
-            supplierNameValue || supplierPriceValue || supplierLeadValue
-        )
-
-        if (supplierTouched) {
-            if (!supplierNameValue) {
+        if (minStockInput) {
+            const minStockNumber = Number.parseInt(minStockValue || "0", 10)
+            if (!Number.isFinite(minStockNumber) || minStockNumber < 0) {
                 isValid = false
-                setFieldValidity(
-                    supplierNameInput,
-                    false,
-                    "Supplier name is required when supplier data is provided."
-                )
-            } else {
-                setFieldValidity(supplierNameInput, true)
-            }
-
-            const supplierPriceNumber = Number.parseInt(supplierPriceValue || "0", 10)
-            if (!supplierPriceValue || !Number.isFinite(supplierPriceNumber) || supplierPriceNumber < 0) {
+                setFieldValidity(minStockInput, false, "Minimum Stock must be 0 or greater.")
+            } else if (Number.isFinite(stockNumber) && minStockNumber > stockNumber) {
                 isValid = false
-                setFieldValidity(
-                    supplierPriceInput,
-                    false,
-                    "Supplier price must be 0 or greater."
-                )
+                setFieldValidity(minStockInput, false, "Minimum Stock cannot exceed Stock.")
             } else {
-                setFieldValidity(supplierPriceInput, true)
+                setFieldValidity(minStockInput, true)
             }
-
-            if (supplierLeadValue) {
-                const supplierLeadNumber = Number.parseInt(supplierLeadValue, 10)
-                if (!Number.isFinite(supplierLeadNumber) || supplierLeadNumber < 0) {
-                    isValid = false
-                    setFieldValidity(
-                        supplierLeadInput,
-                        false,
-                        "Lead time must be 0 or greater."
-                    )
-                } else {
-                    setFieldValidity(supplierLeadInput, true)
-                }
-            } else {
-                setFieldValidity(supplierLeadInput, true)
-            }
-        } else {
-            setFieldValidity(supplierNameInput, true)
-            setFieldValidity(supplierPriceInput, true)
-            setFieldValidity(supplierLeadInput, true)
         }
 
         form.classList.add("was-validated")
@@ -818,8 +852,16 @@ document.addEventListener("DOMContentLoaded", function () {
             return
         }
 
-        const categoryValue = categoryInput ? categoryInput.value : ""
+        const categoryValue = categories.length
+            ? (categories[0].id_categoria || categories[0].id || categories[0].idCategoria || "")
+            : ""
         const providerValue = providerInput ? providerInput.value : ""
+
+        if (!categoryValue) {
+            setFormStatus("Category is required in the system.", "error")
+            setSubmitting(false)
+            return
+        }
 
         const payload = {
             id_categoria: Number(categoryValue) || categoryValue,
@@ -833,12 +875,16 @@ document.addEventListener("DOMContentLoaded", function () {
             sede,
             piso,
             sala,
-            proveedor: supplierNameInput.value.trim() || undefined
+            proveedor: undefined
         }
 
         try {
             await api.createActivo(payload)
             setFormStatus("Asset saved successfully.", "success")
+            if (stockTableCard) {
+                stockTableCard.classList.add("stock-flash")
+                setTimeout(() => stockTableCard.classList.remove("stock-flash"), 900)
+            }
             await loadAssetsFromApi()
 
             form.reset()
