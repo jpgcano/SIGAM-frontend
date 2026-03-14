@@ -82,6 +82,12 @@ function guessType(modelo) {
     if (value.includes("desktop") || value.includes("pc")) {
         return "desktop"
     }
+    if (value.includes("tv") || value.includes("televisor")) {
+        return "tv"
+    }
+    if (value.includes("router")) {
+        return "router"
+    }
     return "desktop"
 }
 
@@ -122,8 +128,16 @@ function hydrateAssets(list) {
     assets = normalizeAssets(list)
     renderAssets(assets)
     renderStockTable(assets)
-    renderSupplierCards(assets)
     buildLocationOptions(assets)
+    scheduleSupplierRender(assets)
+}
+
+function scheduleSupplierRender(list) {
+    if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(() => renderSupplierCards(list))
+    } else {
+        setTimeout(() => renderSupplierCards(list), 0)
+    }
 }
 
 function getIdValue(item, keys) {
@@ -190,10 +204,19 @@ async function loadAssetsFromApi() {
         hydrateAssets([])
         return
     }
+    const cached = localStorage.getItem("assets")
+    if (cached && assets.length === 0) {
+        try {
+            hydrateAssets(JSON.parse(cached))
+        } catch {
+            // ignore cache parse errors
+        }
+    }
     try {
         const data = await api.getActivos()
         const mapped = (data || []).map(normalizeApiAsset)
         hydrateAssets(mapped)
+        localStorage.setItem("assets", JSON.stringify(mapped))
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
@@ -209,7 +232,7 @@ async function loadAssetsFromApi() {
 // updating the counter showing how many assets are currently visible vs total.
 function renderAssets(list) {
 
-    grid.innerHTML = ""
+    const cards = []
 
     list.forEach(asset => {
 
@@ -219,7 +242,7 @@ function renderAssets(list) {
             badge = "bg-warning text-dark"
         }
 
-        grid.innerHTML += `
+        cards.push(`
 
 <div class="col-md-4">
 
@@ -272,6 +295,7 @@ Warranty ${asset.warranty}
 
     })
 
+    grid.innerHTML = cards.join("")
     resultCount.innerText = `Showing ${list.length} of ${assets.length} assets`
     renderAssetList(list)
 
@@ -281,12 +305,12 @@ function renderAssetList(list) {
     if (!assetListBody) {
         return
     }
-    assetListBody.innerHTML = ""
+    const rows = []
     list.forEach(asset => {
         const statusBadge = asset.status === "maintenance"
             ? '<span class="badge bg-warning text-dark">Maintenance</span>'
             : '<span class="badge bg-success">Active</span>'
-        assetListBody.innerHTML += `
+        rows.push(`
           <tr>
             <td>${asset.name}</td>
             <td class="text-muted">${asset.type}</td>
@@ -296,6 +320,7 @@ function renderAssetList(list) {
           </tr>
         `
     })
+    assetListBody.innerHTML = rows.join("")
 }
 
 function setAssetView(mode) {
@@ -313,7 +338,7 @@ function renderStockTable(list) {
     if (!stockTableBody) {
         return
     }
-    stockTableBody.innerHTML = ""
+    const rows = []
 
     list.forEach(asset => {
         const isLow = asset.stock < asset.minStock
@@ -321,7 +346,7 @@ function renderStockTable(list) {
             ? '<span class="badge bg-danger">Below minimum</span>'
             : '<span class="badge bg-success">OK</span>'
 
-        stockTableBody.innerHTML += `
+        rows.push(`
           <tr class="${isLow ? "table-danger" : ""}">
             <td>${asset.name}</td>
             <td class="text-muted">${asset.type}</td>
@@ -332,6 +357,7 @@ function renderStockTable(list) {
           </tr>
         `
     })
+    stockTableBody.innerHTML = rows.join("")
 }
 
 function buildLocationOptions(list) {
@@ -366,7 +392,7 @@ function renderSupplierCards(list) {
     if (!supplierCards) {
         return
     }
-    supplierCards.innerHTML = ""
+    const cards = []
 
     const assetBestPrices = {}
     list.forEach(asset => {
@@ -425,7 +451,7 @@ function renderSupplierCards(list) {
           </div>
         `).join("")
 
-        supplierCards.innerHTML += `
+        cards.push(`
           <div class="col-md-4">
             <div class="card h-100 shadow-sm">
               <div class="card-body">
@@ -465,6 +491,7 @@ function renderSupplierCards(list) {
         `
     })
 
+    supplierCards.innerHTML = cards.join("")
     renderSupplierList(suppliers)
 }
 
@@ -638,6 +665,8 @@ if (supplierViewListBtn) {
 // initial load from API
 loadAssetsFromApi()
 loadCategoriesAndProviders()
+setAssetView("grid")
+setSupplierView("grid")
 
 
 
