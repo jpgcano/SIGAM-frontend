@@ -50,6 +50,23 @@ let editingAssetId = null
 let categories = []
 let providers = []
 
+function setInventoryStatus(message) {
+    if (!inventoryStatus) {
+        return
+    }
+    inventoryStatus.textContent = message || ""
+}
+
+window.addEventListener("error", (event) => {
+    if (inventoryStatus) {
+        inventoryStatus.textContent = `Inventory error: ${event.message || "unknown"}`
+    }
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+    setInventoryStatus("Inventory script loaded.")
+})
+
 function normalizeAssets(list) {
     return list.map(asset => {
         const normalized = { ...asset }
@@ -205,9 +222,7 @@ async function loadAssetsFromApi() {
         hydrateAssets([])
         return
     }
-    if (inventoryStatus) {
-        inventoryStatus.textContent = "Loading assets..."
-    }
+    setInventoryStatus("Loading assets...")
     const cached = localStorage.getItem("assets")
     if (cached && assets.length === 0) {
         try {
@@ -221,19 +236,15 @@ async function loadAssetsFromApi() {
         const mapped = (data || []).map(normalizeApiAsset)
         hydrateAssets(mapped)
         localStorage.setItem("assets", JSON.stringify(mapped))
-        if (inventoryStatus) {
-            inventoryStatus.textContent = `Loaded ${mapped.length} assets.`
-        }
+        setInventoryStatus(`Loaded ${mapped.length} assets.`)
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
             assetFormStatus.textContent = "No se pudieron cargar activos del servidor."
             assetFormStatus.className = "me-auto small text-danger"
         }
-        if (inventoryStatus) {
-            const status = error && error.status ? ` (${error.status})` : ""
-            inventoryStatus.textContent = `Failed to load assets${status}.`
-        }
+        const status = error && error.status ? ` (${error.status})` : ""
+        setInventoryStatus(`Failed to load assets${status}.`)
     }
 }
 
