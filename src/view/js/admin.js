@@ -151,8 +151,8 @@ function timeAgo(date) {
 
 function saveUser() {
 
-    let name = document.getElementById("name").value
-    let email = document.getElementById("email").value
+    let name = document.getElementById("name").value.trim()
+    let email = document.getElementById("email").value.trim()
     let role = document.getElementById("role").value
     let password = document.getElementById("password").value
     let editIndex = document.getElementById("editIndex").value
@@ -164,6 +164,10 @@ function saveUser() {
         const userId = target.id
 
         if (editIndex === "") {
+            if (!name || !email || !role) {
+                alert("Name, email y role son requeridos")
+                return
+            }
             if (!password) {
                 alert("Password is required")
                 return
@@ -184,11 +188,23 @@ function saveUser() {
             return
         } else if (userId) {
             const updates = []
-            if (role) {
+            if (api.updateUsuario) {
+                const payload = {}
+                if (name) payload.nombre = name
+                if (email) payload.email = email
+                if (role) payload.rol = role
+                if (Object.keys(payload).length > 0) {
+                    updates.push(api.updateUsuario(userId, payload))
+                }
+            } else if (role) {
                 updates.push(api.updateUsuarioRol(userId, role))
             }
             if (password) {
                 updates.push(api.updateUsuarioPassword(userId, password))
+            }
+            if (updates.length === 0) {
+                setStatus("Sin cambios para actualizar.", "error")
+                return
             }
             Promise.allSettled(updates).then(() => {
                 setStatus("Usuario actualizado en API.", "success")
@@ -241,6 +257,17 @@ function deleteUser(index) {
     if (confirm("Delete user?")) {
 
         if (usingApi) {
+            const target = users[index] || {}
+            const userId = target.id
+            if (api && api.deleteUsuario && userId) {
+                api.deleteUsuario(userId).then(() => {
+                    setStatus("Usuario eliminado en API.", "success")
+                    loadUsers()
+                }).catch(() => {
+                    setStatus("No se pudo eliminar usuario en API.", "error")
+                })
+                return
+            }
             alert("No hay endpoint para eliminar usuarios en API.")
             return
         }
