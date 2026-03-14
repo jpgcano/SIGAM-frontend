@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return
         }
         submitBtn.disabled = isSubmitting
-        submitBtn.textContent = isSubmitting ? "Loading..." : "enter"
+        submitBtn.textContent = isSubmitting ? "Loading..." : "Enter"
     }
 
     if (!form) {
@@ -40,12 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const password = passwordInput.value
 
         if (!email || !password) {
-            setStatus("Ingresa email y password.", "error")
+            setStatus("Enter email and password.", "error")
             return
         }
 
         if (!window.SIGAM_API) {
-            setStatus("Config de API no cargada.", "error")
+            setStatus("API config not loaded.", "error")
             return
         }
 
@@ -68,10 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             window.SIGAM_API.setUser(userPayload)
 
-            setStatus("Login correcto. Redirigiendo...", "success")
+            setStatus("Login successful. Redirecting...", "success")
             window.location.href = "dashboard.html"
         } catch (error) {
-            setStatus(error.message || "Error de autenticacion.", "error")
+            setStatus(error.message || "Authentication error.", "error")
         } finally {
             setSubmitting(false)
         }

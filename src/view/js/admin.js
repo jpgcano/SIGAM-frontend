@@ -44,11 +44,11 @@ async function loadUsers() {
             const data = await api.getUsuarios()
             users = (data || []).map(normalizeUser)
             usingApi = true
-            setStatus("Usuarios cargados desde API.", "success")
+            setStatus("Users loaded from the API.", "success")
             renderUsers()
             return
         } catch (error) {
-            setStatus("No se pudo cargar usuarios desde API. Usando cache local.", "error")
+            setStatus("Could not load users from the API. Using local cache.", "error")
         }
     }
 
@@ -63,10 +63,10 @@ function renderUsers() {
     table.innerHTML = ""
 
     const query = searchInput ? searchInput.value.trim().toLowerCase() : ""
-    const roleValue = roleFilter ? roleFilter.value.trim().toLowerCase() : "all roles"
+    const roleValue = roleFilter ? roleFilter.value.trim().toLowerCase() : ""
 
     const filtered = users.filter((user) => {
-        const roleMatch = roleValue === "all roles"
+        const roleMatch = !roleValue
             ? true
             : String(user.role || "").toLowerCase() === roleValue
         if (!roleMatch) return false
@@ -131,22 +131,22 @@ function badgeStatus(status) {
 function badgeRole(role) {
 
     if (role === "Gerente") {
-        return `<span class="badge bg-primary">Gerente</span>`
+        return `<span class="badge bg-primary">Manager</span>`
     }
 
     if (role === "Tecnico") {
-        return `<span class="badge bg-info text-dark">Tecnico</span>`
+        return `<span class="badge bg-info text-dark">Technician</span>`
     }
 
     if (role === "Analista") {
-        return `<span class="badge bg-secondary">Analista</span>`
+        return `<span class="badge bg-secondary">Analyst</span>`
     }
 
     if (role === "Auditor") {
         return `<span class="badge bg-dark">Auditor</span>`
     }
 
-    return `<span class="badge bg-secondary">Usuario</span>`
+    return `<span class="badge bg-secondary">User</span>`
 
 }
 
@@ -187,7 +187,7 @@ function saveUser() {
 
         if (editIndex === "") {
             if (!name || !email || !role) {
-                alert("Name, email y role son requeridos")
+                alert("Name, email and role are required")
                 return
             }
             if (!password) {
@@ -200,10 +200,10 @@ function saveUser() {
                 password,
                 rol: role
             }).then(() => {
-                setStatus("Usuario creado en API.", "success")
+                setStatus("User created in the API.", "success")
                 loadUsers()
             }).catch(() => {
-                setStatus("No se pudo crear usuario en API.", "error")
+                setStatus("Could not create user in the API.", "error")
             })
             let modal = bootstrap.Modal.getInstance(document.getElementById("userModal"))
             modal.hide()
@@ -225,14 +225,14 @@ function saveUser() {
                 updates.push(api.updateUsuarioPassword(userId, password))
             }
             if (updates.length === 0) {
-                setStatus("Sin cambios para actualizar.", "error")
+                setStatus("No changes to update.", "error")
                 return
             }
             Promise.allSettled(updates).then(() => {
-                setStatus("Usuario actualizado en API.", "success")
+                setStatus("User updated in the API.", "success")
                 loadUsers()
             }).catch(() => {
-                setStatus("No se pudo actualizar usuario en API.", "error")
+                setStatus("Could not update user in the API.", "error")
             })
             let modal = bootstrap.Modal.getInstance(document.getElementById("userModal"))
             modal.hide()
@@ -283,14 +283,14 @@ function deleteUser(index) {
             const userId = target.id
             if (api && api.deleteUsuario && userId) {
                 api.deleteUsuario(userId).then(() => {
-                    setStatus("Usuario eliminado en API.", "success")
+                    setStatus("User deleted in the API.", "success")
                     loadUsers()
                 }).catch(() => {
-                    setStatus("No se pudo eliminar usuario en API.", "error")
+                    setStatus("Could not delete user in the API.", "error")
                 })
                 return
             }
-            alert("No hay endpoint para eliminar usuarios en API.")
+            alert("No API endpoint available to delete users.")
             return
         }
 

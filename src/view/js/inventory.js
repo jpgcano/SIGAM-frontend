@@ -126,7 +126,7 @@ function normalizeApiAsset(raw) {
     const location = locationParts.join(" - ") || raw.ubicacion || ""
     const supplierName = raw.proveedor || raw.proveedor_nombre || ""
     return {
-        name: raw.modelo || raw.nombre || `Activo ${id}`,
+        name: raw.modelo || raw.nombre || `Asset ${id}`,
         id: id ? String(id) : "",
         categoryId: raw.id_categoria || raw.categoria_id || raw.idCategoria || "",
         providerId: raw.id_proveedor || raw.proveedor_id || raw.idProveedor || "",
@@ -136,7 +136,7 @@ function normalizeApiAsset(raw) {
         location,
         status: mapStatus(raw.estado_vida_util || raw.estado || ""),
         type: guessType(raw.modelo || raw.nombre || ""),
-        warranty: raw.vida_util ? `${raw.vida_util} meses` : raw.estado_vida_util || "",
+        warranty: raw.vida_util ? `${raw.vida_util} months` : raw.estado_vida_util || "",
         stock: Number.parseInt(raw.stock || "0", 10) || 0,
         minStock: Number.parseInt(raw.stock_minimo || "0", 10) || 0,
         suppliers: supplierName
@@ -187,7 +187,7 @@ function fillSelect(select, items, placeholder) {
         .map(item => {
             const id = getIdValue(item, ["id_categoria", "id_proveedor", "id", "idCategoria", "idProveedor"])
             const label = getLabelValue(item, ["nombre", "name", "descripcion", "razon_social", "contacto"])
-            const text = label || (id ? `ID ${id}` : "Sin nombre")
+            const text = label || (id ? `ID ${id}` : "No name")
             return `<option value="${id}">${text}</option>`
         })
         .join("")
@@ -244,7 +244,7 @@ async function loadAssetsFromApi() {
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
-            assetFormStatus.textContent = "No se pudieron cargar activos del servidor."
+        assetFormStatus.textContent = "Could not load assets from the server."
             assetFormStatus.className = "me-auto small text-danger"
         }
         const status = error && error.status ? ` (${error.status})` : ""
@@ -913,7 +913,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const warrantyMatch = warrantyRaw.match(/\d+/)
         const vidaUtil = warrantyMatch ? Number.parseInt(warrantyMatch[0], 10) : null
         if (!vidaUtil) {
-            setFormStatus("Campos requeridos: vida_util", "error")
+            setFormStatus("Required fields: vida_util", "error")
             setSubmitting(false)
             return
         }
@@ -962,7 +962,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             const message = error && error.message
                 ? error.message
-                : "No se pudo guardar el activo en el servidor."
+                : "Could not save the asset on the server."
             setFormStatus(message, "error")
         } finally {
             setSubmitting(false)

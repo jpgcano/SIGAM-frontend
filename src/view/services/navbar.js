@@ -64,13 +64,22 @@
 
                 if (userBox && (name || email)) {
                     userBox.classList.remove("d-none");
-                    if (nameEl) nameEl.textContent = name || "Usuario";
+                    if (nameEl) nameEl.textContent = name || "User";
                     if (emailEl) emailEl.textContent = email;
                 }
 
                 if (roleEl && role) {
                     roleEl.classList.remove("d-none");
-                    roleEl.textContent = role;
+                    const roleLabelMap = {
+                        gerente: "Manager",
+                        analista: "Analyst",
+                        tecnico: "Technician",
+                        "técnico": "Technician",
+                        auditor: "Auditor",
+                        usuario: "User"
+                    };
+                    const roleKey = normalizedRole.replace(/\s+/g, "");
+                    roleEl.textContent = roleLabelMap[roleKey] || role;
                     roleEl.classList.remove("bg-primary", "bg-success", "bg-info", "bg-warning", "bg-secondary", "text-dark");
                     if (normalizedRole.includes("gerente")) {
                         roleEl.classList.add("bg-success");

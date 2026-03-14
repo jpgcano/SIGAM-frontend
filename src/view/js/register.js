@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return
         }
         submitBtn.disabled = isSubmitting
-        submitBtn.textContent = isSubmitting ? "Creating..." : "create account"
+        submitBtn.textContent = isSubmitting ? "Creating..." : "Create Account"
     }
 
     if (!form) {
@@ -48,17 +48,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const role = roleInput ? roleInput.value : "Usuario"
 
         if (!name || !surname || !email || !password) {
-            setStatus("Completa todos los campos requeridos.", "error")
+            setStatus("Please complete all required fields.", "error")
             return
         }
 
         if (password !== confirmPassword) {
-            setStatus("Las contrasenas no coinciden.", "error")
+            setStatus("Passwords do not match.", "error")
             return
         }
 
         if (!window.SIGAM_API) {
-            setStatus("Config de API no cargada.", "error")
+            setStatus("API config not loaded.", "error")
             return
         }
 
@@ -74,10 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             })
 
-            setStatus("Registro exitoso. Redirigiendo...", "success")
+            setStatus("Registration successful. Redirecting...", "success")
             window.location.href = "login.html"
         } catch (error) {
-            setStatus(error.message || "Error de registro.", "error")
+            setStatus(error.message || "Registration error.", "error")
         } finally {
             setSubmitting(false)
         }

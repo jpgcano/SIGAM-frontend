@@ -170,8 +170,8 @@ function buildDashboardData(activos, tickets, mantenimientos) {
             ticket.categoria ||
             ticket.category ||
             ticket.tipo ||
-            "Sin categoria";
-        const label = String(category || "Sin categoria");
+            "No category";
+        const label = String(category || "No category");
         ticketsByCategory[label] = (ticketsByCategory[label] || 0) + 1;
     });
 
@@ -296,7 +296,7 @@ function createBarChart(data) {
     barChartInstance = new Chart(barChart, {
         type: "bar",
         data: {
-            labels: labels.length ? labels : ["Sin categoria"],
+            labels: labels.length ? labels : ["No category"],
             datasets: [{
                 label: "Tickets",
                 data: [
@@ -369,7 +369,7 @@ function renderUpcomingMaintenance(container, list) {
     upcoming.forEach((m) => {
         const title = m.asset || (m.ticketId ? `Ticket #${m.ticketId}` : "Maintenance");
         const subtitle = m.notes || m.type || "Maintenance scheduled";
-        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "Sin fecha";
+        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "No date";
         const item = document.createElement("div");
         item.className = "maintenance-next";
         item.innerHTML = `

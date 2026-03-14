@@ -86,7 +86,7 @@ function setCreatedByFromSession() {
         createdByInput.value = user.nombre || user.name || user.email;
         return;
     }
-    createdByInput.value = "Usuario";
+    createdByInput.value = "User";
 }
 
 function setFieldError(input, message) {
@@ -315,12 +315,12 @@ function renderCategorias() {
     categoriasMap = new Map(
         categoriasList.map((categoria) => {
             const id = categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
-            const label = getCategoriaLabel(categoria) || String(id || "Categoria");
+            const label = getCategoriaLabel(categoria) || String(id || "Category");
             return [String(id), label];
         })
     );
 
-    const placeholder = '<option value="">Selecciona categoria</option>';
+    const placeholder = '<option value="">Select Category</option>';
     const options = Array.from(categoriasMap.entries())
         .map(([id, label]) => `<option value="${id}">${label}</option>`)
         .join("");
@@ -400,7 +400,7 @@ if (ticketForm) {
             : "";
 
         if (!reporterId) {
-            setTicketStatus("Debes iniciar sesión para crear un ticket.", "error");
+            setTicketStatus("You must sign in to create a ticket.", "error");
             setSubmitting(false);
             return;
         }
@@ -440,7 +440,7 @@ function renderTickets(list) {
     ticketList.innerHTML = "";
 
     if (list.length === 0) {
-        ticketList.innerHTML = "<p>No hay tickets que coincidan</p>";
+        ticketList.innerHTML = "<p>No matching tickets found.</p>";
         return;
     }
 
@@ -460,18 +460,18 @@ function renderTickets(list) {
 
             <div class="ticket-info ticket-line">
                 <span>TK-${ticket.id || index + 1}</span>
-                <span>${ticket.device || "Activo"}</span>
-                <span>${ticket.category || "Sin categoria"}</span>
+                <span>${ticket.device || "Asset"}</span>
+                <span>${ticket.category || "No category"}</span>
             </div>
 
             <div class="ticket-info ticket-meta">
-                <span>Creado por: ${ticket.createdBy || "Sin usuario"}</span>
-                <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
+                <span>Created by: ${ticket.createdBy || "No user"}</span>
+                <span>Assigned to: ${ticket.assignedTo || "Unassigned"}</span>
                 <span>${ticket.date}</span>
-                <span>${ticket.estimate || "Sin estimado"}</span>
+                <span>${ticket.estimate || "No estimate"}</span>
             </div>
 
-            <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
+            <button class="delete-btn" onclick="deleteTicket(${index})">Delete</button>
         `;
         ticketList.appendChild(div);
     });
