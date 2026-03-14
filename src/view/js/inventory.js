@@ -12,6 +12,7 @@ const statusFilter = document.getElementById("statusFilter")
 const typeFilter = document.getElementById("typeFilter")
 const locationFilter = document.getElementById("locationFilter")
 const resultCount = document.getElementById("resultCount")
+const inventoryStatus = document.getElementById("inventoryStatus")
 const stockTableBody = document.getElementById("stockTableBody")
 const supplierCards = document.getElementById("supplierCards")
 const supplierListView = document.getElementById("supplierListView")
@@ -204,6 +205,9 @@ async function loadAssetsFromApi() {
         hydrateAssets([])
         return
     }
+    if (inventoryStatus) {
+        inventoryStatus.textContent = "Loading assets..."
+    }
     const cached = localStorage.getItem("assets")
     if (cached && assets.length === 0) {
         try {
@@ -217,11 +221,18 @@ async function loadAssetsFromApi() {
         const mapped = (data || []).map(normalizeApiAsset)
         hydrateAssets(mapped)
         localStorage.setItem("assets", JSON.stringify(mapped))
+        if (inventoryStatus) {
+            inventoryStatus.textContent = `Loaded ${mapped.length} assets.`
+        }
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
             assetFormStatus.textContent = "No se pudieron cargar activos del servidor."
             assetFormStatus.className = "me-auto small text-danger"
+        }
+        if (inventoryStatus) {
+            const status = error && error.status ? ` (${error.status})` : ""
+            inventoryStatus.textContent = `Failed to load assets${status}.`
         }
     }
 }
@@ -339,6 +350,10 @@ function renderStockTable(list) {
         return
     }
     const rows = []
+    if (!list.length) {
+        stockTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No assets available.</td></tr>'
+        return
+    }
 
     list.forEach(asset => {
         const isLow = asset.stock < asset.minStock
@@ -393,6 +408,13 @@ function renderSupplierCards(list) {
         return
     }
     const cards = []
+    if (!list.length) {
+        supplierCards.innerHTML = '<div class="text-muted">No suppliers available.</div>'
+        if (supplierListView) {
+            supplierListView.innerHTML = '<p class="text-muted mb-0">No suppliers available.</p>'
+        }
+        return
+    }
 
     const assetBestPrices = {}
     list.forEach(asset => {
