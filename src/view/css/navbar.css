@@ -1,51 +1,66 @@
 #app-navbar .navbar {
-  background: #1d4ed8;
-  border-bottom: 1px solid #1e40af;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
   padding: 12px 0;
   min-height: 72px;
 }
 
 #app-navbar .navbar .container {
   max-width: 1200px;
+  align-items: center;
 }
 
 #app-navbar .navbar-brand {
   gap: 12px;
+  min-width: 220px;
 }
 
 #app-navbar .navbar-brand strong {
   font-size: 18px;
   line-height: 1.1;
-  color: #ffffff;
+  color: #1d4ed8;
 }
 
 #app-navbar .navbar-brand small {
   font-size: 12px;
-  color: #e0e7ff;
+  color: #64748b;
 }
 
 #app-navbar .nav-link {
   font-size: 14px;
   padding: 0.5rem 0.75rem;
-  color: #e0e7ff;
+  color: #2563eb;
+}
+
+#app-navbar .navbar-collapse {
+  align-items: center;
+}
+
+#app-navbar .navbar-nav {
+  gap: 6px;
+}
+
+#app-navbar .navbar .ms-auto {
+  min-width: 220px;
+  justify-content: flex-end;
 }
 
 #app-navbar .nav-link.active,
 #app-navbar .nav-link.text-primary {
-  color: #ffffff !important;
+  color: #1e3a8a !important;
 }
 
 #app-navbar .navbar .btn {
   font-size: 13px;
   padding: 0.35rem 0.75rem;
   background: transparent;
-  border: 1px solid #bfdbfe;
-  color: #ffffff;
+  border: 1px solid #cbd5f5;
+  color: #1e3a8a;
 }
 
 #app-navbar .navbar .btn.btn-outline-secondary:hover {
-  background: #1e40af;
-  border-color: #1e40af;
+  background: #eef2ff;
+  border-color: #c7d2fe;
 }
 
 @media (max-width: 768px) {
