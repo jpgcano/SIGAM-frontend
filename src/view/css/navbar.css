@@ -1,18 +1,20 @@
 #app-navbar .navbar {
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
-  padding: 12px 0;
-  min-height: 72px;
+  padding: 8px 0;
+  min-height: 70px;
 }
 
 #app-navbar .navbar .container {
   max-width: 1200px;
   align-items: center;
+  min-height: 70px;
 }
 
 #app-navbar .navbar-brand {
   gap: 12px;
   min-width: 220px;
+  padding: 0;
 }
 
 #app-navbar .navbar-brand strong {
@@ -34,15 +36,22 @@
 
 #app-navbar .navbar-collapse {
   align-items: center;
+  min-height: 70px;
 }
 
 #app-navbar .navbar-nav {
   gap: 6px;
+  align-items: center;
 }
 
 #app-navbar .navbar .ms-auto {
   min-width: 220px;
   justify-content: flex-end;
+  align-items: center;
+}
+
+#app-navbar #navbar-user {
+  line-height: 1.1;
 }
 
 #app-navbar .nav-link.active,
