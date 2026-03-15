@@ -291,3 +291,17 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Calendar renderiza eventos desde API, permite drag-and-drop y CRUD básico.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Reports a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Reports a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Reports.page.js`: Vista SPA con métricas, gráficas y listados.
+  - `src/components/Navbar.js`: Agregado enlace a Reports.
+  - `src/main.js`: Ruta `/reports`.
+  - Eliminados: `src/legacy/pages/reports.html`, `src/legacy/js/pages/reports.page.js`, `src/legacy/js/reports.js`.
+- Evidencia:
+  - Reports renderiza métricas y charts con Chart.js cargado dinámicamente.
+- Commit(s):
+  - (Pendiente de aplicación)

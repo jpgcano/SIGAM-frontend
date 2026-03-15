@@ -60,6 +60,12 @@ const render = () => {
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/reports" data-route="/reports" data-role="reports">
+                <i class="bi bi-bar-chart"></i>
+                Reports
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link d-flex align-items-center gap-2" href="/admin" data-route="/admin" data-role="admin">
                 <i class="bi bi-gear"></i>
                 Admin
@@ -111,6 +117,7 @@ const init = () => {
   const inventoryLink = document.querySelector('[data-role="inventory"]');
   const ticketsLink = document.querySelector('[data-role="tickets"]');
   const calendarLink = document.querySelector('[data-role="calendar"]');
+  const reportsLink = document.querySelector('[data-role="reports"]');
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
@@ -142,6 +149,10 @@ const init = () => {
 
   if (calendarLink && !['gerente', 'tecnico'].includes(roleKey)) {
     calendarLink.classList.add('d-none');
+  }
+
+  if (reportsLink && !['gerente', 'analista', 'auditor'].includes(roleKey)) {
+    reportsLink.classList.add('d-none');
   }
 
   if (logoutBtn) {

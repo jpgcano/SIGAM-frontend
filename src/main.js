@@ -8,6 +8,7 @@ import { AdminPage } from './pages/Admin.page.js';
 import { InventoryPage } from './pages/Inventory.page.js';
 import { TicketsPage } from './pages/Tickets.page.js';
 import { CalendarPage } from './pages/Calendar.page.js';
+import { ReportsPage } from './pages/Reports.page.js';
 
 // Importar aquí estilos globales adicionales si fuera necesario
 // import '../css/main.css';
@@ -67,6 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Calendario (restringido por rol)
     router.addRoute('/calendar', CalendarPage);
+
+    // Reportes (restringido por rol)
+    router.addRoute('/reports', ReportsPage);
 
     // Panel de administración (restringido por rol)
     router.addRoute('/admin', {
