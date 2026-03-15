@@ -1,5 +1,6 @@
 import { router } from '../router.js';
 import { getUser, clearStorage } from '../state/storage.js';
+import { renderButton } from './Button.js';
 import '../css/navbar.css';
 
 const ROLE_LABELS = {
@@ -84,7 +85,13 @@ const render = () => {
               <div class="small text-muted" id="navbar-user-email"></div>
             </div>
             <span id="navbar-user-role" class="badge bg-primary d-none"></span>
-            <button id="navbar-logout" type="button" class="btn btn-sm btn-outline-secondary d-none">Logout</button>
+            ${renderButton({
+              id: 'navbar-logout',
+              label: 'Logout',
+              variant: 'outlineSecondary',
+              className: 'btn-sm d-none',
+              attrs: { type: 'button' }
+            })}
           </div>
         </div>
       </div>

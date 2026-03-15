@@ -1,5 +1,6 @@
 import { router } from '../router.js';
 import { api } from '../services/api-client.js';
+import { renderButton } from '../components/Button.js';
 
 // Importamos los estilos específicos de la página.
 // Vite se encargará de inyectarlos en el head.
@@ -19,7 +20,11 @@ const render = () => {
                     <input type="email" id="email" placeholder="Email" required>
                     <input type="password" id="password" placeholder="Password" required>
                     <div id="loginStatus" class="form-status" aria-live="polite"></div>
-                    <button id="loginBtn" type="submit">Enter</button>
+                    ${renderButton({
+                        id: "loginBtn",
+                        label: "Enter",
+                        type: "submit"
+                    })}
                 </form>
                 <p>Don't you have an account?
                 <a href="/register" id="navigateToRegister">Register</a>

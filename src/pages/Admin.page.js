@@ -1,6 +1,7 @@
 import { Navbar } from "../components/Navbar.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
+import { renderButton } from "../components/Button.js";
 import "../css/pages/admin.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Auditor", "Admin", "Administrador"];
@@ -77,16 +78,33 @@ const render = async () => {
         <!-- Menú de Configuración -->
         <ul class="nav nav-pills mb-4" id="admin-tabs">
           <li class="nav-item">
-            <button class="nav-link active" data-section="users">Users</button>
+            ${renderButton({
+              label: "Users",
+              variant: "nav",
+              className: "active",
+              attrs: { "data-section": "users" }
+            })}
           </li>
           <li class="nav-item">
-            <button class="nav-link" data-section="configuration">Configuration</button>
+            ${renderButton({
+              label: "Configuration",
+              variant: "nav",
+              attrs: { "data-section": "configuration" }
+            })}
           </li>
           <li class="nav-item">
-            <button class="nav-link" data-section="security">Security</button>
+            ${renderButton({
+              label: "Security",
+              variant: "nav",
+              attrs: { "data-section": "security" }
+            })}
           </li>
           <li class="nav-item">
-            <button class="nav-link" data-section="backup">Backup</button>
+            ${renderButton({
+              label: "Backup",
+              variant: "nav",
+              attrs: { "data-section": "backup" }
+            })}
           </li>
         </ul>
 
@@ -94,9 +112,11 @@ const render = async () => {
         <div id="section-users" class="card border-0 shadow-sm rounded-4 p-4 admin-section">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-semibold mb-0">User Management</h6>
-            <button class="btn btn-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#userModal">
-              + New User
-            </button>
+            ${renderButton({
+              label: "+ New User",
+              variant: "primaryPill",
+              attrs: { "data-bs-toggle": "modal", "data-bs-target": "#userModal" }
+            })}
           </div>
 
           <!-- Filtros -->
@@ -170,7 +190,11 @@ const render = async () => {
             </div>
           </div>
           <div class="mt-4">
-            <button id="configSave" class="btn btn-dark">Save Configuration</button>
+            ${renderButton({
+              id: "configSave",
+              label: "Save Configuration",
+              variant: "dark"
+            })}
             <span id="configStatus" class="ms-2 small text-muted"></span>
           </div>
         </div>
@@ -203,7 +227,11 @@ const render = async () => {
             </div>
           </div>
           <div class="mt-4">
-            <button id="securitySave" class="btn btn-dark">Save Security</button>
+            ${renderButton({
+              id: "securitySave",
+              label: "Save Security",
+              variant: "dark"
+            })}
             <span id="securityStatus" class="ms-2 small text-muted"></span>
           </div>
         </div>
@@ -226,8 +254,16 @@ const render = async () => {
             </div>
           </div>
           <div class="mt-4 d-flex flex-wrap gap-2">
-            <button id="backupRun" class="btn btn-dark">Run Backup</button>
-            <button id="backupRestore" class="btn btn-outline-secondary">Restore Last Backup</button>
+            ${renderButton({
+              id: "backupRun",
+              label: "Run Backup",
+              variant: "dark"
+            })}
+            ${renderButton({
+              id: "backupRestore",
+              label: "Restore Last Backup",
+              variant: "outlineSecondary"
+            })}
             <span id="backupStatus" class="ms-2 small text-muted"></span>
           </div>
         </div>
@@ -255,8 +291,16 @@ const render = async () => {
               <input type="hidden" id="editIndex">
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button class="btn btn-dark" id="saveUserBtn">Save</button>
+              ${renderButton({
+                label: "Cancel",
+                variant: "secondary",
+                attrs: { "data-bs-dismiss": "modal" }
+              })}
+      ${renderButton({
+        id: "saveUserBtn",
+        label: "Save",
+        variant: "dark"
+      })}
             </div>
           </div>
         </div>
@@ -423,12 +467,18 @@ const init = async () => {
           <td>${badgeStatus(user.status)}</td>
           <td>${timeAgo(user.lastAccess)}</td>
           <td>
-            <button class="btn btn-sm btn-light" data-admin-action="edit" data-index="${index}">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-sm btn-light text-danger" data-admin-action="delete" data-index="${index}">
-              <i class="bi bi-trash"></i>
-            </button>
+            ${renderButton({
+              content: '<i class="bi bi-pencil"></i>',
+              variant: "light",
+              className: "btn-sm",
+              attrs: { "data-admin-action": "edit", "data-index": index }
+            })}
+            ${renderButton({
+              content: '<i class="bi bi-trash"></i>',
+              variant: "light",
+              className: "btn-sm text-danger",
+              attrs: { "data-admin-action": "delete", "data-index": index }
+            })}
           </td>
         </tr>
       `;

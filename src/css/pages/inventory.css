@@ -35,6 +35,10 @@ font-size:14px;
 }
 
 body.page-inventory .btn {
+font-weight:600;
+}
+
+body.page-inventory .btn.btn-dark {
 background:#111827;
 color:white;
 border:none;
@@ -74,6 +78,11 @@ grid-template-columns:repeat(3,1fr);
 gap:20px;
 }
 
+body.page-inventory #assetGrid {
+row-gap:24px;
+column-gap:24px;
+}
+
 /* CARD */
 
 body.page-inventory .card {
@@ -81,6 +90,19 @@ background:white;
 border:1px solid #e5e7eb;
 border-radius:12px;
 padding:20px;
+}
+
+body.page-inventory .asset-card {
+border-left:4px solid transparent;
+box-shadow:0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+body.page-inventory .asset-card.status-ok {
+border-left-color:#16a34a;
+}
+
+body.page-inventory .asset-card.status-warning {
+border-left-color:#f59e0b;
 }
 
 body.page-inventory .inventory-scroll {
@@ -120,10 +142,66 @@ table-layout:fixed;
 
 /* Force internal scroll for suppliers grid */
 body.page-inventory #supplierCards {
-max-height:420px;
-overflow-y:auto;
-display:block;
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+gap:16px;
 padding-right:8px;
+}
+
+body.page-inventory .asset-row {
+border-left:4px solid transparent;
+}
+
+body.page-inventory .asset-row.status-ok {
+border-left-color:#16a34a;
+}
+
+body.page-inventory .asset-row.status-warning {
+border-left-color:#f59e0b;
+}
+
+body.page-inventory .asset-row:hover {
+background:#f9fafb;
+}
+
+body.page-inventory #assetListView table {
+border-collapse:separate;
+border-spacing:0 8px;
+}
+
+body.page-inventory #assetListView tbody tr {
+background:#ffffff;
+box-shadow:0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+body.page-inventory #assetListView tbody tr td {
+padding:12px 10px;
+}
+
+body.page-inventory .supplier-table {
+border-collapse:separate;
+border-spacing:0 8px;
+}
+
+body.page-inventory .supplier-table tbody tr {
+background:#ffffff;
+box-shadow:0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+body.page-inventory .supplier-table tbody td {
+padding:12px 10px;
+font-size:13px;
+}
+
+body.page-inventory #assetGrid {
+margin-top:8px;
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+gap:24px;
+}
+
+body.page-inventory #assetListView {
+margin-top:8px;
 }
 
 body.page-inventory .card h3 {

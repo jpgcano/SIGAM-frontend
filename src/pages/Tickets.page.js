@@ -1,4 +1,6 @@
 import { Navbar } from "../components/Navbar.js";
+import { renderTicketCardBody } from "../components/TicketCard.js";
+import { renderButton } from "../components/Button.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
 import { getUser } from "../state/storage.js";
@@ -36,10 +38,14 @@ const render = async () => {
           <h1>Support tickets</h1>
           <p class="subtitle">Management of incidents and technical requests</p>
         </div>
-        <button id="newTicketBtn" class="btn-nuevo">+ New Ticket</button>
+        ${renderButton({
+          id: "newTicketBtn",
+          label: "+ New Ticket",
+          variant: "primary"
+        })}
       </div>
 
-      <div class="filters">
+      <div class="filters sigam-section">
         <input id="searchInput" type="text" placeholder="Search tickets..." class="search">
         <select id="statusFilter">
           <option value="all">All the states</option>
@@ -54,9 +60,35 @@ const render = async () => {
 
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <p id="contadorTickets" class="contador mb-0"></p>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Ticket view toggle">
+          ${renderButton({
+            id: "ticketViewGrid",
+            label: "Grid",
+            variant: "outlineDark",
+            className: "btn-sm active",
+            attrs: { type: "button" }
+          })}
+          ${renderButton({
+            id: "ticketViewList",
+            label: "List",
+            variant: "outlineDark",
+            className: "btn-sm",
+            attrs: { type: "button" }
+          })}
+        </div>
         <div class="ticket-pagination">
-          <button id="ticketPrevBtn" type="button" class="btn-nuevo btn-small">Prev</button>
-          <button id="ticketNextBtn" type="button" class="btn-nuevo btn-small">Next</button>
+          ${renderButton({
+            id: "ticketPrevBtn",
+            label: "Prev",
+            variant: "primarySmall",
+            attrs: { type: "button" }
+          })}
+          ${renderButton({
+            id: "ticketNextBtn",
+            label: "Next",
+            variant: "primarySmall",
+            attrs: { type: "button" }
+          })}
           <span id="ticketPageInfo" class="ticket-page-info"></span>
         </div>
       </div>
@@ -93,17 +125,48 @@ const render = async () => {
             </select>
             <div class="field-error" id="statusError"></div>
             <div class="ticket-status" id="ticketStatus" aria-live="polite"></div>
-            <button id="addTicket" type="submit">Add Ticket</button>
+            ${renderButton({
+              id: "addTicket",
+              label: "Add Ticket",
+              type: "submit",
+              variant: "primary"
+            })}
           </form>
         </div>
       </div>
 
-      <div id="ticketList"></div>
+      <div id="ticketGrid"></div>
+      <div class="sigam-section d-none" id="ticketListView">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Title</th>
+                <th>Device</th>
+                <th>Category</th>
+                <th>Assigned</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="ticketListBody"></tbody>
+          </table>
+        </div>
+      </div>
 
-      <div class="pagination" id="ticketPagination">
-        <button id="prevPage" class="btn-page">Prev</button>
+      <div class="pagination sigam-section" id="ticketPagination">
+        ${renderButton({
+          id: "prevPage",
+          label: "Prev",
+          variant: "page"
+        })}
         <span id="pageInfo" class="page-info">Page 1</span>
-        <button id="nextPage" class="btn-page">Next</button>
+        ${renderButton({
+          id: "nextPage",
+          label: "Next",
+          variant: "page"
+        })}
         <select id="pageSize" class="page-size">
           <option value="10">10</option>
           <option value="20" selected>20</option>
@@ -132,7 +195,8 @@ const initTickets = () => {
     hasMore: false,
     pageSize: 20,
     TICKETS_PAGE_SIZE: 50,
-    ticketOffset: 0
+    ticketOffset: 0,
+    viewMode: "grid"
   };
 
   const modal = document.querySelector("#ticketModal");
@@ -141,11 +205,15 @@ const initTickets = () => {
 
   const ticketForm = document.querySelector("#ticketForm");
   const addTicketBtn = document.querySelector("#addTicket");
-  const ticketList = document.querySelector("#ticketList");
+  const ticketGrid = document.querySelector("#ticketGrid");
+  const ticketListView = document.querySelector("#ticketListView");
+  const ticketListBody = document.querySelector("#ticketListBody");
   const ticketListStatus = document.querySelector("#ticketListStatus");
   const ticketPrevBtn = document.querySelector("#ticketPrevBtn");
   const ticketNextBtn = document.querySelector("#ticketNextBtn");
   const ticketPageInfo = document.querySelector("#ticketPageInfo");
+  const ticketViewGridBtn = document.querySelector("#ticketViewGrid");
+  const ticketViewListBtn = document.querySelector("#ticketViewList");
 
   const searchInput = document.querySelector("#searchInput");
   const ticketStatusEl = document.querySelector("#ticketStatus");
@@ -172,6 +240,7 @@ const initTickets = () => {
   if (pageSizeSelect) {
     ticketsState.pageSize = Number(pageSizeSelect.value) || ticketsState.pageSize;
   }
+
 
   const setStatus = (element, message, type) => {
     if (!element) return;
@@ -516,11 +585,20 @@ const initTickets = () => {
     if (pageInfo) {
       pageInfo.textContent = `Page ${ticketsState.currentPage}`;
     }
+    if (ticketPageInfo) {
+      ticketPageInfo.textContent = `Page ${ticketsState.currentPage}`;
+    }
     if (prevPageBtn) {
       prevPageBtn.disabled = ticketsState.currentPage <= 1;
     }
     if (nextPageBtn) {
       nextPageBtn.disabled = !ticketsState.hasMore;
+    }
+    if (ticketPrevBtn) {
+      ticketPrevBtn.disabled = ticketsState.currentPage <= 1;
+    }
+    if (ticketNextBtn) {
+      ticketNextBtn.disabled = !ticketsState.hasMore;
     }
   };
 
@@ -561,58 +639,88 @@ const initTickets = () => {
     }
   };
 
-  const renderTickets = (list) => {
-    if (!ticketList) return;
-    ticketList.innerHTML = "";
+  const setTicketView = (mode) => {
+    const isList = mode === "list";
+    if (ticketGrid) ticketGrid.classList.toggle("d-none", isList);
+    if (ticketListView) ticketListView.classList.toggle("d-none", !isList);
+    if (ticketViewGridBtn) ticketViewGridBtn.classList.toggle("active", !isList);
+    if (ticketViewListBtn) ticketViewListBtn.classList.toggle("active", isList);
+    ticketsState.viewMode = isList ? "list" : "grid";
+  };
+
+  const renderTicketGrid = (list) => {
+    if (!ticketGrid) return;
+    ticketGrid.innerHTML = "";
 
     if (list.length === 0) {
-      ticketList.innerHTML = "<p>No matching tickets found.</p>";
+      ticketGrid.innerHTML = "<p>No matching tickets found.</p>";
       renderCategoriasFromTickets();
       return;
     }
 
     list.forEach((ticket, index) => {
       const div = document.createElement("div");
-      div.classList.add("ticket");
-      const categoryLabel = ticket.category || ticket.classification || "Sin categoria";
-      const classificationLabel = ticket.classification || "Sin clasificacion IA";
-      div.innerHTML = `
-        <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
-
-        <div class="ticket-title">
-            ${ticket.title || "Ticket"}
-        </div>
-
-        <div class="ticket-desc">
-            ${ticket.description}
-        </div>
-
-        <div class="ticket-info ticket-line">
-            <span>TK-${ticket.id || index + 1}</span>
-            <span>${ticket.device || "Activo"}</span>
-            <span>${categoryLabel}</span>
-        </div>
-
-        <div class="ticket-info ticket-meta">
-            <span>Creado por: ${ticket.createdBy || "Sin usuario"}</span>
-            <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
-            <span>${ticket.date}</span>
-            <span>${ticket.estimate || "Sin estimado"}</span>
-        </div>
-        <div class="ticket-info ticket-meta">
-            <span>Clasificacion IA: ${classificationLabel}</span>
-        </div>
-      `;
+      div.classList.add("ticket", "ticket-card");
+      const statusClass = mapStatusClass(ticket.status);
+      if (statusClass) {
+        div.classList.add(statusClass);
+      }
+      div.innerHTML = renderTicketCardBody({
+        ticket,
+        index,
+        statusClass: mapStatusClass
+      });
       div.addEventListener("click", (event) => {
         if (event.target.closest(".delete-btn")) return;
         if (ticket.id) {
           router.navigateTo(`/ticket-detail?id=${encodeURIComponent(ticket.id)}`);
         }
       });
-      ticketList.appendChild(div);
+      ticketGrid.appendChild(div);
     });
-
   };
+
+  const renderTicketList = (list) => {
+    if (!ticketListBody) return;
+    if (list.length === 0) {
+      ticketListBody.innerHTML = '<tr><td colspan="7" class="text-muted">No matching tickets found.</td></tr>';
+      return;
+    }
+
+    ticketListBody.innerHTML = list.map((ticket) => {
+      const categoryLabel = ticket.category || ticket.classification || "Sin categoria";
+      const assignedLabel = ticket.assignedTo || "Sin asignar";
+      const statusLabel = ticket.status || "Pending";
+      const statusClass = mapStatusClass(ticket.status);
+      return `
+        <tr data-ticket-id="${ticket.id || ""}" class="ticket-row ${statusClass}">
+          <td>TK-${ticket.id || ""}</td>
+          <td><span class="ticket-status ${mapStatusClass(ticket.status)}">${statusLabel}</span></td>
+          <td>${ticket.title || "Ticket"}</td>
+          <td>${ticket.device || "Activo"}</td>
+          <td>${categoryLabel}</td>
+          <td>${assignedLabel}</td>
+          <td>${ticket.date || ""}</td>
+        </tr>
+      `;
+    }).join("");
+
+    ticketListBody.querySelectorAll("tr[data-ticket-id]").forEach((row) => {
+      row.addEventListener("click", () => {
+        const id = row.getAttribute("data-ticket-id");
+        if (id) {
+          router.navigateTo(`/ticket-detail?id=${encodeURIComponent(id)}`);
+        }
+      });
+    });
+  };
+
+  const renderTickets = (list) => {
+    renderTicketGrid(list);
+    renderTicketList(list);
+  };
+
+  setTicketView("grid");
 
   const applyFilters = () => {
     const search = normalizeToken(searchInput ? searchInput.value : "");
@@ -643,6 +751,13 @@ const initTickets = () => {
       ticketsCount.textContent = `${filtered.length} tickets`;
     }
   };
+
+  if (ticketViewGridBtn) {
+    ticketViewGridBtn.addEventListener("click", () => setTicketView("grid"));
+  }
+  if (ticketViewListBtn) {
+    ticketViewListBtn.addEventListener("click", () => setTicketView("list"));
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -764,21 +879,20 @@ const initTickets = () => {
 
   if (ticketPrevBtn) {
     ticketPrevBtn.addEventListener("click", () => {
-      if (ticketsState.ticketOffset <= 0) return;
-      ticketsState.ticketOffset = Math.max(0, ticketsState.ticketOffset - ticketsState.TICKETS_PAGE_SIZE);
-      loadTickets();
+      if (ticketsState.currentPage <= 1) return;
+      loadTickets(ticketsState.currentPage - 1);
     });
   }
 
   if (ticketNextBtn) {
     ticketNextBtn.addEventListener("click", () => {
-      ticketsState.ticketOffset += ticketsState.TICKETS_PAGE_SIZE;
-      loadTickets();
+      if (!ticketsState.hasMore) return;
+      loadTickets(ticketsState.currentPage + 1);
     });
   }
 
   setCreatedByFromSession();
-  Promise.all([loadActivos(), loadCategorias()]).then(() => {
+  Promise.allSettled([loadActivos(), loadCategorias()]).finally(() => {
     loadTickets(1);
   });
 };

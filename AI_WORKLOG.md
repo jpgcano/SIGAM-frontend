@@ -577,3 +577,87 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-card-style-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Componentizacion de tarjetas (Tickets + Inventario)
+- Rama: feature/components-cards
+- Objetivo: Reutilizar tarjetas y eliminar HTML duplicado.
+- Cambios:
+  - `src/components/TicketCard.js`: nuevo componente para render de tarjetas de tickets.
+  - `src/components/AssetCard.js`: nuevo componente para render de tarjetas de activos.
+  - `src/pages/Tickets.page.js`: consume componente de ticket card.
+  - `src/pages/Inventory.page.js`: consume componente de asset card.
+  - `test/components-cards-2026-03-15.md`: evidencia de prueba.
+- Evidencia: `test/components-cards-2026-03-15.md`.
+- Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Componentizacion de botones (navbar y paginas)
+- Rama: feature/components-cards
+- Objetivo: Unificar estilo y centralizar render de botones.
+- Cambios:
+  - `src/components/Button.js`: componente base de botones con variantes.
+  - `src/css/components/buttons.css`: estilos comunes de botones.
+  - `src/components/Navbar.js`: usa componente de botones para logout.
+  - `src/pages/Tickets.page.js`: botones principales con componente.
+  - `src/pages/TicketDetail.page.js`: botones principales con componente.
+  - `src/pages/Inventory.page.js`: acciones y modales con componente.
+  - `src/pages/Calendar.page.js`: acciones y modales con componente.
+  - `src/pages/Admin.page.js`: tabs y acciones con componente.
+  - `src/pages/Profile.page.js`: acciones con componente.
+  - `src/pages/Login.page.js` y `src/pages/Register.page.js`: botones de submit con componente.
+  - `test/components-buttons-2026-03-15.md`: evidencia de prueba.
+- Evidencia: `test/components-buttons-2026-03-15.md`.
+- Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Estandarizacion de secciones y vista lista para tickets
+- Rama: feature/components-cards
+- Objetivo: Unificar secciones visuales, evitar duplicidad en inventario y agregar grid/list en tickets.
+- Cambios:
+  - `src/css/components/sections.css`: estilos base para secciones.
+  - `src/main.js`: importa estilos de secciones.
+  - `src/pages/Tickets.page.js`: toggle grid/list, tabla de lista y estilos de seccion.
+  - `src/css/pages/tickets.css`: estilos de tabla y toggle.
+  - `src/pages/Inventory.page.js`: secciones con estilo comun y Stock Alerts solo bajo minimo.
+  - `test/tickets-view-toggle-2026-03-15.md`: evidencia de prueba.
+- Evidencia: `test/tickets-view-toggle-2026-03-15.md`.
+- Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Inventario - ajustes de vista y paginacion
+- Rama: feature/components-cards
+- Objetivo: Reubicar toggles de vista, corregir paginacion en lista y eliminar sensacion de duplicado.
+- Cambios:
+  - `src/pages/Inventory.page.js`: reubica toggles, aplica paginacion cliente cuando aplica.
+  - `test/inventory-view-pagination-2026-03-15.md`: evidencia de prueba.
+- Evidencia: `test/inventory-view-pagination-2026-03-15.md`.
+- Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Inventario estilos, bordes por estado y tipo de activo
+- Rama: feature/components-cards
+- Objetivo: Separar tarjetas/lista, usar colores por estado y corregir tipo.
+- Cambios:
+  - `src/css/pages/inventory.css`: bordes por estado, sombras y separacion.
+  - `src/components/AssetCard.js`: clase de estado para tarjetas.
+  - `src/pages/Inventory.page.js`: clases por estado en filas y mapeo de type.
+  - `src/css/pages/tickets.css`: bordes por estado en tarjetas/tabla.
+  - `src/pages/Tickets.page.js`: clases por estado en tarjetas/tabla.
+  - `test/inventory-style-status-2026-03-15.md`: evidencia.
+- Evidencia: `test/inventory-style-status-2026-03-15.md`.
+- Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Ajustes visuales tickets/inventario
+- Rama: feature/components-cards
+- Objetivo: Recuperar estilos de botones, colores de estado y layout de proveedores.
+- Cambios:
+  - `src/css/components/buttons.css`: estilos base para botones (btn-nuevo, btn-page, outline).
+  - `src/css/pages/tickets.css`: bordes por estado en tarjetas y filas.
+  - `src/pages/Tickets.page.js`: clases de estado para tarjetas y filas.
+  - `src/css/pages/inventory.css`: grid de tarjetas, tabla de proveedores, layout mas aireado.
+  - `src/pages/Inventory.page.js`: lista de proveedores en tabla.
+  - `test/tickets-inventory-style-fix-2026-03-15.md`: evidencia.
+- Evidencia: `test/tickets-inventory-style-fix-2026-03-15.md`.
+- Commit: pendiente.

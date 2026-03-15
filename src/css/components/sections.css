@@ -1,0 +1,19 @@
+.sigam-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  padding: 16px;
+}
+
+.sigam-section + .sigam-section {
+  margin-top: 16px;
+}
+
+.sigam-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}

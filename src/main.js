@@ -1,5 +1,7 @@
 import './services/env.js';
 import './css/global.css';
+import './css/components/buttons.css';
+import './css/components/sections.css';
 import { router } from './router.js';
 import { LoginPage } from './pages/Login.page.js';
 import { RegisterPage } from './pages/Register.page.js';

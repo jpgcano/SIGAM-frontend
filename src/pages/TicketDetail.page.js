@@ -4,6 +4,7 @@ import SIGAM_CONFIG from "../services/config.js";
 import { router } from "../router.js";
 import { getUser } from "../state/storage.js";
 import { normalizeCollection } from "../utils/normalize.js";
+import { renderButton } from "../components/Button.js";
 import "../css/pages/tickets.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Analista", "Tecnico", "Usuario"];
@@ -21,7 +22,11 @@ const render = async () => {
           <h1>Ticket</h1>
           <p class="subtitle">Detalle del ticket y sugerencias</p>
         </div>
-        <button class="btn-nuevo" id="backBtn">Volver</button>
+        ${renderButton({
+          id: "backBtn",
+          label: "Volver",
+          variant: "primary"
+        })}
       </div>
 
       <div class="ticket-detail">
@@ -60,13 +65,21 @@ const render = async () => {
               <option value="Resuelto">Resuelto</option>
               <option value="Cerrado">Cerrado</option>
             </select>
-            <button class="btn-nuevo" id="updateStatusBtn">Actualizar estado</button>
+            ${renderButton({
+              id: "updateStatusBtn",
+              label: "Actualizar estado",
+              variant: "primary"
+            })}
           </div>
           <div class="detail-actions" id="assignActions">
             <select id="assignSelect">
               <option value="">Selecciona tecnico</option>
             </select>
-            <button class="btn-nuevo" id="assignBtn">Reasignar</button>
+            ${renderButton({
+              id: "assignBtn",
+              label: "Reasignar",
+              variant: "primary"
+            })}
           </div>
           <p id="detailActionStatus" class="muted"></p>
         </div>
@@ -132,6 +145,12 @@ const renderSolutions = (list) => {
     }
     const hasIaShape = item.solucion || item.pasos || item.advertencias || item.confianza !== undefined;
     if (hasIaShape) {
+      const originToken = String(item.origen || "").toLowerCase();
+      const originLabel =
+        originToken === "ia" ? "IA" :
+        originToken === "fallback" ? "Fallback" :
+        originToken === "historico" ? "Historico" :
+        "";
       const titulo = item.titulo || "Sugerencia IA";
       const solucion = item.solucion || "Sin solucion disponible.";
       const pasos = Array.isArray(item.pasos) && item.pasos.length
@@ -154,6 +173,7 @@ const renderSolutions = (list) => {
       return `
         <div class="solution-card">
           <p><strong>${titulo}</strong></p>
+          ${originLabel ? `<p class="muted">Origen: ${originLabel}</p>` : ""}
           <p>${solucion}</p>
           ${pasos}
           ${causasHtml}

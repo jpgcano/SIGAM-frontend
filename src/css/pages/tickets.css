@@ -110,17 +110,73 @@ body.page-tickets .ticket-pagination {
     gap: 8px;
 }
 
+body.page-tickets .btn-group .sigam-btn.btn-outline-dark {
+    border-color: var(--line);
+    color: var(--primary);
+    background: #ffffff;
+}
+
+body.page-tickets .btn-group .sigam-btn.btn-outline-dark.active,
+body.page-tickets .btn-group .sigam-btn.btn-outline-dark:focus {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
 body.page-tickets .ticket-page-info {
     font-size: 12px;
     color: var(--muted);
 }
 
-body.page-tickets #ticketList {
+body.page-tickets #ticketGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 16px;
     width: 100%;
     margin: 0 auto 32px;
+}
+
+body.page-tickets #ticketListView {
+    margin: 0 auto 32px;
+}
+
+body.page-tickets #ticketListView table {
+    width: 100%;
+}
+
+body.page-tickets #ticketListView thead {
+    background: #f8fafc;
+}
+
+body.page-tickets #ticketListView th,
+body.page-tickets #ticketListView td {
+    font-size: 13px;
+    color: var(--ink);
+}
+
+body.page-tickets #ticketListView tbody tr {
+    cursor: pointer;
+}
+
+body.page-tickets #ticketListView tbody tr:hover {
+    background: #f8fafc;
+}
+
+body.page-tickets .ticket-row {
+    border-left: 4px solid transparent;
+}
+
+body.page-tickets .ticket-row.status-abierto {
+    border-left-color: #1d4ed8;
+}
+
+body.page-tickets .ticket-row.status-en-proceso {
+    border-left-color: #f59e0b;
+}
+
+body.page-tickets .ticket-row.status-cerrado,
+body.page-tickets .ticket-row.status-resuelto {
+    border-left-color: #16a34a;
 }
 
 body.page-tickets .ticket {
@@ -131,6 +187,24 @@ body.page-tickets .ticket {
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
     display: grid;
     gap: 10px;
+}
+
+body.page-tickets .ticket-card {
+    position: relative;
+    border-left: 4px solid transparent;
+}
+
+body.page-tickets .ticket-card.status-abierto {
+    border-left-color: #1d4ed8;
+}
+
+body.page-tickets .ticket-card.status-en-proceso {
+    border-left-color: #f59e0b;
+}
+
+body.page-tickets .ticket-card.status-cerrado,
+body.page-tickets .ticket-card.status-resuelto {
+    border-left-color: #16a34a;
 }
 
 body.page-tickets .ticket-title {

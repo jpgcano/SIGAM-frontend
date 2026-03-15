@@ -2,6 +2,7 @@ import { Navbar } from "../components/Navbar.js";
 import { api } from "../services/api-client.js";
 import { getUser, clearStorage } from "../state/storage.js";
 import { router } from "../router.js";
+import { renderButton } from "../components/Button.js";
 import "../css/pages/profile.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Analista", "Tecnico", "Usuario", "Auditor"];
@@ -60,7 +61,12 @@ const render = async () => {
                   <div class="invalid-feedback">Please confirm the password.</div>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                  <button id="passwordSubmit" type="submit" class="btn btn-dark">Update Password</button>
+                  ${renderButton({
+                    id: "passwordSubmit",
+                    label: "Update Password",
+                    type: "submit",
+                    variant: "dark"
+                  })}
                   <span id="passwordStatus" class="small text-muted"></span>
                 </div>
               </form>
@@ -71,7 +77,11 @@ const render = async () => {
             <div class="card-body">
               <h5 class="fw-semibold mb-3">Session</h5>
               <p class="text-muted">If you suspect any unusual activity, sign out and log in again.</p>
-              <button id="logoutBtn" class="btn btn-outline-secondary">Sign out</button>
+              ${renderButton({
+                id: "logoutBtn",
+                label: "Sign out",
+                variant: "outlineSecondary"
+              })}
             </div>
           </div>
         </div>

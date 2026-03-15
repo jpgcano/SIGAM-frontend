@@ -1,6 +1,7 @@
 import { router } from "../router.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
+import { renderButton } from "../components/Button.js";
 import "../css/pages/register.css";
 
 /**
@@ -26,7 +27,11 @@ const render = () => {
             <option value="Auditor">Auditor</option>
           </select>
           <div id="registerStatus" class="form-status" aria-live="polite"></div>
-          <button id="registerBtn" type="submit">Create Account</button>
+          ${renderButton({
+            id: "registerBtn",
+            label: "Create Account",
+            type: "submit"
+          })}
         </form>
 
         <p>Do you already have an account?

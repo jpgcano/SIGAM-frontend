@@ -1,4 +1,6 @@
 import { Navbar } from "../components/Navbar.js";
+import { renderAssetCard } from "../components/AssetCard.js";
+import { renderButton } from "../components/Button.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
 import { router } from "../router.js";
@@ -23,21 +25,11 @@ const render = async () => {
         </div>
 
         <div class="d-flex gap-2 align-items-center">
-          <div class="btn-group" role="group" aria-label="Asset view toggle">
-            <button id="assetViewGrid" type="button" class="btn btn-outline-dark active">
-              Grid
-            </button>
-            <button id="assetViewList" type="button" class="btn btn-outline-dark">
-              List
-            </button>
-          </div>
-          <button
-            class="btn btn-dark"
-            data-bs-toggle="modal"
-            data-bs-target="#assetModal"
-          >
-            + New Asset
-          </button>
+          ${renderButton({
+            label: "+ New Asset",
+            variant: "dark",
+            attrs: { "data-bs-toggle": "modal", "data-bs-target": "#assetModal" }
+          })}
         </div>
       </div>
 
@@ -125,21 +117,26 @@ const render = async () => {
               </div>
 
               <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
+                ${renderButton({
+                  label: "Cancel",
+                  variant: "secondary",
+                  attrs: { "data-bs-dismiss": "modal" }
+                })}
 
                 <div class="me-auto small" id="assetFormStatus" aria-live="polite"></div>
-                <button type="submit" class="btn btn-dark" id="assetSubmitBtn">
-                  Save Asset
-                </button>
+                ${renderButton({
+                  id: "assetSubmitBtn",
+                  label: "Save Asset",
+                  type: "submit",
+                  variant: "dark"
+                })}
               </div>
             </form>
           </div>
         </div>
       </div>
 
-      <div class="card p-3 mb-4 inventory-scroll">
+      <div class="card p-3 mb-4 inventory-scroll sigam-section">
         <div class="row g-3">
           <div class="col-md-6">
             <input
@@ -180,19 +177,10 @@ const render = async () => {
         </div>
       </div>
 
-      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
-        <p id="resultCount" class="text-muted mb-0"></p>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Assets pagination">
-          <button id="assetsPrevBtn" type="button" class="btn btn-outline-dark">Prev</button>
-          <button id="assetsNextBtn" type="button" class="btn btn-outline-dark">Next</button>
-        </div>
-        <div id="assetsPageInfo" class="text-muted small"></div>
-      </div>
-
-      <div class="card p-3 mb-4" id="stockTableCard">
+      <div class="card p-3 mb-4 sigam-section" id="stockTableCard">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">Stock Table</h5>
-          <small class="text-muted">Alert when stock is below minimum</small>
+          <h5 class="mb-0">Stock Alerts</h5>
+          <small class="text-muted">Only assets below minimum</small>
         </div>
 
         <div class="table-responsive inventory-scroll-body" style="max-height:420px; overflow-y:auto;">
@@ -212,14 +200,26 @@ const render = async () => {
         </div>
       </div>
 
-      <div class="card p-3 mb-4 inventory-scroll">
+      <div class="card p-3 mb-4 inventory-scroll sigam-section">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">Suppliers Comparison</h5>
           <div class="d-flex align-items-center gap-2">
             <small class="text-muted">Cards by supplier</small>
             <div class="btn-group btn-group-sm" role="group" aria-label="Supplier view toggle">
-              <button id="supplierViewGrid" type="button" class="btn btn-outline-dark active">Cards</button>
-              <button id="supplierViewList" type="button" class="btn btn-outline-dark">List</button>
+              ${renderButton({
+                id: "supplierViewGrid",
+                label: "Cards",
+                variant: "outlineDark",
+                className: "btn-sm active",
+                attrs: { type: "button" }
+              })}
+              ${renderButton({
+                id: "supplierViewList",
+                label: "List",
+                variant: "outlineDark",
+                className: "btn-sm",
+                attrs: { type: "button" }
+              })}
             </div>
           </div>
         </div>
@@ -230,8 +230,45 @@ const render = async () => {
         </div>
       </div>
 
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
+        <p id="resultCount" class="text-muted mb-0"></p>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Asset view toggle">
+          ${renderButton({
+            id: "assetViewGrid",
+            label: "Grid",
+            variant: "outlineDark",
+            className: "btn-sm active",
+            attrs: { type: "button" }
+          })}
+          ${renderButton({
+            id: "assetViewList",
+            label: "List",
+            variant: "outlineDark",
+            className: "btn-sm",
+            attrs: { type: "button" }
+          })}
+        </div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Assets pagination">
+          ${renderButton({
+            id: "assetsPrevBtn",
+            label: "Prev",
+            variant: "outlineDark",
+            className: "btn-sm",
+            attrs: { type: "button" }
+          })}
+          ${renderButton({
+            id: "assetsNextBtn",
+            label: "Next",
+            variant: "outlineDark",
+            className: "btn-sm",
+            attrs: { type: "button" }
+          })}
+        </div>
+        <div id="assetsPageInfo" class="text-muted small"></div>
+      </div>
+
       <div class="row g-4" id="assetGrid"></div>
-      <div class="card p-3 mb-4 d-none" id="assetListView">
+      <div class="card p-3 mb-4 d-none sigam-section" id="assetListView">
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">
             <thead>
@@ -335,8 +372,16 @@ const render = async () => {
             </div>
 
             <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-dark">Save Changes</button>
+              ${renderButton({
+                label: "Cancel",
+                variant: "secondary",
+                attrs: { "data-bs-dismiss": "modal" }
+              })}
+              ${renderButton({
+                label: "Save Changes",
+                type: "submit",
+                variant: "dark"
+              })}
             </div>
           </form>
         </div>
@@ -372,8 +417,16 @@ const render = async () => {
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-dark">Save Changes</button>
+              ${renderButton({
+                label: "Cancel",
+                variant: "secondary",
+                attrs: { "data-bs-dismiss": "modal" }
+              })}
+              ${renderButton({
+                label: "Save Changes",
+                type: "submit",
+                variant: "dark"
+              })}
             </div>
           </form>
         </div>
@@ -412,6 +465,9 @@ const ensureBootstrapJs = () => {
 const initInventory = () => {
   const apiBaseUrl = SIGAM_CONFIG.API_BASE_URL;
   let assets = [];
+  let assetsAll = [];
+  let assetsFiltered = [];
+  let paginationMode = "server";
 
   const grid = document.getElementById("assetGrid");
   const searchInput = document.getElementById("searchInput");
@@ -497,8 +553,8 @@ const initInventory = () => {
     });
   };
 
-  const guessType = (modelo) => {
-    const value = String(modelo || "").toLowerCase();
+  const normalizeType = (raw) => {
+    const value = String(raw || "").toLowerCase();
     if (value.includes("laptop") || value.includes("notebook")) {
       return "laptop";
     }
@@ -520,7 +576,7 @@ const initInventory = () => {
     if (value.includes("router")) {
       return "router";
     }
-    return "desktop";
+    return "";
   };
 
   const mapStatus = (estado) => {
@@ -536,6 +592,16 @@ const initInventory = () => {
     const locationParts = [raw.sede, raw.piso, raw.sala].filter(Boolean);
     const location = locationParts.join(" - ") || raw.ubicacion || "";
     const supplierName = raw.proveedor || raw.proveedor_nombre || "";
+    const typeRaw =
+      raw.tipo_activo ||
+      raw.tipo_equipo ||
+      raw.tipo ||
+      raw.categoria ||
+      raw.categoria_nombre ||
+      raw.modelo ||
+      raw.nombre ||
+      "";
+    const normalizedType = normalizeType(typeRaw) || "desktop";
     return {
       name: raw.modelo || raw.nombre || `Asset ${id}`,
       id: id ? String(id) : "",
@@ -546,7 +612,7 @@ const initInventory = () => {
       assigned: raw.asignado_a || raw.usuario || "",
       location,
       status: mapStatus(raw.estado_vida_util || raw.estado || ""),
-      type: guessType(raw.modelo || raw.nombre || ""),
+      type: normalizedType,
       warranty: raw.vida_util ? `${raw.vida_util} months` : raw.estado_vida_util || "",
       stock: Number.parseInt(raw.stock || "0", 10) || 0,
       minStock: Number.parseInt(raw.stock_minimo || "0", 10) || 0,
@@ -556,12 +622,31 @@ const initInventory = () => {
     };
   };
 
-  const hydrateAssets = (list) => {
-    assets = normalizeAssets(list);
-    renderAssets(assets);
-    renderStockTable(assets);
-    buildLocationOptions(assets);
-    scheduleSupplierRender(assets);
+  const applyAssetsView = (displayList, referenceList = null) => {
+    const normalizedDisplay = normalizeAssets(displayList);
+    const normalizedRef = normalizeAssets(referenceList || displayList);
+    assets = normalizedDisplay;
+    renderAssets(normalizedDisplay);
+    renderStockTable(normalizedRef);
+    buildLocationOptions(normalizedRef);
+    scheduleSupplierRender(normalizedRef);
+  };
+
+  const applyAssetsPagination = (list) => {
+    if (paginationMode === "client") {
+      if (list.length > 0) {
+        const lastPageStart = Math.max(0, Math.floor((list.length - 1) / ASSETS_PAGE_SIZE) * ASSETS_PAGE_SIZE);
+        assetsOffset = Math.min(assetsOffset, lastPageStart);
+      } else {
+        assetsOffset = 0;
+      }
+      const pageItems = list.slice(assetsOffset, assetsOffset + ASSETS_PAGE_SIZE);
+      applyAssetsView(pageItems, list);
+      updateAssetsPagination(pageItems.length, list.length);
+      return;
+    }
+    applyAssetsView(list);
+    updateAssetsPagination(list.length);
   };
 
   const scheduleSupplierRender = (list) => {
@@ -696,14 +781,20 @@ const initInventory = () => {
   const loadAssetsFromApi = async () => {
     if (!SIGAM_CONFIG.API_BASE_URL) {
       setInventoryStatus("API client not ready.");
-      hydrateAssets([]);
+      assetsAll = [];
+      assetsFiltered = [];
+      applyAssetsPagination([]);
       return;
     }
     setInventoryStatus("Loading assets...");
     const cached = localStorage.getItem("assets");
     if (cached && assets.length === 0) {
       try {
-        hydrateAssets(JSON.parse(cached));
+        const cachedList = JSON.parse(cached);
+        assetsAll = normalizeAssets(cachedList || []);
+        assetsFiltered = assetsAll;
+        paginationMode = assetsAll.length > ASSETS_PAGE_SIZE ? "client" : "server";
+        applyAssetsPagination(assetsFiltered);
       } catch {
         // ignore cache parse errors
       }
@@ -711,12 +802,16 @@ const initInventory = () => {
     try {
       const data = await getActivos(buildAssetsQuery());
       const mapped = (data || []).map(normalizeApiAsset);
-      hydrateAssets(mapped);
-      localStorage.setItem("assets", JSON.stringify(mapped));
-      setInventoryStatus(`Loaded ${mapped.length} assets.`);
-      updateAssetsPagination(mapped.length);
+      assetsAll = normalizeAssets(mapped);
+      assetsFiltered = assetsAll;
+      paginationMode = assetsAll.length > ASSETS_PAGE_SIZE ? "client" : "server";
+      applyAssetsPagination(assetsFiltered);
+      localStorage.setItem("assets", JSON.stringify(assetsAll));
+      setInventoryStatus(`Loaded ${assetsAll.length} assets.`);
     } catch (error) {
-      hydrateAssets([]);
+      assetsAll = [];
+      assetsFiltered = [];
+      applyAssetsPagination([]);
       if (assetFormStatus) {
         assetFormStatus.textContent = "Could not load assets from the server.";
         assetFormStatus.className = "me-auto small text-danger";
@@ -735,20 +830,29 @@ const initInventory = () => {
         const status = statusCode ? ` (${statusCode})` : "";
         setInventoryStatus(`Failed to load assets${status}.`);
       }
-      updateAssetsPagination(assets.length);
+      updateAssetsPagination(0);
     }
   };
 
-  const updateAssetsPagination = (count) => {
+  const updateAssetsPagination = (count, total = null) => {
     if (assetsPageInfo) {
       const page = Math.floor(assetsOffset / ASSETS_PAGE_SIZE) + 1;
-      assetsPageInfo.textContent = `Page ${page}`;
+      if (total !== null) {
+        const totalPages = Math.max(1, Math.ceil(total / ASSETS_PAGE_SIZE));
+        assetsPageInfo.textContent = `Page ${page} of ${totalPages}`;
+      } else {
+        assetsPageInfo.textContent = `Page ${page}`;
+      }
     }
     if (assetsPrevBtn) {
       assetsPrevBtn.disabled = assetsOffset <= 0;
     }
     if (assetsNextBtn) {
-      assetsNextBtn.disabled = count < ASSETS_PAGE_SIZE;
+      if (total !== null) {
+        assetsNextBtn.disabled = assetsOffset + ASSETS_PAGE_SIZE >= total;
+      } else {
+        assetsNextBtn.disabled = count < ASSETS_PAGE_SIZE;
+      }
     }
   };
 
@@ -756,52 +860,15 @@ const initInventory = () => {
     const cards = [];
 
     list.forEach(asset => {
-      let badge = "bg-success";
-      if (asset.status === "maintenance") {
-        badge = "bg-warning text-dark";
-      }
-
-      cards.push(`
-        <div class="col-md-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <h5 class="fw-bold">${asset.name}</h5>
-                <button
-                  class="btn btn-sm btn-outline-dark asset-edit"
-                  type="button"
-                  data-asset-id="${asset.id}"
-                >
-                  Edit
-                </button>
-              </div>
-
-              <small class="text-muted">${asset.id}</small>
-              <hr>
-              <p><strong>Brand / Model</strong><br>${asset.brand}</p>
-              <p><strong>Serial</strong><br>${asset.serial}</p>
-              <p><strong>Assigned To</strong><br>${asset.assigned}</p>
-              <p><strong>Location</strong><br>${asset.location}</p>
-
-              <div class="d-flex justify-content-between">
-                <span class="badge ${badge}">
-                  ${asset.status}
-                </span>
-                <small class="text-danger">
-                  Warranty ${asset.warranty}
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      `);
+      cards.push(renderAssetCard(asset));
     });
 
     if (grid) {
       grid.innerHTML = cards.join("");
     }
     if (resultCount) {
-      resultCount.innerText = `Showing ${list.length} of ${assets.length} assets`;
+      const total = assetsFiltered.length || assetsAll.length || assets.length;
+      resultCount.innerText = `Showing ${list.length} of ${total} assets`;
     }
     renderAssetList(list);
   };
@@ -815,8 +882,9 @@ const initInventory = () => {
       const statusBadge = asset.status === "maintenance"
         ? '<span class="badge bg-warning text-dark">Maintenance</span>'
         : '<span class="badge bg-success">Active</span>';
+      const statusClass = asset.status === "maintenance" ? "status-warning" : "status-ok";
       rows.push(`
-        <tr>
+        <tr class="asset-row ${statusClass}">
           <td>${asset.name}</td>
           <td class="text-muted">${asset.type}</td>
           <td class="text-muted">${asset.location}</td>
@@ -844,12 +912,13 @@ const initInventory = () => {
       return;
     }
     const rows = [];
-    if (!list.length) {
-      stockTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No assets available.</td></tr>';
+    const lowStockList = list.filter((asset) => asset.stock < asset.minStock);
+    if (!lowStockList.length) {
+      stockTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No low stock alerts.</td></tr>';
       return;
     }
 
-    list.forEach(asset => {
+    lowStockList.forEach(asset => {
       const isLow = asset.stock < asset.minStock;
       const statusBadge = isLow
         ? '<span class="badge bg-danger">Below minimum</span>'
@@ -975,13 +1044,12 @@ const initInventory = () => {
                 <h6 class="fw-bold mb-1">${supplier.name}</h6>
                 <div class="d-flex gap-2 align-items-center">
                   <span class="badge bg-primary-subtle text-primary border">Supplier</span>
-                  <button
-                    class="btn btn-sm btn-outline-dark supplier-edit"
-                    type="button"
-                    data-supplier="${supplier.name}"
-                  >
-                    Edit
-                  </button>
+                  ${renderButton({
+                    label: "Edit",
+                    variant: "outlineDark",
+                    className: "btn-sm supplier-edit",
+                    attrs: { type: "button", "data-supplier": supplier.name }
+                  })}
                 </div>
               </div>
               <div class="text-muted small mb-3">Assets supplied: ${supplier.items}</div>
@@ -1020,18 +1088,45 @@ const initInventory = () => {
       supplierListView.innerHTML = '<p class="text-muted mb-0">No suppliers available.</p>';
       return;
     }
-    supplierListView.innerHTML = suppliers.map(supplier => {
-      const items = supplier.assets
-        .map(item => `<li class="mb-1">${item.assetName} <span class="text-muted">$${item.price || 0}</span></li>`)
-        .join("");
-      return `
-        <div class="mb-3">
-          <div class="fw-semibold">${supplier.name}</div>
-          <small class="text-muted">Assets supplied: ${supplier.items}</small>
-          <ul class="mt-2 mb-0 ps-3">${items}</ul>
-        </div>
-      `;
-    }).join("");
+    supplierListView.innerHTML = `
+      <div class="table-responsive">
+        <table class="table table-sm align-middle supplier-table mb-0">
+          <thead class="text-muted">
+            <tr>
+              <th>Supplier</th>
+              <th class="text-end">Assets</th>
+              <th class="text-end">Avg Price</th>
+              <th class="text-end">Total Stock</th>
+              <th class="text-end">Avg Lead</th>
+              <th>Assets Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${suppliers.map((supplier) => {
+              const avgPrice = supplier.items ? Math.round(supplier.totalPrice / supplier.items) : 0;
+              const avgLeadTime = supplier.leadTimes.length
+                ? Math.round(supplier.leadTimes.reduce((a, b) => a + b, 0) / supplier.leadTimes.length)
+                : 0;
+              const items = supplier.assets
+                .slice(0, 5)
+                .map(item => `${item.assetName} ($${item.price || 0})`)
+                .join(", ");
+              const extra = supplier.assets.length > 5 ? ` +${supplier.assets.length - 5} more` : "";
+              return `
+                <tr>
+                  <td class="fw-semibold">${supplier.name}</td>
+                  <td class="text-end">${supplier.items}</td>
+                  <td class="text-end">$${avgPrice}</td>
+                  <td class="text-end">${supplier.totalStock}</td>
+                  <td class="text-end">${avgLeadTime} days</td>
+                  <td class="text-muted">${items}${extra}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
   };
 
   const setSupplierView = (mode) => {
@@ -1127,7 +1222,8 @@ const initInventory = () => {
     const type = typeFilter ? typeFilter.value : "all";
     const location = locationFilter ? locationFilter.value : "all";
 
-    const filtered = assets.filter(asset => {
+    const sourceList = Array.isArray(assetsAll) && assetsAll.length ? assetsAll : assets;
+    const filtered = sourceList.filter(asset => {
       const matchSearch =
         asset.name.toLowerCase().includes(search) ||
         asset.serial.toLowerCase().includes(search) ||
@@ -1145,9 +1241,9 @@ const initInventory = () => {
       return matchSearch && matchStatus && matchType && matchLocation;
     });
 
-    renderAssets(filtered);
-    renderStockTable(filtered);
-    renderSupplierCards(filtered);
+    assetsFiltered = filtered;
+    assetsOffset = 0;
+    applyAssetsPagination(assetsFiltered);
   };
 
   if (searchInput) {
@@ -1181,14 +1277,22 @@ const initInventory = () => {
         return;
       }
       assetsOffset = Math.max(0, assetsOffset - ASSETS_PAGE_SIZE);
-      loadAssetsFromApi();
+      if (paginationMode === "client") {
+        applyAssetsPagination(assetsFiltered);
+      } else {
+        loadAssetsFromApi();
+      }
     });
   }
 
   if (assetsNextBtn) {
     assetsNextBtn.addEventListener("click", () => {
       assetsOffset += ASSETS_PAGE_SIZE;
-      loadAssetsFromApi();
+      if (paginationMode === "client") {
+        applyAssetsPagination(assetsFiltered);
+      } else {
+        loadAssetsFromApi();
+      }
     });
   }
 
