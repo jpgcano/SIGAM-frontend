@@ -286,7 +286,14 @@ async function loadAssetsFromApi() {
         setInventoryStatus(`Loaded ${mapped.length} assets.`)
         updateAssetsPagination(mapped.length)
     } catch (error) {
-        hydrateAssets([])
+        const cachedFallback = localStorage.getItem("assets")
+        if (cachedFallback && assets.length === 0) {
+            try {
+                hydrateAssets(JSON.parse(cachedFallback))
+            } catch {
+                // ignore cache parse errors
+            }
+        }
         if (assetFormStatus) {
         assetFormStatus.textContent = "Could not load assets from the server."
             assetFormStatus.className = "me-auto small text-danger"
@@ -349,11 +356,11 @@ function renderAssets(list) {
 <div class="d-flex justify-content-between align-items-start">
 <h5 class="fw-bold">${asset.name}</h5>
 <button
-  class="btn btn-sm btn-outline-dark asset-edit"
-  type="button"
-  data-asset-id="${asset.id}"
+    class="btn btn-sm btn-outline-dark asset-edit"
+    type="button"
+    data-asset-id="${asset.id}"
 >
-  Edit
+    Edit
 </button>
 </div>
 
@@ -385,9 +392,9 @@ Warranty ${asset.warranty}
 
 </div>
 
-</div>
+ </div>
 
-`
+        `)
 
     })
 
@@ -407,14 +414,14 @@ function renderAssetList(list) {
             ? '<span class="badge bg-warning text-dark">Maintenance</span>'
             : '<span class="badge bg-success">Active</span>'
         rows.push(`
-          <tr>
+            <tr>
             <td>${asset.name}</td>
             <td class="text-muted">${asset.type}</td>
             <td class="text-muted">${asset.location}</td>
             <td class="text-end fw-semibold">${asset.stock}</td>
             <td>${statusBadge}</td>
-          </tr>
-        `
+            </tr>
+        `)
     })
     assetListBody.innerHTML = rows.join("")
 }
@@ -447,15 +454,15 @@ function renderStockTable(list) {
             : '<span class="badge bg-success">OK</span>'
 
         rows.push(`
-          <tr class="${isLow ? "table-danger" : ""}">
+        <tr class="${isLow ? "table-danger" : ""}">
             <td>${asset.name}</td>
             <td class="text-muted">${asset.type}</td>
             <td class="text-muted">${asset.location}</td>
             <td class="text-end fw-semibold">${asset.stock}</td>
             <td class="text-end text-muted">${asset.minStock}</td>
             <td>${statusBadge}</td>
-          </tr>
-        `
+        </tr>
+        `)
     })
     stockTableBody.innerHTML = rows.join("")
 }
@@ -595,7 +602,7 @@ function renderSupplierCards(list) {
               </div>
             </div>
           </div>
-        `
+        `)
     })
 
     supplierCards.innerHTML = cards.join("")
