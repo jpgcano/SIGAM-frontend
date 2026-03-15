@@ -447,7 +447,9 @@ const initCalendar = async () => {
     scheduleForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const ticketId = ticketIdInput ? ticketIdInput.value.trim() : "";
-      const assetValue = assetSelect ? assetSelect.value : "";
+      const selectedAssetId = assetSelect ? assetSelect.value : "";
+      const assetOption = state.assetsList.find((a) => String(a.id) === String(selectedAssetId));
+      const assetValue = assetOption ? assetOption.label : "";
       const typeValue = typeSelect ? typeSelect.value : "preventive";
       const dateValue = dateInput ? dateInput.value : "";
       const notesValue = notesInput ? notesInput.value : "";
@@ -472,6 +474,7 @@ const initCalendar = async () => {
         ticketId,
         technicianId,
         asset: assetValue,
+        assetId: assetOption ? assetOption.id : null,
         type: typeValue,
         date: dateValue,
         notes: notesValue
@@ -581,13 +584,15 @@ const normalizeMaintenance = (raw) => {
   const dateValue = raw.fecha_inicio || raw.date || "";
   const assetValue = assetLabelParts.join(" - ") || raw.id_activo || raw.activo_id || "";
   const fallbackKey = [ticketId, dateValue, assetValue].filter(Boolean).join("|");
+  const idOrden = raw.id_orden || raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "";
 
   return {
-    id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
-    localId: raw.localId || (raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden ? "" : `local-${fallbackKey || buildLocalId()}`),
+    id: idOrden,
+    localId: raw.localId || (idOrden ? idOrden : `local-${fallbackKey || buildLocalId()}`),
     ticketId,
     technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
     asset: assetValue,
+    assetId: raw.id_activo || raw.activo_id || null,
     type: raw.tipo || raw.type || "preventive",
     date: dateValue,
     notes: raw.diagnostico || raw.notes || ""
@@ -602,7 +607,8 @@ const refreshMaintenances = async (state, scheduleStatus, scheduledEl, overdueEl
       const payload = await api.apiRequest(SIGAM_CONFIG.MANTENIMIENTOS_ENDPOINT);
       const data = normalizeCollection(payload);
       state.usingApi = true;
-      state.maintenances = (data || []).map((item) => normalizeMaintenance(item));
+      const previous = state.maintenances || [];
+      state.maintenances = (data || []).map((item) => mergeMaintenanceItem(normalizeMaintenance(item), previous));
       persistMaintenances(state);
       syncCalendarEvents(state.maintenances, getFilters());
       setScheduleStatus(scheduleStatus, "Maintenance loaded from the API.", "success");
@@ -810,6 +816,28 @@ const updateFilterOptions = (state) => {
   }
 };
 
+const mergeMaintenanceItem = (item, previousList = []) => {
+  const matches = previousList.find((candidate) => {
+    if (item.id && candidate.id) {
+      return String(candidate.id) === String(item.id);
+    }
+    if (item.localId && candidate.localId) {
+      return String(candidate.localId) === String(item.localId);
+    }
+    if (candidate.ticketId && item.ticketId && candidate.date && item.date) {
+      return candidate.ticketId === item.ticketId && candidate.date === item.date;
+    }
+    return false;
+  });
+  return matches
+    ? {
+        ...item,
+        asset: item.asset || matches.asset,
+        assetId: item.assetId || matches.assetId
+      }
+    : item;
+};
+
 const openEditModal = (state, maintenance) => {
   const ticketIdInput = document.querySelector("#ticketId");
   const assetSelect = document.querySelector("#assetName");
@@ -893,18 +921,22 @@ const loadAssets = async (state, select) => {
     try {
       const payload = await api.apiRequest(SIGAM_CONFIG.ACTIVOS_ENDPOINT);
       const data = normalizeCollection(payload);
-      state.assetsList = Array.isArray(data) ? data : [];
+      state.assetsList = Array.isArray(data)
+        ? data.map((asset) => {
+            const id = asset.id_activo || asset.id || asset.idActivo || "";
+            const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
+            const label = labelParts.join(" - ") || asset.nombre || `Asset ${id}`;
+            return { id, label };
+          })
+        : [];
       if (state.assetsList.length === 0) {
         select.innerHTML = '<option value="">No assets available</option>';
         return;
       }
       state.assetsList.forEach((asset) => {
-        const id = asset.id_activo || asset.id || asset.idActivo || "";
-        const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
-        const label = labelParts.join(" - ") || asset.nombre || `Asset ${id}`;
         select.innerHTML += `
-          <option value="${label}">
-            ${label}
+          <option value="${asset.id}">
+            ${asset.label}
           </option>
         `;
       });
@@ -922,9 +954,10 @@ const loadAssets = async (state, select) => {
   }
 
   assets.forEach((asset) => {
+    const label = asset.name;
     select.innerHTML += `
-      <option value="${asset.name}">
-        ${asset.name}
+      <option value="${label}">
+        ${label}
       </option>
     `;
   });
