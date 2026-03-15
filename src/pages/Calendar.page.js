@@ -660,7 +660,7 @@ const syncCalendarEvents = (maintenances, filters) => {
   const filtered = applyAllFilters(maintenances, filters);
   const events = filtered.map((m) => ({
     id: m.id || m.localId || buildLocalId(),
-    title: `${m.asset || "Asset"} · ${m.type || "maintenance"} · #${m.ticketId || "-"}`,
+    title: `${getAssetLabel(m.asset)} · ${m.type || "maintenance"} · #${m.ticketId || "-"}`,
     start: m.date ? `${m.date}T00:00:00` : new Date(),
     end: m.date ? `${m.date}T23:59:59` : new Date(),
     allDay: true,
@@ -716,7 +716,7 @@ const applyTypeFilter = (maintenances, filter) => {
 
 const applyAssetFilter = (maintenances, filter) => {
   if (!filter || filter === "all") return maintenances;
-  return maintenances.filter((m) => String(m.assetId || m.asset || "") === filter);
+  return maintenances.filter((m) => String(m.assetId || getAssetLabel(m.asset) || "") === filter);
 };
 
 const applyTechFilter = (maintenances, filter) => {
@@ -784,7 +784,7 @@ const renderSidebarLists = (state, upcomingEl, overdueEl, filters) => {
     );
     return `
     <div class="calendar-list-item type-${item.type || "preventive"}" data-index="${index}">
-      <div class="calendar-list-title">${item.asset || "Asset"}</div>
+    <div class="calendar-list-title">${getAssetLabel(item.asset) || "Asset"}</div>
       <div class="calendar-list-meta">${item.date || "No date"} · ${item.type || "maintenance"} · #${item.ticketId || "-"}</div>
       <div class="calendar-list-actions">
         <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit">Edit</button>
@@ -799,6 +799,12 @@ const renderSidebarLists = (state, upcomingEl, overdueEl, filters) => {
   overdueEl.innerHTML = overdue.length
     ? overdue.map(renderItem).join("")
     : '<div class="calendar-empty">No overdue items. Aquí verás mantenimientos vencidos.</div>';
+};
+
+const getAssetLabel = (asset) => {
+  if (!asset) return "";
+  if (typeof asset === "string") return asset;
+  return asset.label || asset.nombre || "";
 };
 
 const updateFilterOptions = (state) => {
