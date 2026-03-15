@@ -20,57 +20,49 @@ const render = async () => {
         </div>
 
         <!-- Tarjetas de Estadísticas -->
-        <div class="row g-4 mb-4 admin-stats">
+        <div class="admin-stats mb-4">
           <!-- Total de usuarios -->
-          <div class="col-md-3">
-            <div class="card border-0 shadow-sm p-4 rounded-4">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <small class="text-muted">Total Users</small>
-                  <h4 id="statUsers" class="fw-bold mt-2">0</h4>
-                </div>
-                <i class="bi bi-people text-primary fs-4"></i>
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted">Total Users</small>
+                <h4 id="statUsers" class="fw-bold mt-2">0</h4>
               </div>
+              <i class="bi bi-people text-primary fs-4"></i>
             </div>
           </div>
 
           <!-- Activos gestionados -->
-          <div class="col-md-3">
-            <div class="card border-0 shadow-sm p-4 rounded-4">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <small class="text-muted">Managed Assets</small>
-                  <h4 id="statAssets" class="fw-bold mt-2">0</h4>
-                </div>
-                <i class="bi bi-hdd-stack text-primary fs-4"></i>
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted">Managed Assets</small>
+                <h4 id="statAssets" class="fw-bold mt-2">0</h4>
               </div>
+              <i class="bi bi-hdd-stack text-primary fs-4"></i>
             </div>
           </div>
 
           <!-- Tickets pendientes -->
-          <div class="col-md-3">
-            <div class="card border-0 shadow-sm p-4 rounded-4">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <small class="text-muted">Pending Tickets</small>
-                  <h4 id="statTickets" class="fw-bold mt-2">0</h4>
-                </div>
-                <i class="bi bi-ticket text-primary fs-4"></i>
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted">Pending Tickets</small>
+                <h4 id="statTickets" class="fw-bold mt-2">0</h4>
               </div>
+              <i class="bi bi-ticket text-primary fs-4"></i>
             </div>
           </div>
 
           <!-- Estado del sistema -->
-          <div class="col-md-3">
-            <div class="card border-0 shadow-sm p-4 rounded-4">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <small class="text-muted">System Status</small>
-                  <h5 class="fw-bold text-success mt-2">Optimal</h5>
-                  <small class="text-muted">99.8% uptime</small>
-                </div>
-                <i class="bi bi-bar-chart text-primary fs-4"></i>
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted">System Status</small>
+                <h5 class="fw-bold text-success mt-2">Optimal</h5>
+                <small class="text-muted">99.8% uptime</small>
               </div>
+              <i class="bi bi-bar-chart text-primary fs-4"></i>
             </div>
           </div>
         </div>
