@@ -29,7 +29,7 @@ const normalizeRole = (role) => {
 
 const render = () => {
   return `
-    <nav class="navbar sigam-navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <nav class="navbar sigam-navbar navbar-expand-lg navbar-dark">
       <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard">
           <div class="navbar-logo">
