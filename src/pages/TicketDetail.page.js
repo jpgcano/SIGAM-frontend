@@ -28,8 +28,10 @@ const render = async () => {
         <div class="detail-grid">
           <div><strong>ID:</strong> <span id="detailId">-</span></div>
           <div><strong>Creado:</strong> <span id="detailCreated">-</span></div>
+          <div><strong>Creado por:</strong> <span id="detailCreatedBy">-</span></div>
           <div><strong>Activo:</strong> <span id="detailAsset">-</span></div>
-          <div><strong>Clasificacion:</strong> <span id="detailCategory">-</span></div>
+          <div><strong>Categoria:</strong> <span id="detailCategory">-</span></div>
+          <div><strong>Clasificacion IA:</strong> <span id="detailClassification">-</span></div>
           <div><strong>Asignado a:</strong> <span id="detailAssigned">-</span></div>
           <div><strong>Estado:</strong> <span id="detailEstado">-</span></div>
         </div>
@@ -107,18 +109,40 @@ const renderSolutions = (list) => {
   }).join("");
 };
 
+const getTicketCategoryLabel = (raw) => {
+  return (
+    raw.categoria_ticket ||
+    raw.category ||
+    raw.categoria ||
+    raw.categoria_nombre ||
+    ""
+  );
+};
+
+const getTicketClassificationLabel = (raw) => {
+  return (
+    raw.clasificacion_nlp ||
+    raw.classification ||
+    raw.clasificacion ||
+    raw.clasificacion_ia ||
+    ""
+  );
+};
+
 const normalizeTicket = (raw) => {
   const createdAt = raw.createdAt || raw.date || raw.created_at || raw.created_on || raw.fecha_creacion;
   const rawStatus = raw.status || raw.estado || "";
-  const categoryLabel = raw.clasificacion_nlp || raw.category || raw.categoria || raw.categoria_nombre || "";
+  const categoryLabel = getTicketCategoryLabel(raw);
+  const classificationLabel = getTicketClassificationLabel(raw);
   return {
     id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
     title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
     description: raw.description || raw.descripcion || "",
     device: raw.device || raw.dispositivo || raw.activo || raw.activo_serial || "",
     category: categoryLabel,
+    classification: classificationLabel,
     createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
-    assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || "",
+    assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || raw.tecnico_asignado || "",
     status: rawStatus,
     createdAtLabel: createdAt ? new Date(createdAt).toLocaleString() : ""
   };
@@ -130,15 +154,22 @@ const loadTicket = async () => {
   if (!id) return;
   if (!SIGAM_CONFIG.API_BASE_URL) return;
 
-  const payload = await api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${encodeURIComponent(id)}?suggestions=true`);
+  let payload = null;
+  try {
+    payload = await api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${encodeURIComponent(id)}?suggestions=true`);
+  } catch (error) {
+    payload = await api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${encodeURIComponent(id)}`);
+  }
   const ticket = normalizeTicket(payload || {});
 
   const detailTitle = document.getElementById("detailTitle");
   const detailStatus = document.getElementById("detailStatus");
   const detailId = document.getElementById("detailId");
   const detailCreated = document.getElementById("detailCreated");
+  const detailCreatedBy = document.getElementById("detailCreatedBy");
   const detailAsset = document.getElementById("detailAsset");
   const detailCategory = document.getElementById("detailCategory");
+  const detailClassification = document.getElementById("detailClassification");
   const detailAssigned = document.getElementById("detailAssigned");
   const detailEstado = document.getElementById("detailEstado");
   const detailDescription = document.getElementById("detailDescription");
@@ -150,8 +181,10 @@ const loadTicket = async () => {
   }
   if (detailId) detailId.textContent = ticket.id || "-";
   if (detailCreated) detailCreated.textContent = ticket.createdAtLabel || "-";
+  if (detailCreatedBy) detailCreatedBy.textContent = ticket.createdBy || "Sin usuario";
   if (detailAsset) detailAsset.textContent = ticket.device || "-";
-  if (detailCategory) detailCategory.textContent = ticket.category || "-";
+  if (detailCategory) detailCategory.textContent = ticket.category || "Sin categoria";
+  if (detailClassification) detailClassification.textContent = ticket.classification || "Sin clasificacion IA";
   if (detailAssigned) detailAssigned.textContent = ticket.assignedTo || "Sin asignar";
   if (detailEstado) detailEstado.textContent = ticket.status || "-";
   if (detailDescription) detailDescription.textContent = ticket.description || "-";

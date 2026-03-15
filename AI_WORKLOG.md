@@ -475,3 +475,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/restructure-src-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Organizacion Ticket Detail
+- Rama: developer (feature/task)
+- Objetivo: Mejorar detalle de ticket con categoria y clasificacion separadas.
+- Cambios:
+  - `src/pages/TicketDetail.page.js`: Campos separados y fallback de sugerencias.
+- Evidencia:
+  - `test/ticket-detail-organize-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
