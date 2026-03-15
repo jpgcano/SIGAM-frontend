@@ -429,3 +429,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-category-fallback-v2-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Listas en crear ticket con categorias fallando
+- Rama: developer (feature/task)
+- Objetivo: No bloquear el formulario si no hay categorias disponibles.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Deshabilita categoria cuando falla API y no la exige en validacion.
+- Evidencia:
+  - `test/tickets-create-lists-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

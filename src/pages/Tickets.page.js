@@ -127,6 +127,7 @@ const initTickets = () => {
     activosList: [],
     categoriasMap: new Map(),
     categoriasList: [],
+    categoriasAvailable: false,
     currentPage: 1,
     hasMore: false,
     pageSize: 20,
@@ -265,7 +266,7 @@ const initTickets = () => {
       setFieldError(deviceInput, "");
     }
 
-    if (!categoryInput.value) {
+    if (ticketsState.categoriasAvailable && !categoryInput.value) {
       isValid = false;
       setFieldError(categoryInput, "Category is required.");
     } else {
@@ -447,6 +448,8 @@ const initTickets = () => {
       .map(([id, label]) => `<option value="${id}">${label}</option>`)
       .join("");
     categoryInput.innerHTML = placeholder + options;
+    categoryInput.disabled = false;
+    ticketsState.categoriasAvailable = options.length > 0;
 
     if (categoryFilter) {
       const filterPlaceholder = '<option value="all">All categories</option>';
@@ -476,6 +479,13 @@ const initTickets = () => {
     categoryFilter.innerHTML = filterPlaceholder + options;
   };
 
+  const disableCategorySelect = () => {
+    if (!categoryInput) return;
+    categoryInput.innerHTML = '<option value="">Categorias no disponibles</option>';
+    categoryInput.disabled = true;
+    ticketsState.categoriasAvailable = false;
+  };
+
   const loadCategorias = async () => {
     if (!SIGAM_CONFIG.API_BASE_URL) return;
     try {
@@ -487,6 +497,7 @@ const initTickets = () => {
       }
     } catch (error) {
       setTicketStatus("Unable to load ticket categories from API.", "error");
+      disableCategorySelect();
       renderCategoriasFromTickets();
     }
   };
