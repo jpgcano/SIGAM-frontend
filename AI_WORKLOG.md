@@ -373,4 +373,15 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
 - Evidencia:
   - `test/api-normalization-2026-03-15.md`
 - Commit(s):
+  - 3ab39e7
+
+### 2026-03-15 - IA: Codex
+- Issue: Ajuste de mapeo de campos Tickets API
+- Rama: developer (feature/task)
+- Objetivo: Mostrar datos de tickets provenientes de `vw_tickets_operacion`.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Mapeo de `categoria_ticket`, `activo_serial`, `tecnico_asignado` y `usuario_reporta`.
+- Evidencia:
+  - `test/tickets-api-field-mapping-2026-03-15.md`
+- Commit(s):
   - (Pendiente de aplicacion)

@@ -301,6 +301,7 @@ const initTickets = () => {
     const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
       raw.clasificacion_nlp ||
+      raw.categoria_ticket ||
       raw.category ||
       raw.categoria ||
       raw.categoria_nombre ||
@@ -312,10 +313,10 @@ const initTickets = () => {
       id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
       title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
       description: raw.description || raw.descripcion || "",
-      device: raw.device || raw.dispositivo || activoInfo.label || "",
+      device: raw.device || raw.dispositivo || raw.activo_serial || activoInfo.label || "",
       category: categoryLabel,
       createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
-      assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || "",
+      assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || raw.tecnico_asignado || "",
       estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
       status: rawStatus,
       statusNormalized: normalizedStatus,
