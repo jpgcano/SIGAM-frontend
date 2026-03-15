@@ -10,46 +10,50 @@ import "../css/pages/register.css";
 const render = () => {
   return `
     <div class="page-register">
-      <div class="container">
-        <div class="login-logo">
-          <div class="bg-primary text-white rounded d-flex justify-content-center align-items-center" style="width: 48px; height: 48px; margin: 0 auto;">
+      <div class="register-shell">
+        <div class="register-card">
+          <div class="register-brand">
+            <img src="/logo_circular.png" alt="J-AXON" class="register-logo" />
+            <div class="register-brand-text">
+              <h1>Create a J-AXON Account</h1>
+              <p>Start managing users and services.</p>
+            </div>
           </div>
+
+          <form id="registerForm" novalidate>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" placeholder="Name" required>
+            </div>
+            <div class="form-group">
+              <label for="surname">Last Name</label>
+              <input type="text" id="surname" placeholder="Last Name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="tu@empresa.com" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="••••••••" required>
+            </div>
+  \
+            <div id="registerStatus" class="form-status" aria-live="polite"></div>
+            ${renderButton({
+              id: "registerBtn",
+              label: "Create Account",
+              type: "submit"
+            })}
+          </form>
+
+          <p class="register-footer">Already have an account?
+          <a href="/login" id="navigateToLogin"> Sign in</a>
+          </p>
         </div>
-        <h2 class="login-title">Create Account</h2>
-        <p class="login-subtitle">Set up your profile to start using SIGAM.</p>
-
-        <form id="registerForm" novalidate>
-          <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" placeholder="Name" required>
-          </div>
-          <div class="form-group">
-            <label for="surname">Surname</label>
-            <input type="text" id="surname" placeholder="Surname" required>
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Email" required>
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Password" required>
-          </div>
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-          </div>
-          <div id="registerStatus" class="form-status" aria-live="polite"></div>
-          ${renderButton({
-            id: "registerBtn",
-            label: "Create Account",
-            type: "submit"
-          })}
-        </form>
-
-        <p class="login-footer">Do you already have an account?
-          <a href="/login" id="navigateToLogin">Login</a>
-        </p>
       </div>
     </div>
   `;
