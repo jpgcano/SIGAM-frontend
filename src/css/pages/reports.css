@@ -1,0 +1,50 @@
+
+body.page-reports {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body.page-reports .card {
+    border-radius:10px;
+}
+
+body.page-reports .card h4 {
+    font-weight:bold;
+}
+
+body.page-reports canvas {
+    max-height:350px;
+}
+
+body.page-reports {
+    background:#f5f6f8;
+}
+
+body.page-reports .asset-card {
+    background:#f8f3ed;
+    border:1px solid #e2c7a5;
+    padding:15px;
+    border-radius:10px;
+}
+
+body.page-reports .warranty-card {
+    background:#eef3ff;
+    border:1px solid #c6d4ff;
+    padding:15px;
+    border-radius:10px;
+}
+
+body.page-reports .badge-days {
+    height:fit-content;
+}
+
+body.page-reports .report-scroll {
+    max-height:360px;
+    overflow-y:auto;
+    padding-right:8px;
+}
+
+body.page-reports .report-empty {
+    color:#6b7280;
+    font-size:14px;
+    margin:0;
+}

@@ -1,0 +1,61 @@
+body.page-admin .card {
+border-radius:14px;
+}
+
+body.page-admin .table td {
+vertical-align:middle;
+}
+
+body.page-admin .nav-pills .nav-link.active {
+background:#f1f5f9;
+color:#000;
+}
+
+body.page-admin {
+background:#f5f7fb;
+}
+
+body.page-admin .table td {
+vertical-align:middle;
+}
+
+body.page-admin .admin-stats .card {
+height:100%;
+}
+
+body.page-admin .admin-stats .card .d-flex {
+height:100%;
+}
+
+body.page-admin .admin-stats .card h4, body.page-admin .admin-stats .card h5 {
+margin-bottom:0;
+}
+
+body.page-admin .admin-container {
+max-width:1200px;
+margin:0 auto;
+}
+
+body.page-admin .admin-section {
+animation:fadeUp .25s ease;
+}
+
+@keyframes fadeUp {
+from{opacity:0;transform:translateY(6px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+@media (max-width:768px) {
+  body.page-admin .admin-container {
+    padding:0 6px;
+  }
+  body.page-admin .nav-pills {
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  body.page-admin .nav-pills .nav-link {
+    border-radius:999px;
+    font-size:0.9rem;
+    padding:0.4rem 0.8rem;
+  }
+}

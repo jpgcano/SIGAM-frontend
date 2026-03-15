@@ -1,0 +1,63 @@
+body.page-register {
+    font-family: Arial, sans-serif;
+    background: #a1a1a1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+body.page-register .container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+body.page-register input {
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+body.page-register button {
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+body.page-register button:hover {
+    background: #388E3C;
+}
+
+body.page-register a {
+    color: green;
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    body.page-register {
+        padding: 16px;
+    }
+
+    body.page-register .container {
+        width: 100%;
+        max-width: 360px;
+        padding: 20px;
+    }
+}
+
+@media (max-height: 600px) {
+    body.page-register {
+        align-items: flex-start;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+}
+

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Ticket</title>
+    <link rel="icon" type="image/svg+xml" href="../services/logo_circular.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link rel="stylesheet" href="../css/global.css" />
+<link rel="stylesheet" href="../css/pages/tickets.css">
+</head>
+<body class="page-tickets">
+    <div id="app-navbar"></div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Ticket</h1>
+                <p class="subtitle">Detalle del ticket y sugerencias</p>
+            </div>
+            <button class="btn-nuevo" id="backBtn">Volver</button>
+        </div>
+
+        <div class="ticket-detail">
+            <div class="detail-header">
+                <h2 id="detailTitle">Ticket</h2>
+                <span id="detailStatus" class="ticket-status">Estado</span>
+            </div>
+            <div class="detail-grid">
+                <div><strong>ID:</strong> <span id="detailId">-</span></div>
+                <div><strong>Creado:</strong> <span id="detailCreated">-</span></div>
+                <div><strong>Activo:</strong> <span id="detailAsset">-</span></div>
+                <div><strong>Clasificacion:</strong> <span id="detailCategory">-</span></div>
+                <div><strong>Asignado a:</strong> <span id="detailAssigned">-</span></div>
+                <div><strong>Estado:</strong> <span id="detailEstado">-</span></div>
+            </div>
+            <div class="detail-section">
+                <h3>Descripcion</h3>
+                <p id="detailDescription">-</p>
+            </div>
+            <div class="detail-section">
+                <h3>Soluciones sugeridas</h3>
+                <div id="detailSolutions" class="detail-solutions">
+                    <p class="muted">Sin sugerencias por ahora.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../services/navbar.js"></script>
+    <script src="../js/runtime-env.js"></script>
+    <script src="../js/config.js"></script>
+        <script src="../js/core/storage.js"></script>
+    <script src="../js/core/endpoints.js"></script>
+    <script src="../js/core/api-client.js"></script>
+    <script src="../js/core/formatter.js"></script>
+<script src="../js/api.js"></script>
+    <script>
+    window.SIGAM_PAGE_ROLES = ["Gerente", "Analista", "Tecnico", "Usuario"];
+    </script>
+    <script src="../services/auth-guard.js"></script>
+    <script src="../js/ticket-detail.js"></script>
+</body>
+</html>

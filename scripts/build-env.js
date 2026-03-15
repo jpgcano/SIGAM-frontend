@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const outputPath = path.join(__dirname, '..', 'src', 'view', 'js', 'runtime-env.js');
+const outputPath = path.join(__dirname, '..', 'src', 'legacy', 'js', 'runtime-env.js');
 
-const sigamApi = process.env.SIGAM_API || '';
+const sigamApi = process.env.VITE_SIGAM_API || process.env.SIGAM_API || '';
 
 const content = `// Auto-generated at build time. Do not edit manually.
 window.__ENV__ = {

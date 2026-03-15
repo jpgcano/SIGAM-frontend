@@ -1,0 +1,36 @@
+:root {
+  color-scheme: light;
+  --sigam-text: #0f172a;
+  --sigam-muted: #64748b;
+  --sigam-bg: #f8fafc;
+  --sigam-border: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--sigam-text);
+  background: var(--sigam-bg);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+img, svg, video {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
