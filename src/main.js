@@ -10,6 +10,7 @@ import { TicketsPage } from './pages/Tickets.page.js';
 import { CalendarPage } from './pages/Calendar.page.js';
 import { ReportsPage } from './pages/Reports.page.js';
 import { ProfilePage } from './pages/Profile.page.js';
+import { TicketDetailPage } from './pages/TicketDetail.page.js';
 
 // Importar aquí estilos globales adicionales si fuera necesario
 // import '../css/main.css';
@@ -75,6 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Perfil (restringido por rol)
     router.addRoute('/profile', ProfilePage);
+
+    // Ticket detail
+    router.addRoute('/ticket-detail', TicketDetailPage);
 
     // Panel de administración (restringido por rol)
     router.addRoute('/admin', AdminPage);

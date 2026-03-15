@@ -345,3 +345,16 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Registro muestra estados y redirige a login al completar.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-15 - IA: Codex
+- Issue: Migración Ticket Detail a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Ticket Detail a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/TicketDetail.page.js`: Vista SPA de detalle de ticket y sugerencias.
+  - `src/main.js`: Ruta `/ticket-detail`.
+  - Eliminados: `src/legacy/pages/ticket-detail.html`, `src/legacy/js/ticket-detail.js`.
+- Evidencia:
+  - Ticket detail renderiza datos, estado y sugerencias desde API.
+- Commit(s):
+  - (Pendiente de aplicación)
