@@ -672,3 +672,25 @@ BitÃ¡cora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/profile-password-update-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Profile cambio de contraseña (fallback 404)
+- Rama: developer (feature/task)
+- Objetivo: Evitar 404 al actualizar password probando endpoints y metodos alternos.
+- Cambios:
+  - `src/pages/Profile.page.js`: agrega fallback PATCH/PUT a endpoints alternos.
+- Evidencia:
+  - `test/profile-password-update-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Profile cambio de contraseña (payload requerido)
+- Rama: developer (feature/task)
+- Objetivo: Evitar error de "campo requerido password" enviando variantes de payload.
+- Cambios:
+  - `src/pages/Profile.page.js`: payload compatible con distintos nombres de campos.
+- Evidencia:
+  - `test/profile-password-update-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

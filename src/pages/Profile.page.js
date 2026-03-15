@@ -158,6 +158,16 @@ const setSubmitting = (isSubmitting) => {
   }
 };
 
+const buildPasswordPayload = (currentPassword, newPassword, confirmPassword) => ({
+  currentPassword: currentPassword,
+  newPassword: newPassword,
+  password: newPassword,
+  oldPassword: currentPassword,
+  old_password: currentPassword,
+  new_password: newPassword,
+  confirmPassword: confirmPassword,
+  confirm_password: confirmPassword
+});
 const handlePassword = async (event) => {
   event.preventDefault();
   setPasswordStatus("");
@@ -208,27 +218,51 @@ const handlePassword = async (event) => {
     setSubmitting(true);
     setPasswordStatus("Updating password...", "");
 
+    const safeUserId = encodeURIComponent(userId);
+    const specificEndpoint = `${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${safeUserId}/password`;
+    const userEndpoint = `${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${safeUserId}`;
+    const shouldFallback = (error) => [404, 405, 501].includes(error?.status);
+
     // Intentar con el endpoint específico primero
     try {
-      await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${encodeURIComponent(userId)}/password`, {
+      await api.apiRequest(specificEndpoint, {
         method: "PUT",
-        body: {
-          currentPassword: currentPassword,
-          newPassword: newPassword
-        }
+        body: buildPasswordPayload(currentPassword, newPassword, confirmPassword)
       });
     } catch (specificError) {
-      // Si el endpoint específico falla, intentar con una actualización general del usuario
-      console.warn("Specific password endpoint failed, trying user update:", specificError.message);
-      await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${encodeURIComponent(userId)}`, {
-        method: "PUT",
-        body: {
-          password: newPassword,
-          currentPassword: currentPassword
+      if (shouldFallback(specificError)) {
+        console.warn("Specific password endpoint failed, trying PATCH:", specificError.message);
+        try {
+          await api.apiRequest(specificEndpoint, {
+            method: "PATCH",
+            body: buildPasswordPayload(currentPassword, newPassword, confirmPassword)
+          });
+        } catch (patchError) {
+          if (shouldFallback(patchError)) {
+            console.warn("Specific PATCH failed, trying user update:", patchError.message);
+            try {
+              await api.apiRequest(userEndpoint, {
+                method: "PATCH",
+                body: buildPasswordPayload(currentPassword, newPassword, confirmPassword)
+              });
+            } catch (userPatchError) {
+              if (shouldFallback(userPatchError)) {
+                await api.apiRequest(userEndpoint, {
+                  method: "PUT",
+                  body: buildPasswordPayload(currentPassword, newPassword, confirmPassword)
+                });
+              } else {
+                throw userPatchError;
+              }
+            }
+          } else {
+            throw patchError;
+          }
         }
-      });
+      } else {
+        throw specificError;
+      }
     }
-
     setPasswordStatus("Password updated successfully!", "success");
     const form = document.querySelector("#passwordForm");
     if (form) form.reset();
@@ -291,3 +325,4 @@ export const ProfilePage = {
     roles: ROLE_ALLOWLIST
   }
 };
+
