@@ -451,6 +451,17 @@ const initTickets = () => {
     }
   };
 
+  const loadCategorias = async () => {
+    if (!SIGAM_CONFIG.API_BASE_URL) return;
+    try {
+      const data = await getCategorias();
+      ticketsState.categoriasList = Array.isArray(data) ? data : normalizeCategorias(data);
+      renderCategorias();
+    } catch (error) {
+      setTicketStatus("Unable to load ticket categories from API.", "error");
+    }
+  };
+
   const renderStatusFilter = () => {
     if (!statusFilter) return;
     const unique = new Map();

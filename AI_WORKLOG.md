@@ -385,3 +385,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-api-field-mapping-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Fix carga categorias tickets
+- Rama: developer (feature/task)
+- Objetivo: Eliminar error runtime por `loadCategorias` faltante.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Agrega `loadCategorias` y renderiza categorias.
+- Evidencia:
+  - `test/tickets-load-categories-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
