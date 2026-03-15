@@ -12,9 +12,9 @@ const ROLE_LABELS = {
 };
 
 const ROLE_MENU = {
-  gerente: ['dashboard', 'inventory', 'reports', 'profile', 'admin'],
-  analista: ['dashboard', 'inventory', 'tickets', 'reports', 'profile'],
-  tecnico: ['dashboard', 'tickets', 'calendar', 'profile'],
+  gerente: ['dashboard', 'inventory', 'reports', 'calendar', 'profile', 'admin'],
+  analista: ['dashboard', 'inventory', 'tickets', 'calendar', 'reports', 'profile'],
+  tecnico: ['dashboard', 'tickets', 'inventory', 'calendar', 'profile'],
   auditor: ['dashboard', 'inventory', 'reports', 'profile'],
   usuario: ['dashboard', 'tickets', 'profile']
 };
