@@ -811,17 +811,17 @@ const updateFilterOptions = (state) => {
 
   if (techFilter) {
     const current = techFilter.value || "all";
-    const techs = Array.from(
-      new Set(state.maintenances.map((m) => m.technicianId).filter(Boolean))
-    ).sort();
+    const techOptions = state.techniciansList
+      .filter((tech) => tech && tech.id && tech.label)
+      .map((tech) => ({ id: tech.id, label: tech.label }));
     techFilter.innerHTML = '<option value="all">All Technicians</option>';
-    techs.forEach((tech) => {
+    techOptions.forEach(({ id, label }) => {
       const option = document.createElement("option");
-      option.value = tech;
-      option.textContent = `Technician ${tech}`;
+      option.value = id;
+      option.textContent = label;
       techFilter.appendChild(option);
     });
-    techFilter.value = techs.includes(current) ? current : "all";
+    techFilter.value = techOptions.some((entry) => entry.id === current) ? current : "all";
   }
 };
 
