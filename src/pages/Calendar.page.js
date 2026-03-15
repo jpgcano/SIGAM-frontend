@@ -16,6 +16,12 @@ const ROLE_ALLOWLIST = ["Gerente", "Tecnico"];
 let calendarInstance = null;
 let currentView = "dayGridMonth";
 
+const getAssetLabel = (asset) => {
+  if (!asset) return "";
+  if (typeof asset === "string") return asset;
+  return asset.label || asset.nombre || "";
+};
+
 const render = async () => {
   const navbarHTML = Navbar.render();
 
@@ -353,7 +359,7 @@ const initCalendar = async () => {
       return type ? [`type-${type}`] : [];
     },
     eventContent: (arg) => {
-      const asset = arg.event.extendedProps.asset || "Asset";
+      const asset = getAssetLabel(arg.event.extendedProps.asset) || "Asset";
       const type = arg.event.extendedProps.type || "maintenance";
       const ticket = arg.event.extendedProps.ticketId || "-";
       return {
@@ -361,7 +367,7 @@ const initCalendar = async () => {
       };
     },
     eventDidMount: (info) => {
-      const asset = info.event.extendedProps.asset || "Asset";
+      const asset = getAssetLabel(info.event.extendedProps.asset) || "Asset";
       const type = info.event.extendedProps.type || "maintenance";
       const ticket = info.event.extendedProps.ticketId || "-";
       info.el.setAttribute("title", `${asset} · ${type} · #${ticket}`);
@@ -1020,8 +1026,13 @@ const upsertMaintenanceInApi = async (maintenance, scheduleStatus, state) => {
     }
     setScheduleStatus(scheduleStatus, "Maintenance saved in the API.", "success");
     await refreshMaintenances(state, scheduleStatus);
-  } catch {
-    setScheduleStatus(scheduleStatus, "Could not save maintenance in the API.", "error");
+  } catch (error) {
+    console.error("Saving maintenance failed", error);
+    setScheduleStatus(
+      scheduleStatus,
+      error?.message ? `No se pudo guardar: ${error.message}` : "Could not save maintenance in the API.",
+      "error"
+    );
   }
 };
 
@@ -1081,8 +1092,8 @@ const updateMaintenanceInApi = async (maintenance) => {
       method: "PUT",
       body: payload
     });
-  } catch {
-    // ignore update errors here
+  } catch (error) {
+    console.error("Update maintenance failed", error);
   }
 };
 
