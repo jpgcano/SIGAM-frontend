@@ -451,3 +451,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/remove-legacy-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Limpieza de carpetas vacias
+- Rama: developer (feature/task)
+- Objetivo: Eliminar directorios vacios que quedaron de legacy.
+- Cambios:
+  - Eliminadas carpetas vacias en `src/`.
+- Evidencia:
+  - `test/remove-empty-folders-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
