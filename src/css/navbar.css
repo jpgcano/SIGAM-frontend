@@ -3,7 +3,7 @@
    Usa variables de variables.css
    ========================================================================== */
 
-#app-navbar .navbar {
+.sigam-navbar {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-light);
   padding: var(--space-2) 0;
@@ -13,7 +13,7 @@
   z-index: var(--z-sticky);
 }
 
-#app-navbar .navbar .container {
+.sigam-navbar .container {
   max-width: var(--container-xl);
   align-items: center;
   min-height: var(--navbar-height);
@@ -23,7 +23,7 @@
    BRAND
    ========================================================================== */
 
-#app-navbar .navbar-brand {
+.sigam-navbar .navbar-brand {
   gap: var(--space-3);
   min-width: 220px;
   padding: 0;
@@ -31,14 +31,14 @@
   align-items: center;
 }
 
-#app-navbar .navbar-brand strong {
+.sigam-navbar .navbar-brand strong {
   font-size: var(--text-lg);
   line-height: 1.1;
   color: var(--color-primary-700);
   font-weight: var(--font-bold);
 }
 
-#app-navbar .navbar-brand small {
+.sigam-navbar .navbar-brand small {
   font-size: var(--text-xs);
   color: var(--text-muted);
 }
@@ -47,7 +47,7 @@
    NAV LINKS
    ========================================================================== */
 
-#app-navbar .nav-link {
+.sigam-navbar .nav-link {
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
   color: var(--color-primary-600);
@@ -55,13 +55,13 @@
   transition: all var(--transition-fast);
 }
 
-#app-navbar .nav-link:hover {
+.sigam-navbar .nav-link:hover {
   background: var(--bg-hover);
   color: var(--color-primary-700);
 }
 
-#app-navbar .nav-link.active,
-#app-navbar .nav-link.text-primary {
+.sigam-navbar .nav-link.active,
+.sigam-navbar .nav-link.text-primary {
   color: var(--color-primary-900) !important;
   font-weight: var(--font-medium);
 }
@@ -70,12 +70,12 @@
    NAVBAR COLLAPSE
    ========================================================================== */
 
-#app-navbar .navbar-collapse {
+.sigam-navbar .navbar-collapse {
   align-items: center;
   min-height: var(--navbar-height);
 }
 
-#app-navbar .navbar-nav {
+.sigam-navbar .navbar-nav {
   gap: var(--space-2);
   align-items: center;
 }
@@ -84,13 +84,13 @@
    USER SECTION
    ========================================================================== */
 
-#app-navbar .navbar .ms-auto {
+.sigam-navbar .ms-auto {
   min-width: 220px;
   justify-content: flex-end;
   align-items: center;
 }
 
-#app-navbar #navbar-user {
+.sigam-navbar #navbar-user {
   line-height: 1.1;
   font-size: var(--text-sm);
   color: var(--text-secondary);
@@ -100,7 +100,7 @@
    BUTTONS
    ========================================================================== */
 
-#app-navbar .navbar .btn {
+.sigam-navbar .btn {
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
   background: transparent;
@@ -110,8 +110,8 @@
   transition: all var(--transition-fast);
 }
 
-#app-navbar .navbar .btn:hover,
-#app-navbar .navbar .btn.btn-outline-secondary:hover {
+.sigam-navbar .btn:hover,
+.sigam-navbar .btn.btn-outline-secondary:hover {
   background: var(--color-primary-50);
   border-color: var(--color-primary-300);
 }
@@ -120,13 +120,13 @@
    MOBILE TOGGLE
    ========================================================================== */
 
-#app-navbar .navbar-toggler {
+.sigam-navbar .navbar-toggler {
   border: 1px solid var(--border-light);
   padding: var(--space-2);
   border-radius: var(--radius-md);
 }
 
-#app-navbar .navbar-toggler:focus {
+.sigam-navbar .navbar-toggler:focus {
   box-shadow: 0 0 0 3px var(--color-primary-100);
 }
 
@@ -135,27 +135,13 @@
    ========================================================================== */
 
 @media (max-width: 768px) {
-  #app-navbar .navbar {
-    padding: var(--space-4) 0;
-  }
-  
-  #app-navbar .navbar-brand {
-    min-width: auto;
-  }
-  
-  #app-navbar .navbar .ms-auto {
-    min-width: auto;
-    margin-top: var(--space-3);
-  }
-  
-  #app-navbar .navbar-nav {
-    flex-direction: column;
-    width: 100%;
+  .sigam-navbar .navbar-nav {
     gap: var(--space-1);
+    padding: var(--space-2) 0;
   }
-  
-  #app-navbar .nav-link {
-    width: 100%;
-    padding: var(--space-3) var(--space-4);
+
+  .sigam-navbar .ms-auto {
+    min-width: auto;
+    justify-content: flex-start;
   }
 }
