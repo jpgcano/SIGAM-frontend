@@ -1,5 +1,6 @@
 import { Navbar } from "../components/Navbar.js";
 import { api } from "../services/api-client.js";
+import SIGAM_CONFIG from "../services/config.js";
 import { getUser, clearStorage } from "../state/storage.js";
 import { router } from "../router.js";
 import { renderButton } from "../components/Button.js";

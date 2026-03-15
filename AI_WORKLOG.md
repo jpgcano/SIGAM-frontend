@@ -661,3 +661,14 @@ BitÃ¡cora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-inventory-style-fix-2026-03-15.md`: evidencia.
 - Evidencia: `test/tickets-inventory-style-fix-2026-03-15.md`.
 - Commit: pendiente.
+
+### 2026-03-15 - IA: Codex
+- Issue: Profile cambio de contraseña (fix submit)
+- Rama: developer (feature/task)
+- Objetivo: Asegurar que el cambio de contraseña use configuracion de API y pueda guardar.
+- Cambios:
+  - `src/pages/Profile.page.js`: agrega import de `SIGAM_CONFIG` para usar endpoints.
+- Evidencia:
+  - `test/profile-password-update-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
