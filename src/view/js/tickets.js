@@ -9,6 +9,17 @@ const api = window.SIGAM_API;
 const statusFilter = document.getElementById("statusFilter");
 const categoryFilter = document.getElementById("categoryFilter");
 const modal = document.getElementById("ticketModal");
+const detailModal = document.getElementById("ticketDetailModal");
+const detailClose = document.getElementById("detailClose");
+const detailTitle = document.getElementById("detailTitle");
+const detailStatus = document.getElementById("detailStatus");
+const detailId = document.getElementById("detailId");
+const detailCreated = document.getElementById("detailCreated");
+const detailAsset = document.getElementById("detailAsset");
+const detailCategory = document.getElementById("detailCategory");
+const detailAssigned = document.getElementById("detailAssigned");
+const detailDescription = document.getElementById("detailDescription");
+const detailSolutions = document.getElementById("detailSolutions");
 const openBtn = document.getElementById("newTicketBtn");
 const closeBtn = document.querySelector(".close");
 
@@ -55,9 +66,18 @@ closeBtn.onclick = () => {
     modal.style.display = "none";
 };
 
+if (detailClose) {
+    detailClose.onclick = () => {
+        detailModal.style.display = "none";
+    };
+}
+
 window.onclick = (e) => {
     if (e.target === modal) {
         modal.style.display = "none";
+    }
+    if (detailModal && e.target === detailModal) {
+        detailModal.style.display = "none";
     }
 };
 
@@ -201,6 +221,7 @@ function normalizeTicket(raw) {
         (categoryId ? categoriasMap.get(String(categoryId)) : "") ||
         (activoInfo.raw && (activoInfo.raw.categoria || activoInfo.raw.categoria_nombre)) ||
         "";
+    const createdLabel = createdAt ? new Date(createdAt).toLocaleString() : "";
     return {
         id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
         title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
@@ -213,7 +234,8 @@ function normalizeTicket(raw) {
         status: rawStatus,
         statusNormalized: normalizedStatus,
         assetId: idActivo || "",
-        date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
+        date: createdAt ? new Date(createdAt).toLocaleDateString() : "",
+        createdAtLabel: createdLabel
     };
 }
 
@@ -388,6 +410,68 @@ function updatePaginationControls() {
     }
 }
 
+function renderSolutions(list) {
+    if (!detailSolutions) return;
+    if (!Array.isArray(list) || list.length === 0) {
+        detailSolutions.innerHTML = '<p class="muted">Sin sugerencias por ahora.</p>';
+        return;
+    }
+    detailSolutions.innerHTML = list.map((item) => {
+        if (typeof item === 'string') {
+            return `<div class="solution-card"><p>${item}</p></div>`;
+        }
+        const desc = item.descripcion || item.diagnostico || 'Sin descripcion';
+        const score = typeof item.score === 'number' ? item.score.toFixed(2) : '';
+        const meta = [
+            item.id_ticket ? `Ticket #${item.id_ticket}` : '',
+            score ? `Score: ${score}` : '',
+            item.estado ? `Estado: ${item.estado}` : ''
+        ].filter(Boolean).join(' • ');
+        const keywords = Array.isArray(item.matched_keywords) && item.matched_keywords.length
+            ? `<p>Coincidencias: ${item.matched_keywords.join(', ')}</p>`
+            : '';
+        return `<div class="solution-card">
+            <p><strong>${meta || 'Sugerencia'}</strong></p>
+            <p>${desc}</p>
+            ${keywords}
+        </div>`;
+    }).join('');
+}
+
+async function openTicketDetail(ticket) {
+    if (!detailModal || !ticket) return;
+    detailTitle.textContent = ticket.title || `Ticket #${ticket.id}`;
+    detailStatus.textContent = ticket.status || 'Pending';
+    detailStatus.className = `ticket-status ${mapStatusClass(ticket.status)}`;
+    detailId.textContent = ticket.id || '-';
+    detailCreated.textContent = ticket.createdAtLabel || ticket.date || '-';
+    detailAsset.textContent = ticket.device || '-';
+    detailCategory.textContent = ticket.category || '-';
+    detailAssigned.textContent = ticket.assignedTo || 'Sin asignar';
+    detailDescription.textContent = ticket.description || '-';
+    renderSolutions([]);
+    detailModal.style.display = 'flex';
+
+    if (api && api.getTicket && ticket.id) {
+        try {
+            const full = await api.getTicket(ticket.id, { suggestions: true });
+            const normalized = normalizeTicket(full);
+            detailTitle.textContent = normalized.title || `Ticket #${normalized.id}`;
+            detailStatus.textContent = normalized.status || 'Pending';
+            detailStatus.className = `ticket-status ${mapStatusClass(normalized.status)}`;
+            detailId.textContent = normalized.id || '-';
+            detailCreated.textContent = normalized.createdAtLabel || normalized.date || '-';
+            detailAsset.textContent = normalized.device || '-';
+            detailCategory.textContent = normalized.category || '-';
+            detailAssigned.textContent = normalized.assignedTo || 'Sin asignar';
+            detailDescription.textContent = normalized.description || '-';
+            renderSolutions(full.suggestions || []);
+        } catch (e) {
+            renderSolutions([]);
+        }
+    }
+}
+
 async function loadTickets(page = 1) {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
@@ -510,32 +594,10 @@ function renderTickets(list) {
                 <span>${ticket.date}</span>
                 <span>${ticket.estimate || "Sin estimado"}</span>
             </div>
-
-            <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
         `;
+        div.addEventListener("click", () => openTicketDetail(ticket));
         ticketList.appendChild(div);
     });
-}
-
-/* BORRAR TICKET */
-async function deleteTicket(index) {
-    const ticket = tickets[index];
-    if (!ticket) {
-        return;
-    }
-
-    if (api && api.deleteTicket && ticket.id) {
-        try {
-            await api.deleteTicket(ticket.id);
-        } catch (error) {
-            setTicketStatus("Unable to delete ticket from API.", "error");
-            return;
-        }
-    }
-
-    tickets.splice(index, 1);
-    localStorage.setItem("tickets", JSON.stringify(tickets));
-    applyFilters();
 }
 
 function applyFilters() {
