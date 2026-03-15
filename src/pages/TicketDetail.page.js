@@ -33,6 +33,7 @@ const render = async () => {
           <div><strong>ID:</strong> <span id="detailId">-</span></div>
           <div><strong>Creado:</strong> <span id="detailCreated">-</span></div>
           <div><strong>Creado por:</strong> <span id="detailCreatedBy">-</span></div>
+          <div><strong>Tipo de activo:</strong> <span id="detailAssetType">-</span></div>
           <div><strong>Activo:</strong> <span id="detailAsset">-</span></div>
           <div><strong>Categoria:</strong> <span id="detailCategory">-</span></div>
           <div><strong>Clasificacion IA:</strong> <span id="detailClassification">-</span></div>
@@ -44,7 +45,7 @@ const render = async () => {
           <p id="detailDescription">-</p>
         </div>
         <div class="detail-section">
-          <h3>Soluciones IA</h3>
+          <h3>Recomendaciones de soluciones</h3>
           <div id="detailSolutions" class="detail-solutions">
             <p class="muted">Sin sugerencias por ahora.</p>
           </div>
@@ -180,6 +181,13 @@ const normalizeTicket = (raw) => {
   const rawStatus = raw.status || raw.estado || "";
   const categoryLabel = getTicketCategoryLabel(raw);
   const classificationLabel = getTicketClassificationLabel(raw);
+  const assetType =
+    raw.tipo_activo ||
+    raw.activo_tipo ||
+    raw.tipo_equipo ||
+    raw.tipo ||
+    raw.modelo ||
+    "";
   return {
     id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
     title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
@@ -187,6 +195,7 @@ const normalizeTicket = (raw) => {
     device: raw.device || raw.dispositivo || raw.activo || raw.activo_serial || "",
     category: categoryLabel,
     classification: classificationLabel,
+    assetType,
     createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
     assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || raw.tecnico_asignado || "",
     status: rawStatus,
@@ -213,6 +222,7 @@ const loadTicket = async () => {
   const detailId = document.getElementById("detailId");
   const detailCreated = document.getElementById("detailCreated");
   const detailCreatedBy = document.getElementById("detailCreatedBy");
+  const detailAssetType = document.getElementById("detailAssetType");
   const detailAsset = document.getElementById("detailAsset");
   const detailCategory = document.getElementById("detailCategory");
   const detailClassification = document.getElementById("detailClassification");
@@ -228,11 +238,15 @@ const loadTicket = async () => {
   if (detailId) detailId.textContent = ticket.id || "-";
   if (detailCreated) detailCreated.textContent = ticket.createdAtLabel || "-";
   if (detailCreatedBy) detailCreatedBy.textContent = ticket.createdBy || "Sin usuario";
+  if (detailAssetType) detailAssetType.textContent = ticket.assetType || "Sin tipo";
   if (detailAsset) detailAsset.textContent = ticket.device || "-";
   if (detailCategory) detailCategory.textContent = ticket.category || "Sin categoria";
   if (detailClassification) detailClassification.textContent = ticket.classification || "Sin clasificacion IA";
   if (detailAssigned) detailAssigned.textContent = ticket.assignedTo || "Sin asignar";
-  if (detailEstado) detailEstado.textContent = ticket.status || "-";
+  if (detailEstado) {
+    detailEstado.textContent = ticket.status || "-";
+    detailEstado.className = `ticket-status ${mapStatusClass(ticket.status)}`;
+  }
   if (detailDescription) detailDescription.textContent = ticket.description || "-";
 
   renderSolutions(payload?.suggestions || []);

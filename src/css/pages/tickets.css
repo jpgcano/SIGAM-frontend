@@ -305,6 +305,12 @@ body.page-tickets .detail-grid {
     margin: 16px 0 20px;
 }
 
+body.page-tickets .detail-grid .ticket-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 body.page-tickets .detail-section {
     margin-top: 18px;
 }
