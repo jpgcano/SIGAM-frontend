@@ -440,3 +440,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-create-lists-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Eliminacion de legacy
+- Rama: developer (feature/task)
+- Objetivo: Remover codigo legacy no utilizado.
+- Cambios:
+  - Eliminado `src/legacy/` completo.
+- Evidencia:
+  - `test/remove-legacy-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
