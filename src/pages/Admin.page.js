@@ -458,31 +458,41 @@ const init = async () => {
       return haystack.includes(query);
     });
 
-    filtered.forEach((user, index) => {
-      userTable.innerHTML += `
+    if (filtered.length === 0) {
+      userTable.innerHTML = `
         <tr>
-          <td>${user.name}</td>
-          <td>${user.email}</td>
-          <td>${badgeRole(user.role)}</td>
-          <td>${badgeStatus(user.status)}</td>
-          <td>${timeAgo(user.lastAccess)}</td>
-          <td>
-            ${renderButton({
-              content: '<i class="bi bi-pencil"></i>',
-              variant: "light",
-              className: "btn-sm",
-              attrs: { "data-admin-action": "edit", "data-index": index }
-            })}
-            ${renderButton({
-              content: '<i class="bi bi-trash"></i>',
-              variant: "light",
-              className: "btn-sm text-danger",
-              attrs: { "data-admin-action": "delete", "data-index": index }
-            })}
+          <td colspan="6" class="text-center text-muted py-4">
+            No users found. Add a new user to populate the table.
           </td>
         </tr>
       `;
-    });
+    } else {
+      filtered.forEach((user, index) => {
+        userTable.innerHTML += `
+          <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${badgeRole(user.role)}</td>
+            <td>${badgeStatus(user.status)}</td>
+            <td>${timeAgo(user.lastAccess)}</td>
+            <td>
+              ${renderButton({
+                content: '<i class="bi bi-pencil"></i>',
+                variant: "light",
+                className: "btn-sm",
+                attrs: { "data-admin-action": "edit", "data-index": index }
+              })}
+              ${renderButton({
+                content: '<i class="bi bi-trash"></i>',
+                variant: "light",
+                className: "btn-sm text-danger",
+                attrs: { "data-admin-action": "delete", "data-index": index }
+              })}
+            </td>
+          </tr>
+        `;
+      });
+    }
 
     updateStats();
   };

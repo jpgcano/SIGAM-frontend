@@ -97,21 +97,26 @@ body.page-admin .nav-pills .nav-link.active {
 
 body.page-admin .admin-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Keep cards readable and avoid extremely narrow columns */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-6);
 }
 
 body.page-admin .admin-stats .card {
-  height: 100%;
+  min-height: 170px;
   padding: var(--space-5);
+  border-radius: var(--card-radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 body.page-admin .admin-stats .card .d-flex {
-  height: 100%;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
 }
 
 body.page-admin .admin-stats .card h4,
