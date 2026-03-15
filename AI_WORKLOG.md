@@ -235,3 +235,15 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Estructura alineada a SPA moderna y Vite root en `.`
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Dashboard a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Dashboard a SPA usando estilos existentes y lógica real de API.
+- Cambios:
+  - `src/pages/Dashboard.page.js`: Reescrito con estructura legacy, gráficos y carga de datos.
+  - Eliminados: `src/legacy/pages/dashboard.html`, `src/legacy/js/pages/dashboard.page.js`, `src/legacy/js/charts.js`.
+- Evidencia:
+  - Dashboard renderiza cards, listas y gráficos con Chart.js cargado dinámicamente.
+- Commit(s):
+  - (Pendiente de aplicación)
