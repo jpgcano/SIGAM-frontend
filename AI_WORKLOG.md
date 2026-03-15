@@ -305,3 +305,17 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Reports renderiza métricas y charts con Chart.js cargado dinámicamente.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Profile a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Profile a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Profile.page.js`: Vista SPA de perfil y cambio de password.
+  - `src/components/Navbar.js`: Agregado enlace a Profile.
+  - `src/main.js`: Ruta `/profile`.
+  - Eliminados: `src/legacy/pages/profile.html`, `src/legacy/js/pages/profile.page.js`, `src/legacy/js/profile.js`.
+- Evidencia:
+  - Perfil renderiza datos de sesión y permite actualizar password.
+- Commit(s):
+  - (Pendiente de aplicación)
