@@ -267,7 +267,7 @@ const render = async () => {
         <div id="assetsPageInfo" class="text-muted small"></div>
       </div>
 
-      <div class="row g-4" id="assetGrid"></div>
+      <div id="assetGrid"></div>
       <div class="card p-3 mb-4 d-none sigam-section" id="assetListView">
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">

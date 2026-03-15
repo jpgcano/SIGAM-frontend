@@ -97,21 +97,33 @@ body.page-admin .nav-pills .nav-link.active {
 
 body.page-admin .admin-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(230px, 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-6);
 }
 
 body.page-admin .admin-stats .card {
-  height: 100%;
-  padding: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--card-radius);
+  min-height: 140px;
 }
 
 body.page-admin .admin-stats .card .d-flex {
-  height: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (max-width: 1024px) {
+  body.page-admin .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  body.page-admin .admin-stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 body.page-admin .admin-stats .card h4,
