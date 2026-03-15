@@ -283,23 +283,6 @@ body.page-dashboard {
     overflow-x: hidden;
 }
 
-    body.page-dashboard .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 20px;
-    }
-
-    body.page-dashboard .navbar nav {
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    body.page-dashboard .navbar nav a {
-        margin: 10px 0;
-    }
-
 body.page-dashboard .container-dashboard {
     width: 100%;
     max-width: 1200px;
