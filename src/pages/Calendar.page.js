@@ -2,17 +2,19 @@ import { Navbar } from "../components/Navbar.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
 import { getUser } from "../state/storage.js";
-import { router } from "../router.js";
 import { normalizeCollection } from "../utils/normalize.js";
 import { renderButton } from "../components/Button.js";
+import { Calendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+import interactionPlugin from "@fullcalendar/interaction";
 import "../css/pages/calendar.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Tecnico"];
-const CALENDAR_CSS_CDN = "https://cdn.jsdelivr.net/gh/williamtroup/Calendar.js@main/dist/calendar.js.min.css";
-const CALENDAR_JS_CDN = "https://cdn.jsdelivr.net/gh/williamtroup/Calendar.js@main/dist/calendar.min.js";
 
 let calendarInstance = null;
-let currentView = "full-month";
+let currentView = "dayGridMonth";
 
 const render = async () => {
   const navbarHTML = Navbar.render();
@@ -20,7 +22,7 @@ const render = async () => {
   return `
     ${navbarHTML}
     <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="calendar-header">
         <div>
           <h3>Maintenance Calendar</h3>
           <p class="text-muted">
@@ -61,7 +63,7 @@ const render = async () => {
         </div>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="calendar-toolbar d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-2">
           ${renderButton({
             id: "prevPeriodBtn",
@@ -76,7 +78,8 @@ const render = async () => {
           })}
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-items-center">
+          <input id="eventSearch" class="form-control" placeholder="Search ticket, asset or note" />
           <div class="btn-group" role="group" aria-label="Calendar view">
             ${renderButton({
               id: "viewWeekBtn",
@@ -88,12 +91,23 @@ const render = async () => {
               label: "Month",
               variant: "outlineDark"
             })}
+            ${renderButton({
+              id: "viewListBtn",
+              label: "List",
+              variant: "outlineDark"
+            })}
           </div>
-          <select class="form-select">
-            <option>All Types</option>
-            <option>Preventive</option>
-            <option>In inspection</option>
-            <option>Repair</option>
+          <select id="typeFilter" class="form-select">
+            <option value="all">All Types</option>
+            <option value="preventive">Preventive</option>
+            <option value="inspection">Inspection</option>
+            <option value="repair">Repair</option>
+          </select>
+          <select id="assetFilter" class="form-select">
+            <option value="all">All Assets</option>
+          </select>
+          <select id="techFilter" class="form-select">
+            <option value="all">All Technicians</option>
           </select>
           ${renderButton({
             id: "goTodayBtn",
@@ -103,7 +117,35 @@ const render = async () => {
         </div>
       </div>
 
-      <div id="calendar" class="calendar"></div>
+      <div class="row g-4">
+        <div class="col-lg-9">
+          <div id="calendar" class="calendar"></div>
+          <div class="calendar-hint">Tip: drag events to reschedule quickly.</div>
+        </div>
+        <div class="col-lg-3">
+          <div class="calendar-panel">
+            <h6 class="calendar-panel-title">Upcoming</h6>
+            <div id="upcomingList" class="calendar-list"></div>
+            <h6 class="calendar-panel-title mt-4">Overdue</h6>
+            <div id="overdueList" class="calendar-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-legend mt-4">
+        <div class="legend-item">
+          <span class="legend-dot preventive"></span>
+          Preventive
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot inspection"></span>
+          Inspection
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot repair"></span>
+          Repair
+        </div>
+      </div>
     </div>
 
     <div class="modal fade" id="scheduleModal">
@@ -175,6 +217,7 @@ const render = async () => {
           </div>
 
           <div class="modal-body">
+            <p><strong>Ticket:</strong> <span id="detailTicket"></span></p>
             <p><strong>Asset:</strong> <span id="detailAsset"></span></p>
             <p><strong>Type:</strong> <span id="detailType"></span></p>
             <p><strong>Date:</strong> <span id="detailDate"></span></p>
@@ -209,7 +252,6 @@ const render = async () => {
 const init = async () => {
   Navbar.init();
   await ensureBootstrapJs();
-  await ensureCalendarJs();
   await initCalendar();
 };
 
@@ -234,35 +276,6 @@ const ensureBootstrapJs = () => {
   });
 };
 
-const ensureCalendarJs = () => {
-  if (window.calendarJs) {
-    return Promise.resolve();
-  }
-  return new Promise((resolve, reject) => {
-    if (!document.querySelector('link[data-sigam-calendar="true"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = CALENDAR_CSS_CDN;
-      link.setAttribute("data-sigam-calendar", "true");
-      document.head.appendChild(link);
-    }
-
-    const existing = document.querySelector('script[data-sigam-calendar="true"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Calendar.js failed to load")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = CALENDAR_JS_CDN;
-    script.async = true;
-    script.setAttribute("data-sigam-calendar", "true");
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Calendar.js failed to load"));
-    document.head.appendChild(script);
-  });
-};
-
 const initCalendar = async () => {
   const state = {
     maintenances: [],
@@ -270,6 +283,7 @@ const initCalendar = async () => {
     usingApi: false,
     editIndex: null
   };
+  window.__calendarState = state;
 
   const scheduleStatus = document.querySelector("#scheduleStatus");
   const scheduleForm = document.querySelector("#scheduleForm");
@@ -285,8 +299,17 @@ const initCalendar = async () => {
   const goTodayBtn = document.querySelector("#goTodayBtn");
   const viewWeekBtn = document.querySelector("#viewWeekBtn");
   const viewMonthBtn = document.querySelector("#viewMonthBtn");
+  const typeFilter = document.querySelector("#typeFilter");
+  const assetFilter = document.querySelector("#assetFilter");
+  const techFilter = document.querySelector("#techFilter");
+  const eventSearch = document.querySelector("#eventSearch");
+  const viewListBtn = document.querySelector("#viewListBtn");
+
+  const upcomingList = document.querySelector("#upcomingList");
+  const overdueList = document.querySelector("#overdueList");
 
   const detailAsset = document.querySelector("#detailAsset");
+  const detailTicket = document.querySelector("#detailTicket");
   const detailType = document.querySelector("#detailType");
   const detailDate = document.querySelector("#detailDate");
   const detailNotes = document.querySelector("#detailNotes");
@@ -300,83 +323,122 @@ const initCalendar = async () => {
   const dateInput = document.querySelector("#maintenanceDate");
   const notesInput = document.querySelector("#notes");
 
-  if (!calendarEl || !window.calendarJs) {
+  if (!calendarEl) {
+    if (calendarEl) {
+      calendarEl.innerHTML = '<div class="calendar-empty">Calendar could not load. Please refresh.</div>';
+    }
     return;
   }
 
-  calendarInstance = new window.calendarJs("calendar", {
-    manualEditingEnabled: false,
-    dragAndDropForEventsEnabled: true,
-    views: {
-      fullWeek: { enabled: true },
-      timeline: { enabled: true }
+  calendarInstance = new Calendar(calendarEl, {
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+    initialView: "dayGridMonth",
+    headerToolbar: false,
+    editable: true,
+    eventDurationEditable: true,
+    eventStartEditable: true,
+    nowIndicator: true,
+    selectable: true,
+    selectMirror: true,
+    eventDisplay: "block",
+    eventClassNames: (arg) => {
+      const type = String(arg.event.extendedProps.type || "").toLowerCase();
+      return type ? [`type-${type}`] : [];
     },
-    events: {
-      onEventClick: (event) => {
-        const maintenance = findMaintenanceByEvent(state.maintenances, event);
-        if (!maintenance) return;
-        state.editIndex = state.maintenances.indexOf(maintenance);
-        if (detailAsset) detailAsset.textContent = maintenance.asset || "";
-        if (detailType) detailType.textContent = maintenance.type || "";
-        if (detailDate) detailDate.textContent = maintenance.date || "";
-        if (detailNotes) detailNotes.textContent = maintenance.notes || "-";
-        const modal = new window.bootstrap.Modal(document.getElementById("detailModal"));
-        modal.show();
-      },
-      onEventDragDrop: (event, targetDate) => {
-        const maintenance = findMaintenanceByEvent(state.maintenances, event);
-        if (!maintenance || !targetDate) return;
-        maintenance.date = targetDate.toISOString().split("T")[0];
-        persistMaintenances(state);
-        updateStats(state, scheduledEl, overdueEl, assetsEl);
-        if (state.usingApi) {
-          updateMaintenanceInApi(maintenance);
-        }
-      },
-      onViewChange: (viewName) => {
-        currentView = viewName || currentView;
-        updateViewButtons(currentView, viewWeekBtn, viewMonthBtn);
-        updateMonthLabel(monthLabel);
+    eventContent: (arg) => {
+      const asset = arg.event.extendedProps.asset || "Asset";
+      const type = arg.event.extendedProps.type || "maintenance";
+      const ticket = arg.event.extendedProps.ticketId || "-";
+      return {
+        html: `<div class="fc-event-title">${asset}</div><div class="fc-event-meta">${type} · #${ticket}</div>`
+      };
+    },
+    eventDidMount: (info) => {
+      const asset = info.event.extendedProps.asset || "Asset";
+      const type = info.event.extendedProps.type || "maintenance";
+      const ticket = info.event.extendedProps.ticketId || "-";
+      info.el.setAttribute("title", `${asset} · ${type} · #${ticket}`);
+    },
+    eventClick: (info) => {
+      const maintenance = findMaintenanceByEvent(state.maintenances, info.event);
+      if (!maintenance) return;
+      openDetailModal(state, maintenance);
+    },
+    eventDrop: (info) => {
+      const maintenance = findMaintenanceByEvent(state.maintenances, info.event);
+      if (!maintenance) return;
+      maintenance.date = info.event.startStr ? info.event.startStr.slice(0, 10) : maintenance.date;
+      persistMaintenances(state);
+      syncCalendarEvents(state.maintenances, getFilters());
+      updateStats(state, scheduledEl, overdueEl, assetsEl);
+      renderSidebarLists(state, upcomingList, overdueList, getFilters());
+      if (state.usingApi) {
+        updateMaintenanceInApi(maintenance);
       }
+    },
+    eventResize: (info) => {
+      const maintenance = findMaintenanceByEvent(state.maintenances, info.event);
+      if (!maintenance) return;
+      maintenance.date = info.event.startStr ? info.event.startStr.slice(0, 10) : maintenance.date;
+      persistMaintenances(state);
+      syncCalendarEvents(state.maintenances, getFilters());
+      updateStats(state, scheduledEl, overdueEl, assetsEl);
+      renderSidebarLists(state, upcomingList, overdueList, getFilters());
+      if (state.usingApi) {
+        updateMaintenanceInApi(maintenance);
+      }
+    },
+    select: (info) => {
+      if (dateInput) dateInput.value = info.startStr.slice(0, 10);
+      const modal = new window.bootstrap.Modal(document.getElementById("scheduleModal"));
+      modal.show();
     }
   });
 
-  updateViewButtons(currentView, viewWeekBtn, viewMonthBtn);
+  calendarInstance.render();
+  currentView = calendarInstance.view.type;
+  updateViewButtons(currentView, viewWeekBtn, viewMonthBtn, viewListBtn);
   updateMonthLabel(monthLabel);
 
   if (prevPeriodBtn) {
     prevPeriodBtn.addEventListener("click", () => {
-      calendarInstance.moveCurrentViewToPreviousDate();
+      calendarInstance.prev();
       updateMonthLabel(monthLabel);
     });
   }
   if (nextPeriodBtn) {
     nextPeriodBtn.addEventListener("click", () => {
-      calendarInstance.moveCurrentViewToNextDate();
+      calendarInstance.next();
       updateMonthLabel(monthLabel);
     });
   }
   if (goTodayBtn) {
     goTodayBtn.addEventListener("click", () => {
-      calendarInstance.moveToToday();
+      calendarInstance.today();
       updateMonthLabel(monthLabel);
     });
   }
   if (viewWeekBtn) {
     viewWeekBtn.addEventListener("click", () => {
-      calendarInstance.setOptions({ viewToOpenOnFirstLoad: "full-week" });
-      calendarInstance.refresh();
-      currentView = "full-week";
-      updateViewButtons(currentView, viewWeekBtn, viewMonthBtn);
+      calendarInstance.changeView("timeGridWeek");
+      currentView = "timeGridWeek";
+      updateViewButtons(currentView, viewWeekBtn, viewMonthBtn, viewListBtn);
       updateMonthLabel(monthLabel);
     });
   }
   if (viewMonthBtn) {
     viewMonthBtn.addEventListener("click", () => {
-      calendarInstance.setOptions({ viewToOpenOnFirstLoad: "full-month" });
-      calendarInstance.refresh();
-      currentView = "full-month";
-      updateViewButtons(currentView, viewWeekBtn, viewMonthBtn);
+      calendarInstance.changeView("dayGridMonth");
+      currentView = "dayGridMonth";
+      updateViewButtons(currentView, viewWeekBtn, viewMonthBtn, viewListBtn);
+      updateMonthLabel(monthLabel);
+    });
+  }
+  if (viewListBtn) {
+    viewListBtn.addEventListener("click", () => {
+      calendarInstance.changeView("listWeek");
+      currentView = "listWeek";
+      updateViewButtons(currentView, viewWeekBtn, viewMonthBtn, viewListBtn);
       updateMonthLabel(monthLabel);
     });
   }
@@ -403,9 +465,10 @@ const initCalendar = async () => {
         return;
       }
 
+      const target = state.maintenances[state.editIndex] || {};
       const maintenance = {
-        id: state.editIndex !== null ? (state.maintenances[state.editIndex] || {}).id : "",
-        localId: state.editIndex === null ? buildLocalId() : undefined,
+        id: target.id || "",
+        localId: state.editIndex === null ? buildLocalId() : target.localId,
         ticketId,
         technicianId,
         asset: assetValue,
@@ -422,8 +485,9 @@ const initCalendar = async () => {
       }
 
       persistMaintenances(state);
-      syncCalendarEvents(state.maintenances);
+      syncCalendarEvents(state.maintenances, getFilters());
       updateStats(state, scheduledEl, overdueEl, assetsEl);
+      renderSidebarLists(state, upcomingList, overdueList, getFilters());
 
       if (state.usingApi) {
         await upsertMaintenanceInApi(maintenance, scheduleStatus, state);
@@ -446,8 +510,9 @@ const initCalendar = async () => {
       }
       state.maintenances.splice(state.editIndex, 1);
       persistMaintenances(state);
-      syncCalendarEvents(state.maintenances);
+      syncCalendarEvents(state.maintenances, getFilters());
       updateStats(state, scheduledEl, overdueEl, assetsEl);
+      renderSidebarLists(state, upcomingList, overdueList, getFilters());
       const modal = window.bootstrap.Modal.getInstance(document.getElementById("detailModal"));
       if (modal) modal.hide();
     });
@@ -457,16 +522,34 @@ const initCalendar = async () => {
     editBtn.addEventListener("click", () => {
       const target = state.maintenances[state.editIndex];
       if (!target) return;
-      if (ticketIdInput) ticketIdInput.value = target.ticketId || "";
-      if (assetSelect) assetSelect.value = target.asset || "";
-      if (typeSelect) typeSelect.value = target.type || "preventive";
-      if (dateInput) dateInput.value = target.date || "";
-      if (notesInput) notesInput.value = target.notes || "";
-      const modal = new window.bootstrap.Modal(document.getElementById("scheduleModal"));
-      modal.show();
+      openEditModal(state, target);
+      const detailModal = window.bootstrap.Modal.getInstance(document.getElementById("detailModal"));
+      if (detailModal) detailModal.hide();
     });
   }
 
+  const refreshFilters = () => {
+    syncCalendarEvents(state.maintenances, getFilters());
+    renderSidebarLists(state, upcomingList, overdueList, getFilters());
+  };
+
+  if (typeFilter) {
+    typeFilter.addEventListener("change", refreshFilters);
+  }
+
+  if (assetFilter) {
+    assetFilter.addEventListener("change", refreshFilters);
+  }
+
+  if (techFilter) {
+    techFilter.addEventListener("change", refreshFilters);
+  }
+
+  if (eventSearch) {
+    eventSearch.addEventListener("input", refreshFilters);
+  }
+
+  bindListHandlers(state, upcomingList, overdueList);
   await refreshMaintenances(state, scheduleStatus, scheduledEl, overdueEl, assetsEl);
   await loadAssets(state, assetSelect);
 };
@@ -485,14 +568,28 @@ const setScheduleStatus = (element, message, type) => {
 };
 
 const normalizeMaintenance = (raw) => {
+  const assetLabelParts = [
+    raw.asset,
+    raw.activo,
+    raw.assetName,
+    raw.nombre_activo,
+    raw.nombre,
+    raw.modelo,
+    raw.serial
+  ].filter(Boolean);
+  const ticketId = raw.id_ticket || raw.ticketId || "";
+  const dateValue = raw.fecha_inicio || raw.date || "";
+  const assetValue = assetLabelParts.join(" - ") || raw.id_activo || raw.activo_id || "";
+  const fallbackKey = [ticketId, dateValue, assetValue].filter(Boolean).join("|");
+
   return {
     id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
-    localId: raw.localId,
-    ticketId: raw.id_ticket || raw.ticketId || "",
+    localId: raw.localId || (raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden ? "" : `local-${fallbackKey || buildLocalId()}`),
+    ticketId,
     technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
-    asset: raw.asset || raw.activo || raw.assetName || "",
+    asset: assetValue,
     type: raw.tipo || raw.type || "preventive",
-    date: raw.fecha_inicio || raw.date || "",
+    date: dateValue,
     notes: raw.diagnostico || raw.notes || ""
   };
 };
@@ -507,9 +604,11 @@ const refreshMaintenances = async (state, scheduleStatus, scheduledEl, overdueEl
       state.usingApi = true;
       state.maintenances = (data || []).map((item) => normalizeMaintenance(item));
       persistMaintenances(state);
-      syncCalendarEvents(state.maintenances);
+      syncCalendarEvents(state.maintenances, getFilters());
       setScheduleStatus(scheduleStatus, "Maintenance loaded from the API.", "success");
       updateStats(state, scheduledEl, overdueEl, assetsEl);
+      renderSidebarLists(state, document.querySelector("#upcomingList"), document.querySelector("#overdueList"), getFilters());
+      updateFilterOptions(state);
       return;
     } catch (error) {
       setScheduleStatus(scheduleStatus, "Could not load maintenance from the API.", "error");
@@ -519,25 +618,29 @@ const refreshMaintenances = async (state, scheduleStatus, scheduledEl, overdueEl
   state.usingApi = false;
   const cached = JSON.parse(localStorage.getItem("maintenances") || "[]");
   state.maintenances = cached.map((item) => normalizeMaintenance(item));
-  syncCalendarEvents(state.maintenances);
+  syncCalendarEvents(state.maintenances, getFilters());
   updateStats(state, scheduledEl, overdueEl, assetsEl);
+  renderSidebarLists(state, document.querySelector("#upcomingList"), document.querySelector("#overdueList"), getFilters());
+  updateFilterOptions(state);
 };
 
 const persistMaintenances = (state) => {
   localStorage.setItem("maintenances", JSON.stringify(state.maintenances));
 };
 
-const syncCalendarEvents = (maintenances) => {
+const syncCalendarEvents = (maintenances, filters) => {
   if (!calendarInstance) return;
-  const events = maintenances.map((m) => ({
+  const filtered = applyAllFilters(maintenances, filters);
+  const events = filtered.map((m) => ({
     id: m.id || m.localId || buildLocalId(),
-    title: `${m.asset || "Asset"} - ${m.type || "maintenance"}`,
-    from: m.date ? new Date(`${m.date}T00:00:00`) : new Date(),
-    to: m.date ? new Date(`${m.date}T23:59:59`) : new Date(),
-    description: m.notes || "",
-    group: m.technicianId ? `Technician ${m.technicianId}` : "Technician",
-    isAllDay: true,
-    customTags: {
+    title: `${m.asset || "Asset"} · ${m.type || "maintenance"} · #${m.ticketId || "-"}`,
+    start: m.date ? `${m.date}T00:00:00` : new Date(),
+    end: m.date ? `${m.date}T23:59:59` : new Date(),
+    allDay: true,
+    backgroundColor: getTypeColor(m.type),
+    borderColor: getTypeColor(m.type),
+    textColor: "#ffffff",
+    extendedProps: {
       maintenanceId: m.id,
       localId: m.localId,
       ticketId: m.ticketId,
@@ -548,14 +651,226 @@ const syncCalendarEvents = (maintenances) => {
       notes: m.notes
     }
   }));
-  calendarInstance.setEvents(events);
+  calendarInstance.removeAllEvents();
+  calendarInstance.addEventSource(events);
 };
 
+const getTypeFilterValue = () => {
+  const el = document.querySelector("#typeFilter");
+  return el ? el.value : "all";
+};
+
+const getAssetFilterValue = () => {
+  const el = document.querySelector("#assetFilter");
+  return el ? el.value : "all";
+};
+
+const getTechFilterValue = () => {
+  const el = document.querySelector("#techFilter");
+  return el ? el.value : "all";
+};
+
+const getSearchValue = () => {
+  const el = document.querySelector("#eventSearch");
+  return el ? el.value.trim().toLowerCase() : "";
+};
+
+const getFilters = () => ({
+  type: getTypeFilterValue(),
+  asset: getAssetFilterValue(),
+  tech: getTechFilterValue(),
+  search: getSearchValue()
+});
+
+const applyTypeFilter = (maintenances, filter) => {
+  if (!filter || filter === "all") return maintenances;
+  return maintenances.filter((m) => String(m.type || "").toLowerCase() === filter);
+};
+
+const applyAssetFilter = (maintenances, filter) => {
+  if (!filter || filter === "all") return maintenances;
+  return maintenances.filter((m) => String(m.asset || "") === filter);
+};
+
+const applyTechFilter = (maintenances, filter) => {
+  if (!filter || filter === "all") return maintenances;
+  return maintenances.filter((m) => String(m.technicianId || "") === filter);
+};
+
+const getTypeColor = (type) => {
+  const key = String(type || "").toLowerCase();
+  if (key === "inspection") return "#16a34a";
+  if (key === "repair") return "#dc2626";
+  return "#2563eb";
+};
+
+const applyTextFilter = (maintenances, search) => {
+  if (!search) return maintenances;
+  return maintenances.filter((m) => {
+    const haystack = [
+      m.asset,
+      m.type,
+      m.notes,
+      m.ticketId,
+      m.technicianId
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(search);
+  });
+};
+
+const applyAllFilters = (maintenances, filters) => {
+  const safe = filters || {};
+  return applyTextFilter(
+    applyTechFilter(
+      applyAssetFilter(
+        applyTypeFilter(maintenances, safe.type),
+        safe.asset
+      ),
+      safe.tech
+    ),
+    safe.search
+  );
+};
+
+const renderSidebarLists = (state, upcomingEl, overdueEl, filters) => {
+  if (!upcomingEl || !overdueEl) return;
+  const today = new Date().toISOString().split("T")[0];
+  const filtered = applyAllFilters(state.maintenances, filters);
+  const upcoming = filtered
+    .filter((m) => m.date && m.date >= today)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .slice(0, 6);
+  const overdue = filtered
+    .filter((m) => m.date && m.date < today)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .slice(0, 6);
+
+  const renderItem = (item) => {
+    const index = state.maintenances.findIndex(
+      (m) =>
+        (item.id && String(m.id) === String(item.id)) ||
+        (item.localId && String(m.localId) === String(item.localId)) ||
+        (m.ticketId === item.ticketId && m.date === item.date && m.asset === item.asset)
+    );
+    return `
+    <div class="calendar-list-item type-${item.type || "preventive"}" data-index="${index}">
+      <div class="calendar-list-title">${item.asset || "Asset"}</div>
+      <div class="calendar-list-meta">${item.date || "No date"} · ${item.type || "maintenance"} · #${item.ticketId || "-"}</div>
+      <div class="calendar-list-actions">
+        <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit">Edit</button>
+      </div>
+    </div>
+  `;
+  };
+
+  upcomingEl.innerHTML = upcoming.length
+    ? upcoming.map(renderItem).join("")
+    : '<div class="calendar-empty">No upcoming items. Aquí aparecerán los mantenimientos futuros.</div>';
+  overdueEl.innerHTML = overdue.length
+    ? overdue.map(renderItem).join("")
+    : '<div class="calendar-empty">No overdue items. Aquí verás mantenimientos vencidos.</div>';
+};
+
+const updateFilterOptions = (state) => {
+  const assetFilter = document.querySelector("#assetFilter");
+  const techFilter = document.querySelector("#techFilter");
+  if (!assetFilter && !techFilter) return;
+
+  if (assetFilter) {
+    const current = assetFilter.value || "all";
+    const assets = Array.from(
+      new Set(state.maintenances.map((m) => m.asset).filter(Boolean))
+    ).sort();
+    assetFilter.innerHTML = '<option value="all">All Assets</option>';
+    assets.forEach((asset) => {
+      const option = document.createElement("option");
+      option.value = asset;
+      option.textContent = asset;
+      assetFilter.appendChild(option);
+    });
+    assetFilter.value = assets.includes(current) ? current : "all";
+  }
+
+  if (techFilter) {
+    const current = techFilter.value || "all";
+    const techs = Array.from(
+      new Set(state.maintenances.map((m) => m.technicianId).filter(Boolean))
+    ).sort();
+    techFilter.innerHTML = '<option value="all">All Technicians</option>';
+    techs.forEach((tech) => {
+      const option = document.createElement("option");
+      option.value = tech;
+      option.textContent = `Technician ${tech}`;
+      techFilter.appendChild(option);
+    });
+    techFilter.value = techs.includes(current) ? current : "all";
+  }
+};
+
+const openEditModal = (state, maintenance) => {
+  const ticketIdInput = document.querySelector("#ticketId");
+  const assetSelect = document.querySelector("#assetName");
+  const typeSelect = document.querySelector("#maintenanceType");
+  const dateInput = document.querySelector("#maintenanceDate");
+  const notesInput = document.querySelector("#notes");
+  if (state) {
+    state.editIndex = state.maintenances.indexOf(maintenance);
+  }
+  if (ticketIdInput) ticketIdInput.value = maintenance.ticketId || "";
+  if (assetSelect) assetSelect.value = maintenance.asset || "";
+  if (typeSelect) typeSelect.value = maintenance.type || "preventive";
+  if (dateInput) dateInput.value = maintenance.date || "";
+  if (notesInput) notesInput.value = maintenance.notes || "";
+  const modal = new window.bootstrap.Modal(document.getElementById("scheduleModal"));
+  modal.show();
+};
+
+const bindListHandlers = (state, upcomingEl, overdueEl) => {
+  const handler = (event) => {
+    const item = event.target.closest(".calendar-list-item");
+    if (!item) return;
+    const action = event.target.getAttribute("data-action");
+    const index = Number(item.dataset.index);
+    const maintenance = Number.isFinite(index) && state.maintenances[index] ? state.maintenances[index] : null;
+    if (!maintenance) return;
+    if (action === "edit") {
+      openEditModal(state, maintenance);
+      return;
+    }
+    openDetailModal(state, maintenance);
+  };
+
+  if (upcomingEl) upcomingEl.addEventListener("click", handler);
+  if (overdueEl) overdueEl.addEventListener("click", handler);
+};
+
+const openDetailModal = (state, maintenance) => {
+  const detailAsset = document.querySelector("#detailAsset");
+  const detailTicket = document.querySelector("#detailTicket");
+  const detailType = document.querySelector("#detailType");
+  const detailDate = document.querySelector("#detailDate");
+  const detailNotes = document.querySelector("#detailNotes");
+  state.editIndex = state.maintenances.indexOf(maintenance);
+  if (detailTicket) detailTicket.textContent = maintenance.ticketId || "-";
+  if (detailAsset) detailAsset.textContent = maintenance.asset || "";
+  if (detailType) detailType.textContent = maintenance.type || "";
+  if (detailDate) detailDate.textContent = maintenance.date || "";
+  if (detailNotes) detailNotes.textContent = maintenance.notes || "-";
+  const modal = new window.bootstrap.Modal(document.getElementById("detailModal"));
+  modal.show();
+};
+
+
 const findMaintenanceByEvent = (maintenances, event) => {
-  const custom = event && event.customTags ? event.customTags : {};
+  const custom = event && event.extendedProps ? event.extendedProps : {};
   const id = custom.maintenanceId || event.id;
   const localId = custom.localId;
-  return maintenances.find((m) => (id && m.id === id) || (localId && m.localId === localId));
+  return maintenances.find(
+    (m) => (id && String(m.id) === String(id)) || (localId && String(m.localId) === String(localId))
+  );
 };
 
 const updateStats = (state, scheduledEl, overdueEl, assetsEl) => {
@@ -676,16 +991,18 @@ const deleteMaintenanceInApi = async (maintenanceId, scheduleStatus) => {
   }
 };
 
-const updateViewButtons = (viewName, weekBtn, monthBtn) => {
-  if (!weekBtn || !monthBtn) return;
-  const isWeek = String(viewName).includes("week");
-  weekBtn.classList.toggle("active", isWeek);
-  monthBtn.classList.toggle("active", !isWeek);
+const updateViewButtons = (viewName, weekBtn, monthBtn, listBtn) => {
+  const isWeek = String(viewName).includes("timeGridWeek");
+  const isMonth = String(viewName).includes("dayGridMonth");
+  const isList = String(viewName).includes("list");
+  if (weekBtn) weekBtn.classList.toggle("active", isWeek);
+  if (monthBtn) monthBtn.classList.toggle("active", isMonth);
+  if (listBtn) listBtn.classList.toggle("active", isList);
 };
 
 const updateMonthLabel = (labelEl) => {
   if (!labelEl || !calendarInstance) return;
-  const current = calendarInstance.getCurrentDisplayDate();
+  const current = calendarInstance.getDate();
   const monthName = current.toLocaleString("default", { month: "long" });
   labelEl.textContent = `${monthName} ${current.getFullYear()}`;
 };

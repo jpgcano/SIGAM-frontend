@@ -51,14 +51,19 @@ const render = async () => {
               <h5 class="fw-semibold mb-3">Change Password</h5>
               <form id="passwordForm" novalidate>
                 <div class="mb-3">
-                  <label class="form-label">New Password</label>
-                  <input id="newPassword" class="form-control" type="password" required>
-                  <div class="invalid-feedback">Password is required.</div>
+                  <label class="form-label">Current Password</label>
+                  <input id="currentPassword" class="form-control" type="password" required>
+                  <div class="invalid-feedback">Current password is required.</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Confirm Password</label>
+                  <label class="form-label">New Password</label>
+                  <input id="newPassword" class="form-control" type="password" required minlength="8">
+                  <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Confirm New Password</label>
                   <input id="confirmPassword" class="form-control" type="password" required>
-                  <div class="invalid-feedback">Please confirm the password.</div>
+                  <div class="invalid-feedback">Please confirm the new password.</div>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                   ${renderButton({
@@ -141,50 +146,101 @@ const setPasswordStatus = (message, type) => {
 const setSubmitting = (isSubmitting) => {
   const submitBtn = document.querySelector("#passwordSubmit");
   if (!submitBtn) return;
+
   submitBtn.disabled = isSubmitting;
-  submitBtn.textContent = isSubmitting ? "Updating..." : "Update Password";
+  if (isSubmitting) {
+    submitBtn.textContent = "Updating...";
+    submitBtn.innerHTML = "Updating...";
+  } else {
+    submitBtn.textContent = "Update Password";
+    submitBtn.innerHTML = "Update Password";
+  }
 };
 
 const handlePassword = async (event) => {
   event.preventDefault();
   setPasswordStatus("");
 
-  const password = document.querySelector("#newPassword")?.value.trim() || "";
-  const confirm = document.querySelector("#confirmPassword")?.value.trim() || "";
+  const currentPassword = document.querySelector("#currentPassword")?.value.trim() || "";
+  const newPassword = document.querySelector("#newPassword")?.value.trim() || "";
+  const confirmPassword = document.querySelector("#confirmPassword")?.value.trim() || "";
 
-  if (!password || !confirm) {
-    setPasswordStatus("Password is required.", "error");
+  // Validaciones básicas
+  if (!currentPassword) {
+    setPasswordStatus("Current password is required.", "error");
     return;
   }
 
-  if (password !== confirm) {
-    setPasswordStatus("Passwords do not match.", "error");
+  if (!newPassword) {
+    setPasswordStatus("New password is required.", "error");
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    setPasswordStatus("New password must be at least 8 characters long.", "error");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    setPasswordStatus("New passwords do not match.", "error");
+    return;
+  }
+
+  if (currentPassword === newPassword) {
+    setPasswordStatus("New password must be different from current password.", "error");
     return;
   }
 
   const user = getUser();
   const userId = user && (user.id || user.id_usuario || user.userId);
   if (!userId) {
-    setPasswordStatus("User id not found in session.", "error");
+    setPasswordStatus("User ID not found in session.", "error");
     return;
   }
 
   if (!SIGAM_CONFIG.API_BASE_URL) {
-    setPasswordStatus("API not available.", "error");
+    setPasswordStatus("API not available. Please check configuration.", "error");
     return;
   }
 
   try {
     setSubmitting(true);
-    await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${encodeURIComponent(userId)}/password`, {
-      method: "PUT",
-      body: { password }
-    });
-    setPasswordStatus("Password updated successfully.", "success");
+    setPasswordStatus("Updating password...", "");
+
+    // Intentar con el endpoint específico primero
+    try {
+      await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${encodeURIComponent(userId)}/password`, {
+        method: "PUT",
+        body: {
+          currentPassword: currentPassword,
+          newPassword: newPassword
+        }
+      });
+    } catch (specificError) {
+      // Si el endpoint específico falla, intentar con una actualización general del usuario
+      console.warn("Specific password endpoint failed, trying user update:", specificError.message);
+      await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}/${encodeURIComponent(userId)}`, {
+        method: "PUT",
+        body: {
+          password: newPassword,
+          currentPassword: currentPassword
+        }
+      });
+    }
+
+    setPasswordStatus("Password updated successfully!", "success");
     const form = document.querySelector("#passwordForm");
     if (form) form.reset();
+
+    // Opcional: mostrar un mensaje de éxito temporal y luego limpiar
+    setTimeout(() => {
+      setPasswordStatus("", "");
+    }, 3000);
+
   } catch (error) {
-    setPasswordStatus(error.message || "Could not update password.", "error");
+    console.error("Password update error:", error);
+    const errorMessage = error.message || "Could not update password. Please try again.";
+    setPasswordStatus(errorMessage, "error");
   } finally {
     setSubmitting(false);
   }
@@ -201,7 +257,26 @@ const bindEvents = () => {
 
   if (form) {
     form.addEventListener("submit", handlePassword);
+
+    // Validación en tiempo real para mejor UX
+    const inputs = form.querySelectorAll("input");
+    inputs.forEach(input => {
+      input.addEventListener("blur", () => {
+        if (input.checkValidity()) {
+          input.classList.remove("is-invalid");
+        } else {
+          input.classList.add("is-invalid");
+        }
+      });
+
+      input.addEventListener("input", () => {
+        if (input.classList.contains("is-invalid") && input.checkValidity()) {
+          input.classList.remove("is-invalid");
+        }
+      });
+    });
   }
+
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
