@@ -24,3 +24,6 @@ coverage/
 
 # Build-time runtime env
 src/legacy/js/runtime-env.js
+
+# Calendario
+planCalendario.md
