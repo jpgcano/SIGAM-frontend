@@ -1,3 +1,4 @@
+// Register flow: validate inputs, call API, redirect to login on success.
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("registerForm")
     const nameInput = document.getElementById("name")

@@ -63,3 +63,51 @@
 - Scope: README con estructura, configuracion de entorno y despliegue.
 - Files: README.md.
 - Evidence: README describe flujo de Vercel y variables de entorno.
+- Task: Documentacion ampliada y comentarios en codigo.
+- Scope: README ampliado con estructura, rutas, auth, API y contribucion. Comentarios breves en servicios y flujos de auth.
+- Files: README.md, src/view/js/api.js, src/view/js/login.js, src/view/js/register.js, src/view/services/auth-guard.js, src/view/services/navbar.js.
+- Evidence: README incluye secciones de rutas y auth; codigo con comentarios de proposito.
+- Task: Pruebas de tickets por serial y categorias.
+- Scope: Validacion manual de carga de categorias, autocompletado de serial y creacion de ticket.
+- Files: test/tickets-serial-categorias.md.
+- Evidence: Checklist y resultados en test/tickets-serial-categorias.md.
+- Task: Tests automaticos DOM para tickets.
+- Scope: Tests con Vitest + JSDOM para categorias y serial.
+- Files: test/tickets.dom.test.js, vitest.config.js, package.json, README.md.
+- Evidence: Casos automatizados definidos en test/tickets.dom.test.js.
+- Task: Ajuste de carga de categorias desde API.
+- Scope: Soporte para respuestas anidadas y nombres alternativos de campos.
+- Files: src/view/js/api.js, src/view/js/tickets.js.
+- Evidence: Normalizacion extendida para payloads data.categorias y data.categories.
+- Task: Ajuste responsive de tarjetas de tickets.
+- Scope: Breakpoints para 450px, 750px, 1200px y 1400px+ con layout estable.
+- Files: src/view/css/tickets.css, test/tickets-responsive.md.
+- Evidence: Checklist en test/tickets-responsive.md.
+- Task: Regla de responsive agregada al skill.
+- Scope: Se establece que todas las vistas deben funcionar en 450px, 750px, 1200px y 1400px+.
+- Files: SKILL.md.
+- Evidence: Regla 20 en SKILL.md.
+- Task: Ajuste de filtros y layout de tickets.
+- Scope: Filtro por categoria desde API y lineas de meta con wrap para evitar overflow.
+- Files: src/view/pages/tickets.html, src/view/js/tickets.js, src/view/css/tickets.css, test/tickets-filtros-categorias.md.
+- Evidence: Checklist en test/tickets-filtros-categorias.md.
+- Task: Refinamiento de filtros de tickets.
+- Scope: Filtro de estado poblado desde API y normalizacion de textos para busqueda y categorias.
+- Files: src/view/js/tickets.js, src/view/css/tickets.css.
+- Evidence: Pendiente de validacion visual en deploy.
+- Task: Ajuste de densidad visual en tickets.
+- Scope: Tarjetas compactas y layout optimizado para 450px, 750px, 1200px y 1400px+.
+- Files: src/view/css/tickets.css, test/tickets-responsive-v2.md.
+- Evidence: Checklist en test/tickets-responsive-v2.md.
+- Task: Ajuste de ancho y centrado del listado de tickets.
+- Scope: Max-width 900px y menor espacio vertical.
+- Files: src/view/css/tickets.css, test/tickets-density-v3.md.
+- Evidence: Checklist en test/tickets-density-v3.md.
+- Task: Ajuste de ancho para escritorio.
+- Scope: Listado ampliado a 1100px/1180px en 1400px+ para evitar layout angosto.
+- Files: src/view/css/tickets.css, test/tickets-density-v3.md.
+- Evidence: Actualizacion en test/tickets-density-v3.md.
+- Task: Layout en grid para tickets.
+- Scope: Grid con 1/2/3 columnas segun 450/750/1400+ para aprovechar espacio.
+- Files: src/view/css/tickets.css, test/tickets-grid-layout.md.
+- Evidence: Checklist en test/tickets-grid-layout.md.

@@ -1,9 +1,13 @@
 let tickets = [];
 let activosMap = new Map();
+let activosBySerial = new Map();
 let activosList = [];
+let categoriasMap = new Map();
+let categoriasList = [];
 
 const api = window.SIGAM_API;
 const statusFilter = document.getElementById("statusFilter");
+const categoryFilter = document.getElementById("categoryFilter");
 const modal = document.getElementById("ticketModal");
 const openBtn = document.getElementById("newTicketBtn");
 const closeBtn = document.querySelector(".close");
@@ -16,9 +20,23 @@ const searchInput = document.getElementById("searchInput");
 const ticketStatusEl = document.getElementById("ticketStatus");
 const ticketsCount = document.getElementById("contadorTickets");
 
+const prevPageBtn = document.getElementById("prevPage");
+const nextPageBtn = document.getElementById("nextPage");
+const pageInfo = document.getElementById("pageInfo");
+const pageSizeSelect = document.getElementById("pageSize");
+
+let currentPage = 1;
+let pageSize = 20;
+let hasMore = false;
+
+if (pageSizeSelect) {
+    pageSize = Number(pageSizeSelect.value) || pageSize;
+}
+
 const titleInput = document.getElementById("title");
 const descriptionInput = document.getElementById("description");
 const deviceInput = document.getElementById("device");
+const deviceList = document.getElementById("deviceList");
 const categoryInput = document.getElementById("category");
 const createdByInput = document.getElementById("createdBy");
 const assignedToInput = document.getElementById("assignedTo");
@@ -126,7 +144,7 @@ function validateTicketForm() {
         setFieldError(deviceInput, "");
     }
 
-    if (!categoryInput.value.trim()) {
+    if (!categoryInput.value) {
         isValid = false;
         setFieldError(categoryInput, "Category is required.");
     } else {
@@ -173,19 +191,58 @@ function normalizeTicket(raw) {
         raw.fecha_creacion;
     const idActivo = raw.id_activo || raw.activoId || raw.assetId;
     const activoInfo = activosMap.get(String(idActivo)) || {};
+    const rawStatus = raw.status || raw.estado || "";
+    const normalizedStatus = normalizeToken(rawStatus);
+    const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
+    const categoryLabel =
+        raw.category ||
+        raw.categoria ||
+        raw.categoria_nombre ||
+        (categoryId ? categoriasMap.get(String(categoryId)) : "") ||
+        (activoInfo.raw && (activoInfo.raw.categoria || activoInfo.raw.categoria_nombre)) ||
+        "";
     return {
         id: raw.id || raw._id || raw.ticketId || raw.codigo || raw.id_ticket,
-        title: raw.title || raw.titulo || raw.asunto || "",
+        title: raw.title || raw.titulo || raw.asunto || raw.descripcion || "",
         description: raw.description || raw.descripcion || "",
         device: raw.device || raw.dispositivo || activoInfo.label || "",
-        category: raw.category || raw.categoria || "",
+        category: categoryLabel,
         createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
         assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || "",
         estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
-        status: raw.status || raw.estado || "",
+        status: rawStatus,
+        statusNormalized: normalizedStatus,
         assetId: idActivo || "",
         date: createdAt ? new Date(createdAt).toLocaleDateString() : ""
     };
+}
+
+function normalizeToken(value) {
+    return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function mapStatusClass(status) {
+    const key = normalizeToken(status);
+    if (key.includes('abierto')) return 'status-abierto';
+    if (key.includes('proceso')) return 'status-en-proceso';
+    if (key.includes('cerrado')) return 'status-cerrado';
+    if (key.includes('resuelto')) return 'status-resuelto';
+    return '';
+}
+
+function getActivoSerial(activo) {
+    return (
+        activo.serial ||
+        activo.serie ||
+        activo.codigo ||
+        activo.codigo_activo ||
+        activo.serial_activo ||
+        ""
+    );
 }
 
 async function loadActivos() {
@@ -193,14 +250,14 @@ async function loadActivos() {
         return;
     }
     try {
-        const data = await api.getActivos();
+        const data = await api.getActivos({ limit: 500, offset: 0 });
         activosList = Array.isArray(data) ? data : [];
         activosMap = new Map(
             activosList.map((activo) => {
                 const id = activo.id_activo || activo.id || activo.idActivo;
                 const labelParts = [
                     activo.modelo,
-                    activo.serial,
+                    getActivoSerial(activo),
                     activo.sede,
                     activo.sala
                 ].filter(Boolean);
@@ -208,39 +265,152 @@ async function loadActivos() {
                 return [String(id), { label, raw: activo }];
             })
         );
+        activosBySerial = new Map(
+            activosList
+                .map((activo) => ({
+                    serial: getActivoSerial(activo),
+                    activo
+                }))
+                .filter((item) => item.serial)
+                .map((item) => [String(item.serial).trim().toLowerCase(), item.activo])
+        );
 
-        if (deviceInput) {
-            const placeholder = '<option value="">Selecciona un activo</option>';
-            const options = activosList
-                .map((activo) => {
-                    const id = activo.id_activo || activo.id || activo.idActivo;
-                    const info = activosMap.get(String(id)) || {};
-                    const label = info.label || String(id || "Activo");
-                    return `<option value="${id}">${label}</option>`;
-                })
+        if (deviceList) {
+            const serials = Array.from(new Set(
+                activosList
+                    .map((activo) => getActivoSerial(activo))
+                    .filter(Boolean)
+                    .map((serial) => String(serial).trim())
+            ));
+            deviceList.innerHTML = serials
+                .map((serial) => `<option value="${serial}"></option>`)
                 .join("");
-            deviceInput.innerHTML = placeholder + options;
         }
     } catch (error) {
         setTicketStatus("Unable to load assets from API.", "error");
     }
 }
 
-async function loadTickets() {
+async function loadCategorias() {
+    if (!api || !api.getCategorias) {
+        return;
+    }
+    try {
+        const data = api.getCategoriasTicket ? await api.getCategoriasTicket() : await api.getCategorias();
+        categoriasList = normalizeCategorias(data);
+        renderCategorias();
+    } catch (error) {
+        categoriasList = [];
+        renderCategorias();
+        setTicketStatus("Unable to load categories from API.", "error");
+    }
+}
+
+function normalizeCategorias(data) {
+    if (Array.isArray(data)) {
+        return data;
+    }
+    if (data && Array.isArray(data.categorias)) {
+        return data.categorias;
+    }
+    if (data && Array.isArray(data.categories)) {
+        return data.categories;
+    }
+    return [];
+}
+
+function getCategoriaLabel(categoria) {
+    return (
+        categoria.nombre ||
+        categoria.name ||
+        categoria.categoria ||
+        categoria.nombre_categoria ||
+        ""
+    );
+}
+
+function renderCategorias() {
+    if (!categoryInput) {
+        return;
+    }
+
+    categoriasMap = new Map(
+        categoriasList.map((categoria) => {
+            const id = categoria.id_categoria_ticket || categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
+            const label = getCategoriaLabel(categoria) || String(id || "Categoria");
+            return [String(id), label];
+        })
+    );
+
+    const placeholder = '<option value="">Selecciona categoria</option>';
+    const options = Array.from(categoriasMap.entries())
+        .map(([id, label]) => `<option value="${id}">${label}</option>`)
+        .join("");
+    categoryInput.innerHTML = placeholder + options;
+
+    if (categoryFilter) {
+        const filterPlaceholder = '<option value="all">All categories</option>';
+        const filterOptions = Array.from(categoriasMap.entries())
+            .map(([id, label]) => `<option value="${normalizeToken(label)}">${label}</option>`)
+            .join("");
+        categoryFilter.innerHTML = filterPlaceholder + filterOptions;
+    }
+}
+
+function renderStatusFilter() {
+    if (!statusFilter) {
+        return;
+    }
+    const unique = new Map();
+    tickets.forEach((ticket) => {
+        const label = String(ticket.status || "").trim();
+        if (!label) {
+            return;
+        }
+        unique.set(normalizeToken(label), label);
+    });
+    const placeholder = '<option value="all">All the states</option>';
+    const options = Array.from(unique.entries())
+        .map(([value, label]) => `<option value="${value}">${label}</option>`)
+        .join("");
+    statusFilter.innerHTML = placeholder + options;
+}
+
+function updatePaginationControls() {
+    if (pageInfo) {
+        pageInfo.textContent = `Page ${currentPage}`;
+    }
+    if (prevPageBtn) {
+        prevPageBtn.disabled = currentPage <= 1;
+    }
+    if (nextPageBtn) {
+        nextPageBtn.disabled = !hasMore;
+    }
+}
+
+async function loadTickets(page = 1) {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
         return;
     }
     try {
-        const data = await api.getTickets();
+        currentPage = page;
+        const offset = (currentPage - 1) * pageSize;
+        const data = await api.getTickets({ limit: pageSize, offset });
         tickets = (data || []).map(normalizeTicket);
+        hasMore = Array.isArray(data) && data.length === pageSize;
         localStorage.setItem("tickets", JSON.stringify(tickets));
+        renderStatusFilter();
         applyFilters();
+        updatePaginationControls();
     } catch (error) {
         setTicketStatus("Unable to load tickets from API.", "error");
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
+        hasMore = false;
+        renderStatusFilter();
         applyFilters();
+        updatePaginationControls();
     }
 }
 
@@ -263,7 +433,11 @@ if (ticketForm) {
 
         const user = getCurrentUser() || {};
         const reporterId = user.id || user.id_usuario || user.userId || "";
-        const assetId = deviceInput.value;
+        const serialValue = deviceInput.value.trim();
+        const matchedActivo = activosBySerial.get(serialValue.toLowerCase());
+        const assetId = matchedActivo
+            ? (matchedActivo.id_activo || matchedActivo.id || matchedActivo.idActivo)
+            : "";
 
         if (!reporterId) {
             setTicketStatus("Debes iniciar sesión para crear un ticket.", "error");
@@ -271,26 +445,25 @@ if (ticketForm) {
             return;
         }
 
+        if (!assetId) {
+            setTicketStatus("Serial no encontrado. Verifica el activo.", "error");
+            setSubmitting(false);
+            return;
+        }
+
         const ticketPayload = {
-            id_activo: assetId ? Number(assetId) || assetId : "",
-            id_usuario_reporta: reporterId,
+            id_activo: Number(assetId) || assetId,
             descripcion: descriptionInput.value.trim()
         };
 
-        const extraPayload = {
-            titulo: titleInput.value.trim(),
-            categoria: categoryInput.value.trim(),
-            asignadoA: assignedToInput.value.trim(),
-            estimado: estimateInput.value.trim(),
-            estado: statusInput.value
-        };
+        const categoryValue = categoryInput.value;
+        if (categoryValue) {
+            ticketPayload.id_categoria_ticket = Number(categoryValue) || categoryValue;
+        }
 
         try {
-            const response = await api.createTicket({ ...ticketPayload, ...extraPayload });
-            const created = normalizeTicket(response || { ...ticketPayload, ...extraPayload });
-            tickets.unshift(created);
-            localStorage.setItem("tickets", JSON.stringify(tickets));
-            applyFilters();
+            await api.createTicket(ticketPayload);
+            await loadTickets(currentPage);
             ticketForm.reset();
             clearFormErrors();
             setTicketStatus("Ticket created successfully.", "success");
@@ -315,25 +488,27 @@ function renderTickets(list) {
         const div = document.createElement("div");
         div.classList.add("ticket");
         div.innerHTML = `
-            <div class="ticket-status">${ticket.status || "Pending"}</div>
+            <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
 
             <div class="ticket-title">
                 ${ticket.title || "Ticket"}
             </div>
 
-            <div class="ticket-info">
+            <div class="ticket-desc">
                 ${ticket.description}
             </div>
 
-            <div class="ticket-info">
-                TK-${ticket.id || index + 1} - ${ticket.device || "Activo"} - ${ticket.category || "Sin categoria"}
+            <div class="ticket-info ticket-line">
+                <span>TK-${ticket.id || index + 1}</span>
+                <span>${ticket.device || "Activo"}</span>
+                <span>${ticket.category || "Sin categoria"}</span>
             </div>
 
-            <div class="ticket-info">
-                Creado por: ${ticket.createdBy} -
-                Asignado a: ${ticket.assignedTo || "Sin asignar"} -
-                ${ticket.date} -
-                ${ticket.estimate || "Sin estimado"}
+            <div class="ticket-info ticket-meta">
+                <span>Creado por: ${ticket.createdBy || "Sin usuario"}</span>
+                <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
+                <span>${ticket.date}</span>
+                <span>${ticket.estimate || "Sin estimado"}</span>
             </div>
 
             <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
@@ -364,25 +539,29 @@ async function deleteTicket(index) {
 }
 
 function applyFilters() {
-    const search = searchInput.value.toLowerCase();
-    const status = statusFilter.value;
+    const search = normalizeToken(searchInput.value);
+    const status = normalizeToken(statusFilter.value);
+    const category = categoryFilter ? normalizeToken(categoryFilter.value) : "all";
 
     const filtered = tickets.filter(ticket => {
-        const title = (ticket.title || "").toLowerCase();
-        const description = (ticket.description || "").toLowerCase();
-        const device = (ticket.device || "").toLowerCase();
-        const category = (ticket.category || "").toLowerCase();
+        const title = normalizeToken(ticket.title);
+        const description = normalizeToken(ticket.description);
+        const device = normalizeToken(ticket.device);
+        const ticketCategory = normalizeToken(ticket.category);
 
         const matchSearch =
             title.includes(search) ||
             description.includes(search) ||
             device.includes(search) ||
-            category.includes(search);
+            ticketCategory.includes(search);
 
         const matchStatus =
-            status === "all" || ticket.status === status;
+            status === "all" || (ticket.statusNormalized || "").includes(status);
 
-        return matchSearch && matchStatus;
+        const matchCategory =
+            category === "all" || ticketCategory.includes(category);
+
+        return matchSearch && matchStatus && matchCategory;
     });
 
     renderTickets(filtered);
@@ -393,6 +572,35 @@ function applyFilters() {
 
 searchInput.addEventListener("input", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
+if (categoryFilter) {
+    categoryFilter.addEventListener("change", applyFilters);
+}
+
+if (prevPageBtn) {
+    prevPageBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+            loadTickets(currentPage - 1);
+        }
+    });
+}
+
+if (nextPageBtn) {
+    nextPageBtn.addEventListener("click", () => {
+        if (hasMore) {
+            loadTickets(currentPage + 1);
+        }
+    });
+}
+
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", () => {
+        const nextSize = Number(pageSizeSelect.value) || 20;
+        pageSize = nextSize;
+        loadTickets(1);
+    });
+}
 
 setCreatedByFromSession();
-loadActivos().then(loadTickets);
+Promise.all([loadActivos(), loadCategorias()]).then(() => {
+    loadTickets(1);
+});

@@ -1,3 +1,5 @@
+// Centralized API client for SIGAM frontend.
+// Handles base URL, auth token, and uniform error parsing.
 (function () {
     const config = window.SIGAM_CONFIG || {};
     const baseUrl = (config.API_BASE_URL || '').replace(/\/+$/, '');
@@ -6,6 +8,7 @@
     const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
     const categoriasEndpoint = config.CATEGORIAS_ENDPOINT || '/api/categorias';
+    const categoriasTicketEndpoint = config.CATEGORIAS_TICKET_ENDPOINT || '/api/tickets/categorias';
     const proveedoresEndpoint = config.PROVEEDORES_ENDPOINT || '/api/proveedores';
     const usuariosEndpoint = config.USUARIOS_ENDPOINT || '/api/usuarios';
     const mantenimientosEndpoint = config.MANTENIMIENTOS_ENDPOINT || '/api/mantenimientos';
@@ -88,17 +91,36 @@
         if (payload && Array.isArray(payload.data)) {
             return payload.data;
         }
+        if (payload && payload.data && Array.isArray(payload.data.data)) {
+            return payload.data.data;
+        }
+        if (payload && payload.data && Array.isArray(payload.data.categorias)) {
+            return payload.data.categorias;
+        }
+        if (payload && payload.data && Array.isArray(payload.data.categories)) {
+            return payload.data.categories;
+        }
         if (payload && Array.isArray(payload.tickets)) {
             return payload.tickets;
         }
         if (payload && Array.isArray(payload.activos)) {
             return payload.activos;
         }
+        if (payload && Array.isArray(payload.repuestos)) {
+            return payload.repuestos;
+        }
+        if (payload && Array.isArray(payload.categorias)) {
+            return payload.categorias;
+        }
+        if (payload && Array.isArray(payload.categories)) {
+            return payload.categories;
+        }
         return [];
     }
 
-    async function getTickets() {
-        const payload = await apiRequest(ticketsEndpoint);
+    async function getTickets(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        const payload = await apiRequest(qs ? `${ticketsEndpoint}?${qs}` : ticketsEndpoint);
         return normalizeCollection(payload);
     }
 
@@ -115,8 +137,9 @@
         return apiRequest(dashboardEndpoint);
     }
 
-    async function getActivos() {
-        const payload = await apiRequest(activosEndpoint);
+    async function getActivos(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        const payload = await apiRequest(qs ? `${activosEndpoint}?${qs}` : activosEndpoint);
         return normalizeCollection(payload);
     }
 
@@ -134,6 +157,11 @@
         return normalizeCollection(payload);
     }
 
+    async function getCategoriasTicket() {
+        const payload = await apiRequest(categoriasTicketEndpoint);
+        return normalizeCollection(payload);
+    }
+
     async function getProveedores() {
         const payload = await apiRequest(proveedoresEndpoint);
         return normalizeCollection(payload);
@@ -146,14 +174,6 @@
 
     async function createUsuario(body) {
         return apiRequest(usuariosEndpoint, { method: 'POST', body });
-    }
-
-    async function updateUsuario(id, body) {
-        const safeId = encodeURIComponent(id);
-        return apiRequest(`${usuariosEndpoint}/${safeId}`, {
-            method: 'PATCH',
-            body
-        });
     }
 
     async function updateUsuarioRol(id, rol) {
@@ -170,11 +190,6 @@
             method: 'PATCH',
             body: { password }
         });
-    }
-
-    async function deleteUsuario(id) {
-        const safeId = encodeURIComponent(id);
-        return apiRequest(`${usuariosEndpoint}/${safeId}`, { method: 'DELETE' });
     }
 
     async function getMantenimientos() {
@@ -227,16 +242,14 @@
         deleteTicket,
         getDashboard,
         getActivos,
+        getCategorias,
         createActivo,
         updateActivo,
-        getCategorias,
         getProveedores,
         getUsuarios,
         createUsuario,
-        updateUsuario,
         updateUsuarioRol,
         updateUsuarioPassword,
-        deleteUsuario,
         getMantenimientos,
         createMantenimiento,
         updateMantenimiento,

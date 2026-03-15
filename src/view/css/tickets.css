@@ -17,6 +17,7 @@ body{
 
 .container{
     width:92%;
+    max-width:1200px;
     margin:auto;
     margin-top:35px;
 }
@@ -107,9 +108,12 @@ select{
 /* LISTA TICKETS */
 
 #ticketList{
-    display:flex;
-    flex-direction:column;
-    gap:15px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+    width:100%;
+    max-width:1100px;
+    margin:0 auto 32px;
 }
 
 
@@ -117,19 +121,23 @@ select{
 
 .ticket{
     background:white;
-    padding:20px;
+    padding:16px;
     border-radius:14px;
     border:1px solid #c1c1c2;
     box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    display:grid;
+    gap:8px;
+    height:100%;
 }
 
 
 /* TITULO TICKET */
 
 .ticket-title{
-    font-size:18px;
+    font-size:16px;
     font-weight:600;
-    margin-bottom:8px;
+    margin-bottom:6px;
+    word-break:break-word;
 }
 
 
@@ -144,18 +152,36 @@ select{
 /* INFO EXTRA */
 
 .ticket-info{
-    font-size:13px;
+    font-size:12px;
     color:#6b7280;
+    word-break:break-word;
+    line-height:1.4;
+}
+
+.ticket-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+}
+
+.ticket-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 12px;
 }
 
 
 /* STATUS */
 
-.status{
-    float:right;
+.ticket-status{
+    justify-self:start;
+    align-self:start;
     font-size:12px;
     padding:6px 10px;
     border-radius:20px;
+    background:#e5e7eb;
+    color:#374151;
+    width:fit-content;
 }
 
 .status.progreso{
@@ -227,7 +253,8 @@ select{
 .modal-content {
     background: white;
     padding: 25px;
-    width: 400px;
+    width: 92vw;
+    max-width: 520px;
     border-radius: 12px;
 
     display: flex;
@@ -271,6 +298,12 @@ select{
     cursor: pointer;
 }
 
+#ticketForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .close {
     align-self: flex-end;
     font-size: 22px;
@@ -283,11 +316,12 @@ select{
     background:#ef4444;
     color:white;
     border:none;
-    padding:8px 14px;
+    padding:6px 12px;
     border-radius:8px;
-    font-size:13px;
+    font-size:12px;
     cursor:pointer;
     transition:0.2s;
+    width:fit-content;
 }
 
 .delete-btn:hover{
@@ -298,98 +332,158 @@ select{
     transform:scale(0.95);
 }
 
-/* RESPONSIVE */
-
-@media (max-width: 1024px) {
-    .container {
-        width: 94%;
-        margin-top: 28px;
-    }
-
-    .header h1 {
-        font-size: 28px;
-    }
-
-    .filters {
-        gap: 14px;
-        padding: 16px;
-    }
+.pagination{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:flex-end;
+    margin:12px auto 32px;
+    max-width:1100px;
 }
 
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
+.btn-page{
+    background:#0f172a;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+}
+
+.btn-page:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.page-info{
+    font-size:13px;
+    color:#6b7280;
+}
+
+.page-size{
+    border-radius:8px;
+    padding:8px 10px;
+}
+
+.ticket-status.status-abierto{
+    background:#dbeafe;
+    color:#1d4ed8;
+}
+
+.ticket-status.status-en-proceso{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.ticket-status.status-cerrado{
+    background:#d1fae5;
+    color:#065f46;
+}
+
+.ticket-status.status-resuelto{
+    background:#e0f2fe;
+    color:#0369a1;
+}
+
+@media (max-width: 750px){
+    .container{
+        width:94%;
+        margin-top:20px;
     }
 
-    .btn-nuevo {
-        width: 100%;
-        text-align: center;
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
     }
 
-    .filters {
-        flex-wrap: wrap;
+    .filters{
+        flex-direction:column;
+        gap:12px;
     }
 
     .search,
-    select {
-        min-width: 0;
-        width: 100%;
+    select{
+        width:100%;
+        min-width:unset;
     }
 
-    .ticket {
-        padding: 16px;
+    #ticketList{
+        width:100%;
     }
 
-    .ticket-title {
-        font-size: 16px;
+    .ticket{
+        padding:14px;
+        gap:6px;
     }
 
-    .modal-content {
-        width: min(92vw, 420px);
-        padding: 20px;
+    .ticket-title{
+        font-size:15px;
     }
 }
 
-@media (max-width: 480px) {
-    .container {
-        width: 94%;
-        margin-top: 22px;
+@media (max-width: 450px){
+    .header h1{
+        font-size:24px;
     }
 
-    .header h1 {
-        font-size: 24px;
+    .ticket{
+        padding:12px;
     }
 
-    .subtitle {
-        font-size: 14px;
+    .ticket-title{
+        font-size:14px;
     }
 
-    .filters {
-        padding: 14px;
-        gap: 12px;
+    .ticket-line,
+    .ticket-meta{
+        flex-direction:column;
+        gap:4px;
     }
 
-    .ticket {
-        padding: 14px;
+    .modal-content{
+        width:92vw;
+    }
+}
+
+@media (min-width: 750px){
+    #ticketList{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:14px;
+    }
+}
+
+@media (min-width: 751px) and (max-width: 1199px){
+    .container{
+        max-width:960px;
     }
 
-    .ticket-desc {
-        font-size: 14px;
+    #ticketList{
+        max-width:960px;
+    }
+}
+
+@media (min-width: 1200px){
+    .container{
+        max-width:1200px;
     }
 
-    .ticket-info {
-        font-size: 12px;
+    #ticketList{
+        max-width:1100px;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:16px;
+    }
+}
+
+@media (min-width: 1400px){
+    .container{
+        max-width:1280px;
     }
 
-    .status {
-        float: none;
-        display: inline-block;
-        margin-bottom: 10px;
-    }
-
-    .modal-content {
-        width: 92vw;
+    #ticketList{
+        max-width:1180px;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+        gap:16px;
     }
 }
