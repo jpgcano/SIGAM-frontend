@@ -457,11 +457,15 @@ const initTickets = () => {
     }
   };
 
+  const getTicketCategoryLabel = (ticket) => {
+    return String(ticket.category || ticket.classification || "").trim();
+  };
+
   const renderCategoriasFromTickets = () => {
     if (!categoryFilter) return;
     const unique = new Map();
     ticketsState.tickets.forEach((ticket) => {
-      const label = String(ticket.category || "").trim();
+      const label = getTicketCategoryLabel(ticket);
       if (!label) return;
       unique.set(normalizeToken(label), label);
     });
@@ -564,7 +568,7 @@ const initTickets = () => {
     list.forEach((ticket, index) => {
       const div = document.createElement("div");
       div.classList.add("ticket");
-      const categoryLabel = ticket.category || "Sin categoria";
+      const categoryLabel = ticket.category || ticket.classification || "Sin categoria";
       const classificationLabel = ticket.classification || "Sin clasificacion IA";
       div.innerHTML = `
         <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
@@ -638,7 +642,7 @@ const initTickets = () => {
       const title = normalizeToken(ticket.title);
       const description = normalizeToken(ticket.description);
       const device = normalizeToken(ticket.device);
-      const ticketCategory = normalizeToken(ticket.category);
+      const ticketCategory = normalizeToken(getTicketCategoryLabel(ticket));
 
       const matchSearch =
         title.includes(search) ||

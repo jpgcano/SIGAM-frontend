@@ -418,3 +418,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-category-fallback-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Mostrar categoria en cards con fallback a clasificacion IA
+- Rama: developer (feature/task)
+- Objetivo: Evitar cards sin categoria cuando solo existe clasificacion.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Usa clasificacion IA como fallback visual y para filtros.
+- Evidencia:
+  - `test/tickets-category-fallback-v2-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
