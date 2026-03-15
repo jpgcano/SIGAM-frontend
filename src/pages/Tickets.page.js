@@ -300,13 +300,18 @@ const initTickets = () => {
     const normalizedStatus = normalizeToken(rawStatus);
     const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
-      raw.clasificacion_nlp ||
       raw.categoria_ticket ||
       raw.category ||
       raw.categoria ||
       raw.categoria_nombre ||
       (categoryId ? ticketsState.categoriasMap.get(String(categoryId)) : "") ||
       (activoInfo.raw && (activoInfo.raw.categoria || activoInfo.raw.categoria_nombre)) ||
+      "";
+    const classificationLabel =
+      raw.clasificacion_nlp ||
+      raw.classification ||
+      raw.clasificacion ||
+      raw.clasificacion_ia ||
       "";
 
     return {
@@ -315,6 +320,7 @@ const initTickets = () => {
       description: raw.description || raw.descripcion || "",
       device: raw.device || raw.dispositivo || raw.activo_serial || activoInfo.label || "",
       category: categoryLabel,
+      classification: classificationLabel,
       createdBy: raw.createdBy || raw.creadoPor || raw.created_by || raw.usuario_reporta || "",
       assignedTo: raw.assignedTo || raw.asignadoA || raw.assigned_to || raw.usuario_asignado || raw.tecnico_asignado || "",
       estimate: raw.estimate || raw.tiempoEstimado || raw.estimated || "",
@@ -451,14 +457,33 @@ const initTickets = () => {
     }
   };
 
+  const renderCategoriasFromTickets = () => {
+    if (!categoryFilter) return;
+    const unique = new Map();
+    ticketsState.tickets.forEach((ticket) => {
+      const label = String(ticket.category || "").trim();
+      if (!label) return;
+      unique.set(normalizeToken(label), label);
+    });
+    const filterPlaceholder = '<option value="all">All categories</option>';
+    const options = Array.from(unique.entries())
+      .map(([value, label]) => `<option value="${value}">${label}</option>`)
+      .join("");
+    categoryFilter.innerHTML = filterPlaceholder + options;
+  };
+
   const loadCategorias = async () => {
     if (!SIGAM_CONFIG.API_BASE_URL) return;
     try {
       const data = await getCategorias();
       ticketsState.categoriasList = Array.isArray(data) ? data : normalizeCategorias(data);
       renderCategorias();
+      if (ticketsState.categoriasList.length === 0) {
+        renderCategoriasFromTickets();
+      }
     } catch (error) {
       setTicketStatus("Unable to load ticket categories from API.", "error");
+      renderCategoriasFromTickets();
     }
   };
 
@@ -532,12 +557,15 @@ const initTickets = () => {
 
     if (list.length === 0) {
       ticketList.innerHTML = "<p>No matching tickets found.</p>";
+      renderCategoriasFromTickets();
       return;
     }
 
     list.forEach((ticket, index) => {
       const div = document.createElement("div");
       div.classList.add("ticket");
+      const categoryLabel = ticket.category || "Sin categoria";
+      const classificationLabel = ticket.classification || "Sin clasificacion IA";
       div.innerHTML = `
         <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
 
@@ -552,7 +580,7 @@ const initTickets = () => {
         <div class="ticket-info ticket-line">
             <span>TK-${ticket.id || index + 1}</span>
             <span>${ticket.device || "Activo"}</span>
-            <span>${ticket.category || "Sin clasificacion"}</span>
+            <span>${categoryLabel}</span>
         </div>
 
         <div class="ticket-info ticket-meta">
@@ -560,6 +588,9 @@ const initTickets = () => {
             <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
             <span>${ticket.date}</span>
             <span>${ticket.estimate || "Sin estimado"}</span>
+        </div>
+        <div class="ticket-info ticket-meta">
+            <span>Clasificacion IA: ${classificationLabel}</span>
         </div>
 
         <button class="delete-btn" data-index="${index}">Delete</button>
@@ -622,6 +653,7 @@ const initTickets = () => {
     });
 
     renderTickets(filtered);
+    renderCategoriasFromTickets();
     if (ticketsCount) {
       ticketsCount.textContent = `${filtered.length} tickets`;
     }

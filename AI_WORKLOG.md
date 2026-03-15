@@ -407,3 +407,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/api-cache-no-store-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Fallback de categorias en Tickets
+- Rama: developer (feature/task)
+- Objetivo: Mantener filtro de categorias funcionando sin dependencia del endpoint.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Deriva categorias desde tickets y muestra clasificacion IA.
+- Evidencia:
+  - `test/tickets-category-fallback-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
