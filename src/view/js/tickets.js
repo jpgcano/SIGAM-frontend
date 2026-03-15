@@ -15,6 +15,10 @@ const closeBtn = document.querySelector(".close");
 const ticketForm = document.getElementById("ticketForm");
 const addTicketBtn = document.getElementById("addTicket");
 const ticketList = document.getElementById("ticketList");
+const ticketListStatus = document.getElementById("ticketListStatus");
+const ticketPrevBtn = document.getElementById("ticketPrevBtn");
+const ticketNextBtn = document.getElementById("ticketNextBtn");
+const ticketPageInfo = document.getElementById("ticketPageInfo");
 
 const searchInput = document.getElementById("searchInput");
 const ticketStatusEl = document.getElementById("ticketStatus");
@@ -42,6 +46,24 @@ const createdByInput = document.getElementById("createdBy");
 const assignedToInput = document.getElementById("assignedTo");
 const estimateInput = document.getElementById("estimate");
 const statusInput = document.getElementById("status");
+
+const TICKETS_PAGE_SIZE = 50;
+let ticketOffset = 0;
+let ticketFetchTimer = null;
+
+function setListStatus(message, type) {
+    if (!ticketListStatus) {
+        return;
+    }
+    ticketListStatus.textContent = message || "";
+    ticketListStatus.style.color = "#6b7280";
+    if (type === "error") {
+        ticketListStatus.style.color = "#dc2626";
+    }
+    if (type === "success") {
+        ticketListStatus.style.color = "#059669";
+    }
+}
 
 /* abrir modal */
 openBtn.onclick = () => {
@@ -99,7 +121,7 @@ function setCreatedByFromSession() {
         createdByInput.value = user.nombre || user.name || user.email;
         return;
     }
-    createdByInput.value = "Usuario";
+    createdByInput.value = "User";
 }
 
 function setFieldError(input, message) {
@@ -391,6 +413,7 @@ function updatePaginationControls() {
 async function loadTickets(page = 1) {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
+        setListStatus("API not available.", "error");
         return;
     }
     try {
@@ -404,7 +427,19 @@ async function loadTickets(page = 1) {
         applyFilters();
         updatePaginationControls();
     } catch (error) {
-        setTicketStatus("Unable to load tickets from API.", "error");
+        const status = error && error.status ? error.status : null;
+        if (status === 401) {
+            setListStatus("Session expired. Please log in again.", "error");
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 800);
+        } else if (status === 429) {
+            setListStatus("Too many requests. Please wait and try again.", "error");
+        } else if (status === 500) {
+            setListStatus("Server error loading tickets.", "error");
+        } else {
+            setListStatus("Unable to load tickets from API.", "error");
+        }
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
         hasMore = false;
@@ -440,7 +475,13 @@ if (ticketForm) {
             : "";
 
         if (!reporterId) {
-            setTicketStatus("Debes iniciar sesión para crear un ticket.", "error");
+            setTicketStatus("You must sign in to create a ticket.", "error");
+            setSubmitting(false);
+            return;
+        }
+
+        if (!assetId) {
+            setTicketStatus("Serial not found. Please verify the asset.", "error");
             setSubmitting(false);
             return;
         }
@@ -476,11 +517,28 @@ if (ticketForm) {
     });
 }
 
+if (ticketPrevBtn) {
+    ticketPrevBtn.addEventListener("click", () => {
+        if (ticketOffset <= 0) {
+            return;
+        }
+        ticketOffset = Math.max(0, ticketOffset - TICKETS_PAGE_SIZE);
+        loadTickets();
+    });
+}
+
+if (ticketNextBtn) {
+    ticketNextBtn.addEventListener("click", () => {
+        ticketOffset += TICKETS_PAGE_SIZE;
+        loadTickets();
+    });
+}
+
 function renderTickets(list) {
     ticketList.innerHTML = "";
 
     if (list.length === 0) {
-        ticketList.innerHTML = "<p>No hay tickets que coincidan</p>";
+        ticketList.innerHTML = "<p>No matching tickets found.</p>";
         return;
     }
 
@@ -511,7 +569,7 @@ function renderTickets(list) {
                 <span>${ticket.estimate || "Sin estimado"}</span>
             </div>
 
-            <button class="delete-btn" onclick="deleteTicket(${index})">Eliminar</button>
+            <button class="delete-btn" onclick="deleteTicket(${index})">Delete</button>
         `;
         ticketList.appendChild(div);
     });

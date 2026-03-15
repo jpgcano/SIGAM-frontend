@@ -19,6 +19,7 @@
   ],
   "rewrites": [
     { "source": "/", "destination": "/pages/login.html" },
+    { "source": "/:path*.html", "destination": "/pages/:path*.html" },
     { "source": "/login", "destination": "/pages/login.html" },
     { "source": "/register", "destination": "/pages/register.html" },
     { "source": "/dashboard", "destination": "/pages/dashboard.html" },

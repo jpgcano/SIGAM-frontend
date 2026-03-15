@@ -48,14 +48,14 @@ function normalizeMaintenance(raw) {
 async function refreshMaintenances() {
   if (api && api.getMantenimientos) {
     try {
-      const data = await api.getMantenimientos()
+      const data = await api.getMantenimientos({ limit: 50, offset: 0 })
       usingApi = true
       saveMaintenances((data || []).map(normalizeMaintenance))
-      setScheduleStatus("Mantenimientos cargados desde API.", "success")
+      setScheduleStatus("Maintenance loaded from the API.", "success")
       renderCalendar()
       return
     } catch (error) {
-      setScheduleStatus("No se pudo cargar mantenimientos desde API.", "error")
+      setScheduleStatus("Could not load maintenance from the API.", "error")
     }
   }
   usingApi = false
@@ -250,7 +250,7 @@ function wireDragAndDrop() {
           id_ticket: list[index].ticketId,
           id_usuario_tecnico: list[index].technicianId
         }).catch(() => {
-          setScheduleStatus("No se pudo actualizar la fecha en API.", "error")
+          setScheduleStatus("Could not update the date in the API.", "error")
         })
       }
     })
@@ -348,10 +348,10 @@ if (scheduleForm) {
         : api.createMantenimiento(payload)
 
       action.then(() => {
-        setScheduleStatus("Mantenimiento guardado en API.", "success")
+        setScheduleStatus("Maintenance saved in the API.", "success")
         refreshMaintenances()
       }).catch(() => {
-        setScheduleStatus("No se pudo guardar mantenimiento en API.", "error")
+        setScheduleStatus("Could not save maintenance in the API.", "error")
       })
     }
 
@@ -396,7 +396,7 @@ function loadAssets() {
   select.innerHTML = ""
 
   if (api && api.getActivos) {
-    api.getActivos().then((assets) => {
+    api.getActivos({ limit: 50, offset: 0 }).then((assets) => {
       assetsList = Array.isArray(assets) ? assets : []
       if (assetsList.length === 0) {
         select.innerHTML = '<option value="">No assets available</option>'
@@ -405,7 +405,7 @@ function loadAssets() {
       assetsList.forEach((asset) => {
         const id = asset.id_activo || asset.id || asset.idActivo || ""
         const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean)
-        const label = labelParts.join(" - ") || asset.nombre || `Activo ${id}`
+        const label = labelParts.join(" - ") || asset.nombre || `Asset ${id}`
         select.innerHTML += `
           <option value="${label}">
             ${label}
@@ -444,7 +444,7 @@ function deleteMaintenance() {
     const target = maintenances[editIndex] || {}
     if (usingApi && api && api.deleteMantenimiento && target.id) {
       api.deleteMantenimiento(target.id).catch(() => {
-        setScheduleStatus("No se pudo eliminar en API.", "error")
+        setScheduleStatus("Could not delete in the API.", "error")
       })
     }
     maintenances.splice(editIndex, 1)

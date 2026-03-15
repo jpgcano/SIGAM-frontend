@@ -104,6 +104,23 @@ select{
     font-size:14px;
 }
 
+.ticket-pagination{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.btn-small{
+    padding:8px 12px;
+    font-size:12px;
+    border-radius:8px;
+}
+
+.ticket-page-info{
+    font-size:12px;
+    color:#6b7280;
+}
+
 
 /* LISTA TICKETS */
 
@@ -408,6 +425,7 @@ select{
         width:100%;
         min-width:unset;
     }
+}
 
     #ticketList{
         width:100%;
@@ -421,7 +439,6 @@ select{
     .ticket-title{
         font-size:15px;
     }
-}
 
 @media (max-width: 450px){
     .header h1{
@@ -431,10 +448,12 @@ select{
     .ticket{
         padding:12px;
     }
+}
 
     .ticket-title{
         font-size:14px;
     }
+}
 
     .ticket-line,
     .ticket-meta{
@@ -458,6 +477,7 @@ select{
     .container{
         max-width:960px;
     }
+}
 
     #ticketList{
         max-width:960px;

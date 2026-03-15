@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const passwordInput = document.getElementById("password")
     const statusEl = document.getElementById("loginStatus")
     const submitBtn = document.getElementById("loginBtn")
+    let loginAttempts = 0
 
     function setStatus(message, type) {
         if (!statusEl) {
@@ -25,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return
         }
         submitBtn.disabled = isSubmitting
-        submitBtn.textContent = isSubmitting ? "Loading..." : "enter"
+        submitBtn.textContent = isSubmitting ? "Loading..." : "Enter"
     }
 
     if (!form) {
@@ -40,12 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const password = passwordInput.value
 
         if (!email || !password) {
-            setStatus("Ingresa email y password.", "error")
+            setStatus("Enter email and password.", "error")
             return
         }
 
         if (!window.SIGAM_API) {
-            setStatus("Config de API no cargada.", "error")
+            setStatus("API config not loaded.", "error")
             return
         }
 
@@ -68,10 +69,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             window.SIGAM_API.setUser(userPayload)
 
-            setStatus("Login correcto. Redirigiendo...", "success")
+            setStatus("Login successful. Redirecting...", "success")
             window.location.href = "dashboard.html"
         } catch (error) {
-            setStatus(error.message || "Error de autenticacion.", "error")
+            loginAttempts += 1
+            if (loginAttempts >= 3) {
+                setStatus("Too many failed attempts. Please wait and try again.", "error")
+                submitBtn.disabled = true
+                return
+            }
+            setStatus(error.message || "Authentication error.", "error")
         } finally {
             setSubmitting(false)
         }

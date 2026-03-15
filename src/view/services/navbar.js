@@ -5,6 +5,19 @@
         return;
     }
 
+    const ensureNavbarStyles = () => {
+        if (document.querySelector('link[data-sigam-navbar="true"]')) {
+            return;
+        }
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "../css/navbar.css";
+        link.setAttribute("data-sigam-navbar", "true");
+        document.head.appendChild(link);
+    };
+
+    ensureNavbarStyles();
+
     let currentPage = (location.pathname.split("/").pop() || "").toLowerCase();
     if (!currentPage) {
         currentPage = "dashboard.html";
@@ -51,13 +64,22 @@
 
                 if (userBox && (name || email)) {
                     userBox.classList.remove("d-none");
-                    if (nameEl) nameEl.textContent = name || "Usuario";
+                    if (nameEl) nameEl.textContent = name || "User";
                     if (emailEl) emailEl.textContent = email;
                 }
 
                 if (roleEl && role) {
                     roleEl.classList.remove("d-none");
-                    roleEl.textContent = role;
+                    const roleLabelMap = {
+                        gerente: "Manager",
+                        analista: "Analyst",
+                        tecnico: "Technician",
+                        "técnico": "Technician",
+                        auditor: "Auditor",
+                        usuario: "User"
+                    };
+                    const roleKey = normalizedRole.replace(/\s+/g, "");
+                    roleEl.textContent = roleLabelMap[roleKey] || role;
                     roleEl.classList.remove("bg-primary", "bg-success", "bg-info", "bg-warning", "bg-secondary", "text-dark");
                     if (normalizedRole.includes("gerente")) {
                         roleEl.classList.add("bg-success");

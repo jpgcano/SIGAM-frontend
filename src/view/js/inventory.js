@@ -2,6 +2,7 @@
 // to a hard‑coded default list. using `let` because we will reassign when pushing new
 // assets later. this ensures persistence across page reloads.
 const api = window.SIGAM_API
+const apiBaseUrl = window.SIGAM_CONFIG && window.SIGAM_CONFIG.API_BASE_URL
 let assets = []
 
 
@@ -12,14 +13,30 @@ const statusFilter = document.getElementById("statusFilter")
 const typeFilter = document.getElementById("typeFilter")
 const locationFilter = document.getElementById("locationFilter")
 const resultCount = document.getElementById("resultCount")
+const inventoryStatus = document.getElementById("inventoryStatus")
 const stockTableBody = document.getElementById("stockTableBody")
 const supplierCards = document.getElementById("supplierCards")
+const supplierListView = document.getElementById("supplierListView")
+const supplierViewGridBtn = document.getElementById("supplierViewGrid")
+const supplierViewListBtn = document.getElementById("supplierViewList")
 const supplierForm = document.getElementById("supplierForm")
 const supplierEditName = document.getElementById("supplierEditName")
 const supplierEditRows = document.getElementById("supplierEditRows")
 let editingSupplierName = null
 const assetFormStatus = document.getElementById("assetFormStatus")
 const assetSubmitBtn = document.getElementById("assetSubmitBtn")
+const assetViewGridBtn = document.getElementById("assetViewGrid")
+const assetViewListBtn = document.getElementById("assetViewList")
+const assetListView = document.getElementById("assetListView")
+const assetListBody = document.getElementById("assetListBody")
+const stockTableCard = document.getElementById("stockTableCard")
+const assetsPrevBtn = document.getElementById("assetsPrevBtn")
+const assetsNextBtn = document.getElementById("assetsNextBtn")
+const assetsPageInfo = document.getElementById("assetsPageInfo")
+
+const ASSETS_PAGE_SIZE = 50
+let assetsOffset = 0
+let assetsFetchTimer = null
 
 const assetEditForm = document.getElementById("assetEditForm")
 const editName = document.getElementById("editName")
@@ -40,6 +57,25 @@ const editSupplierLeadTime = document.getElementById("editSupplierLeadTime")
 let editingAssetId = null
 let categories = []
 let providers = []
+
+function setInventoryStatus(message) {
+    if (!inventoryStatus) {
+        return
+    }
+    inventoryStatus.textContent = message || ""
+}
+
+window.addEventListener("error", (event) => {
+    if (inventoryStatus) {
+        inventoryStatus.textContent = `Inventory error: ${event.message || "unknown"}`
+    }
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("sigam_token")
+    const shortToken = token ? `${token.slice(0, 8)}...` : "missing"
+    setInventoryStatus(`Inventory script loaded. API: ${apiBaseUrl || "missing"} | token: ${shortToken}`)
+})
 
 function normalizeAssets(list) {
     return list.map(asset => {
@@ -74,6 +110,12 @@ function guessType(modelo) {
     if (value.includes("desktop") || value.includes("pc")) {
         return "desktop"
     }
+    if (value.includes("tv") || value.includes("televisor")) {
+        return "tv"
+    }
+    if (value.includes("router")) {
+        return "router"
+    }
     return "desktop"
 }
 
@@ -91,7 +133,7 @@ function normalizeApiAsset(raw) {
     const location = locationParts.join(" - ") || raw.ubicacion || ""
     const supplierName = raw.proveedor || raw.proveedor_nombre || ""
     return {
-        name: raw.modelo || raw.nombre || `Activo ${id}`,
+        name: raw.modelo || raw.nombre || `Asset ${id}`,
         id: id ? String(id) : "",
         categoryId: raw.id_categoria || raw.categoria_id || raw.idCategoria || "",
         providerId: raw.id_proveedor || raw.proveedor_id || raw.idProveedor || "",
@@ -101,7 +143,7 @@ function normalizeApiAsset(raw) {
         location,
         status: mapStatus(raw.estado_vida_util || raw.estado || ""),
         type: guessType(raw.modelo || raw.nombre || ""),
-        warranty: raw.vida_util ? `${raw.vida_util} meses` : raw.estado_vida_util || "",
+        warranty: raw.vida_util ? `${raw.vida_util} months` : raw.estado_vida_util || "",
         stock: Number.parseInt(raw.stock || "0", 10) || 0,
         minStock: Number.parseInt(raw.stock_minimo || "0", 10) || 0,
         suppliers: supplierName
@@ -114,8 +156,16 @@ function hydrateAssets(list) {
     assets = normalizeAssets(list)
     renderAssets(assets)
     renderStockTable(assets)
-    renderSupplierCards(assets)
     buildLocationOptions(assets)
+    scheduleSupplierRender(assets)
+}
+
+function scheduleSupplierRender(list) {
+    if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(() => renderSupplierCards(list))
+    } else {
+        setTimeout(() => renderSupplierCards(list), 0)
+    }
 }
 
 function getIdValue(item, keys) {
@@ -144,7 +194,7 @@ function fillSelect(select, items, placeholder) {
         .map(item => {
             const id = getIdValue(item, ["id_categoria", "id_proveedor", "id", "idCategoria", "idProveedor"])
             const label = getLabelValue(item, ["nombre", "name", "descripcion", "razon_social", "contacto"])
-            const text = label || (id ? `ID ${id}` : "Sin nombre")
+            const text = label || (id ? `ID ${id}` : "No name")
             return `<option value="${id}">${text}</option>`
         })
         .join("")
@@ -158,7 +208,7 @@ async function loadCategoriesAndProviders() {
     }
     try {
         if (api.getCategorias) {
-            categories = await api.getCategorias()
+            categories = await api.getCategorias({ limit: 50, offset: 0 })
             fillSelect(document.getElementById("categoryId"), categories, "Select category")
             fillSelect(editCategoryId, categories, "Select category")
         }
@@ -168,7 +218,7 @@ async function loadCategoriesAndProviders() {
 
     try {
         if (api.getProveedores) {
-            providers = await api.getProveedores()
+            providers = await api.getProveedores({ limit: 50, offset: 0 })
             fillSelect(document.getElementById("providerId"), providers, "Select provider")
             fillSelect(editProviderId, providers, "Select provider")
         }
@@ -177,21 +227,98 @@ async function loadCategoriesAndProviders() {
     }
 }
 
+function buildAssetsQuery() {
+    const params = {
+        limit: ASSETS_PAGE_SIZE,
+        offset: assetsOffset
+    }
+    const searchValue = searchInput ? searchInput.value.trim() : ""
+    const statusValue = statusFilter ? statusFilter.value : "all"
+    const typeValue = typeFilter ? typeFilter.value : "all"
+    const locationValue = locationFilter ? locationFilter.value : "all"
+
+    if (searchValue) {
+        params.search = searchValue
+    }
+    if (statusValue && statusValue !== "all") {
+        params.estado = statusValue
+    }
+    if (typeValue && typeValue !== "all") {
+        params.tipo = typeValue
+    }
+    if (locationValue && locationValue !== "all") {
+        params.ubicacion = locationValue
+    }
+
+    return params
+}
+
+function scheduleAssetsRefresh() {
+    if (assetsFetchTimer) {
+        clearTimeout(assetsFetchTimer)
+    }
+    assetsFetchTimer = setTimeout(() => {
+        assetsOffset = 0
+        loadAssetsFromApi()
+    }, 600)
+}
+
 async function loadAssetsFromApi() {
     if (!api || !api.getActivos) {
+        setInventoryStatus("API client not ready.")
         hydrateAssets([])
         return
     }
+    setInventoryStatus("Loading assets...")
+    const cached = localStorage.getItem("assets")
+    if (cached && assets.length === 0) {
+        try {
+            hydrateAssets(JSON.parse(cached))
+        } catch {
+            // ignore cache parse errors
+        }
+    }
     try {
-        const data = await api.getActivos()
+        const data = await api.getActivos(buildAssetsQuery())
         const mapped = (data || []).map(normalizeApiAsset)
         hydrateAssets(mapped)
+        localStorage.setItem("assets", JSON.stringify(mapped))
+        setInventoryStatus(`Loaded ${mapped.length} assets.`)
+        updateAssetsPagination(mapped.length)
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
-            assetFormStatus.textContent = "No se pudieron cargar activos del servidor."
+        assetFormStatus.textContent = "Could not load assets from the server."
             assetFormStatus.className = "me-auto small text-danger"
         }
+        const statusCode = error && error.status ? error.status : null
+        if (statusCode === 401) {
+            setInventoryStatus("Session expired. Please log in again.")
+            setTimeout(() => {
+                window.location.href = "login.html"
+            }, 800)
+        } else if (statusCode === 429) {
+            setInventoryStatus("Too many requests. Please wait and try again.")
+        } else if (statusCode === 500) {
+            setInventoryStatus("Server error loading assets.")
+        } else {
+            const status = statusCode ? ` (${statusCode})` : ""
+            setInventoryStatus(`Failed to load assets${status}.`)
+        }
+        updateAssetsPagination(assets.length)
+    }
+}
+
+function updateAssetsPagination(count) {
+    if (assetsPageInfo) {
+        const page = Math.floor(assetsOffset / ASSETS_PAGE_SIZE) + 1
+        assetsPageInfo.textContent = `Page ${page}`
+    }
+    if (assetsPrevBtn) {
+        assetsPrevBtn.disabled = assetsOffset <= 0
+    }
+    if (assetsNextBtn) {
+        assetsNextBtn.disabled = count < ASSETS_PAGE_SIZE
     }
 }
 
@@ -201,7 +328,7 @@ async function loadAssetsFromApi() {
 // updating the counter showing how many assets are currently visible vs total.
 function renderAssets(list) {
 
-    grid.innerHTML = ""
+    const cards = []
 
     list.forEach(asset => {
 
@@ -211,7 +338,7 @@ function renderAssets(list) {
             badge = "bg-warning text-dark"
         }
 
-        grid.innerHTML += `
+        cards.push(`
 
 <div class="col-md-4">
 
@@ -264,15 +391,54 @@ Warranty ${asset.warranty}
 
     })
 
+    grid.innerHTML = cards.join("")
     resultCount.innerText = `Showing ${list.length} of ${assets.length} assets`
+    renderAssetList(list)
 
+}
+
+function renderAssetList(list) {
+    if (!assetListBody) {
+        return
+    }
+    const rows = []
+    list.forEach(asset => {
+        const statusBadge = asset.status === "maintenance"
+            ? '<span class="badge bg-warning text-dark">Maintenance</span>'
+            : '<span class="badge bg-success">Active</span>'
+        rows.push(`
+          <tr>
+            <td>${asset.name}</td>
+            <td class="text-muted">${asset.type}</td>
+            <td class="text-muted">${asset.location}</td>
+            <td class="text-end fw-semibold">${asset.stock}</td>
+            <td>${statusBadge}</td>
+          </tr>
+        `
+    })
+    assetListBody.innerHTML = rows.join("")
+}
+
+function setAssetView(mode) {
+    if (!assetViewGridBtn || !assetViewListBtn || !assetListView || !grid) {
+        return
+    }
+    const showList = mode === "list"
+    assetListView.classList.toggle("d-none", !showList)
+    grid.classList.toggle("d-none", showList)
+    assetViewGridBtn.classList.toggle("active", !showList)
+    assetViewListBtn.classList.toggle("active", showList)
 }
 
 function renderStockTable(list) {
     if (!stockTableBody) {
         return
     }
-    stockTableBody.innerHTML = ""
+    const rows = []
+    if (!list.length) {
+        stockTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No assets available.</td></tr>'
+        return
+    }
 
     list.forEach(asset => {
         const isLow = asset.stock < asset.minStock
@@ -280,7 +446,7 @@ function renderStockTable(list) {
             ? '<span class="badge bg-danger">Below minimum</span>'
             : '<span class="badge bg-success">OK</span>'
 
-        stockTableBody.innerHTML += `
+        rows.push(`
           <tr class="${isLow ? "table-danger" : ""}">
             <td>${asset.name}</td>
             <td class="text-muted">${asset.type}</td>
@@ -291,6 +457,7 @@ function renderStockTable(list) {
           </tr>
         `
     })
+    stockTableBody.innerHTML = rows.join("")
 }
 
 function buildLocationOptions(list) {
@@ -325,7 +492,14 @@ function renderSupplierCards(list) {
     if (!supplierCards) {
         return
     }
-    supplierCards.innerHTML = ""
+    const cards = []
+    if (!list.length) {
+        supplierCards.innerHTML = '<div class="text-muted">No suppliers available.</div>'
+        if (supplierListView) {
+            supplierListView.innerHTML = '<p class="text-muted mb-0">No suppliers available.</p>'
+        }
+        return
+    }
 
     const assetBestPrices = {}
     list.forEach(asset => {
@@ -384,7 +558,7 @@ function renderSupplierCards(list) {
           </div>
         `).join("")
 
-        supplierCards.innerHTML += `
+        cards.push(`
           <div class="col-md-4">
             <div class="card h-100 shadow-sm">
               <div class="card-body">
@@ -423,6 +597,43 @@ function renderSupplierCards(list) {
           </div>
         `
     })
+
+    supplierCards.innerHTML = cards.join("")
+    renderSupplierList(suppliers)
+}
+
+function renderSupplierList(suppliersMap) {
+    if (!supplierListView) {
+        return
+    }
+    const suppliers = Object.values(suppliersMap || {})
+    if (!suppliers.length) {
+        supplierListView.innerHTML = '<p class="text-muted mb-0">No suppliers available.</p>'
+        return
+    }
+    supplierListView.innerHTML = suppliers.map(supplier => {
+        const items = supplier.assets
+            .map(item => `<li class="mb-1">${item.assetName} <span class="text-muted">$${item.price || 0}</span></li>`)
+            .join("")
+        return `
+          <div class="mb-3">
+            <div class="fw-semibold">${supplier.name}</div>
+            <small class="text-muted">Assets supplied: ${supplier.items}</small>
+            <ul class="mt-2 mb-0 ps-3">${items}</ul>
+          </div>
+        `
+    }).join("")
+}
+
+function setSupplierView(mode) {
+    if (!supplierCards || !supplierListView || !supplierViewGridBtn || !supplierViewListBtn) {
+        return
+    }
+    const showList = mode === "list"
+    supplierCards.classList.toggle("d-none", showList)
+    supplierListView.classList.toggle("d-none", !showList)
+    supplierViewGridBtn.classList.toggle("active", !showList)
+    supplierViewListBtn.classList.toggle("active", showList)
 }
 
 function openSupplierEditor(supplierName) {
@@ -538,16 +749,60 @@ function filterAssets() {
 
 // wire up input events so that the list refreshes whenever the user types or
 // changes a filter dropdown.
-searchInput.addEventListener("input", filterAssets)
-statusFilter.addEventListener("change", filterAssets)
-typeFilter.addEventListener("change", filterAssets)
+searchInput.addEventListener("input", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
+statusFilter.addEventListener("change", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
+typeFilter.addEventListener("change", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
 if (locationFilter) {
-    locationFilter.addEventListener("change", filterAssets)
+    locationFilter.addEventListener("change", () => {
+        filterAssets()
+        scheduleAssetsRefresh()
+    })
+}
+
+if (assetsPrevBtn) {
+    assetsPrevBtn.addEventListener("click", () => {
+        if (assetsOffset <= 0) {
+            return
+        }
+        assetsOffset = Math.max(0, assetsOffset - ASSETS_PAGE_SIZE)
+        loadAssetsFromApi()
+    })
+}
+
+if (assetsNextBtn) {
+    assetsNextBtn.addEventListener("click", () => {
+        assetsOffset += ASSETS_PAGE_SIZE
+        loadAssetsFromApi()
+    })
+}
+
+if (assetViewGridBtn) {
+    assetViewGridBtn.addEventListener("click", () => setAssetView("grid"))
+}
+if (assetViewListBtn) {
+    assetViewListBtn.addEventListener("click", () => setAssetView("list"))
+}
+if (supplierViewGridBtn) {
+    supplierViewGridBtn.addEventListener("click", () => setSupplierView("grid"))
+}
+if (supplierViewListBtn) {
+    supplierViewListBtn.addEventListener("click", () => setSupplierView("list"))
 }
 
 // initial load from API
 loadAssetsFromApi()
 loadCategoriesAndProviders()
+setAssetView("grid")
+setSupplierView("grid")
 
 
 
@@ -558,7 +813,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("assetForm")
     const nameInput = document.getElementById("name")
     const brandInput = document.getElementById("brand")
-    const categoryInput = document.getElementById("categoryId")
     const providerInput = document.getElementById("providerId")
     const serialInput = document.getElementById("serial")
     const assignedInput = document.getElementById("assigned")
@@ -568,9 +822,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const warrantyInput = document.getElementById("warranty")
     const stockInput = document.getElementById("stock")
     const minStockInput = document.getElementById("minStock")
-    const supplierNameInput = document.getElementById("supplierName")
-    const supplierPriceInput = document.getElementById("supplierPrice")
-    const supplierLeadInput = document.getElementById("supplierLeadTime")
 
     function setFieldValidity(input, isValid, message) {
         if (!input) {
@@ -639,18 +890,16 @@ document.addEventListener("DOMContentLoaded", function () {
             setFieldValidity(brandInput, true)
         }
 
-        if (categoryInput && !categoryInput.value) {
-            isValid = false
-            setFieldValidity(categoryInput, false, "Category is required.")
-        } else if (categoryInput) {
-            setFieldValidity(categoryInput, true)
-        }
-
         if (providerInput && !providerInput.value) {
             isValid = false
             setFieldValidity(providerInput, false, "Provider is required.")
         } else if (providerInput) {
             setFieldValidity(providerInput, true)
+        }
+
+        if (!providerInput) {
+            isValid = false
+            setFormStatus("Provider is required.", "error")
         }
 
         if (!serialValue) {
@@ -710,67 +959,17 @@ document.addEventListener("DOMContentLoaded", function () {
             setFieldValidity(stockInput, true)
         }
 
-        const minStockNumber = Number.parseInt(minStockValue || "0", 10)
-        if (!Number.isFinite(minStockNumber) || minStockNumber < 0) {
-            isValid = false
-            setFieldValidity(minStockInput, false, "Minimum Stock must be 0 or greater.")
-        } else if (Number.isFinite(stockNumber) && minStockNumber > stockNumber) {
-            isValid = false
-            setFieldValidity(minStockInput, false, "Minimum Stock cannot exceed Stock.")
-        } else {
-            setFieldValidity(minStockInput, true)
-        }
-
-        const supplierNameValue = supplierNameInput.value.trim()
-        const supplierPriceValue = supplierPriceInput.value.trim()
-        const supplierLeadValue = supplierLeadInput.value.trim()
-        const supplierTouched = Boolean(
-            supplierNameValue || supplierPriceValue || supplierLeadValue
-        )
-
-        if (supplierTouched) {
-            if (!supplierNameValue) {
+        if (minStockInput) {
+            const minStockNumber = Number.parseInt(minStockValue || "0", 10)
+            if (!Number.isFinite(minStockNumber) || minStockNumber < 0) {
                 isValid = false
-                setFieldValidity(
-                    supplierNameInput,
-                    false,
-                    "Supplier name is required when supplier data is provided."
-                )
-            } else {
-                setFieldValidity(supplierNameInput, true)
-            }
-
-            const supplierPriceNumber = Number.parseInt(supplierPriceValue || "0", 10)
-            if (!supplierPriceValue || !Number.isFinite(supplierPriceNumber) || supplierPriceNumber < 0) {
+                setFieldValidity(minStockInput, false, "Minimum Stock must be 0 or greater.")
+            } else if (Number.isFinite(stockNumber) && minStockNumber > stockNumber) {
                 isValid = false
-                setFieldValidity(
-                    supplierPriceInput,
-                    false,
-                    "Supplier price must be 0 or greater."
-                )
+                setFieldValidity(minStockInput, false, "Minimum Stock cannot exceed Stock.")
             } else {
-                setFieldValidity(supplierPriceInput, true)
+                setFieldValidity(minStockInput, true)
             }
-
-            if (supplierLeadValue) {
-                const supplierLeadNumber = Number.parseInt(supplierLeadValue, 10)
-                if (!Number.isFinite(supplierLeadNumber) || supplierLeadNumber < 0) {
-                    isValid = false
-                    setFieldValidity(
-                        supplierLeadInput,
-                        false,
-                        "Lead time must be 0 or greater."
-                    )
-                } else {
-                    setFieldValidity(supplierLeadInput, true)
-                }
-            } else {
-                setFieldValidity(supplierLeadInput, true)
-            }
-        } else {
-            setFieldValidity(supplierNameInput, true)
-            setFieldValidity(supplierPriceInput, true)
-            setFieldValidity(supplierLeadInput, true)
         }
 
         form.classList.add("was-validated")
@@ -813,13 +1012,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const warrantyMatch = warrantyRaw.match(/\d+/)
         const vidaUtil = warrantyMatch ? Number.parseInt(warrantyMatch[0], 10) : null
         if (!vidaUtil) {
-            setFormStatus("Campos requeridos: vida_util", "error")
+            setFormStatus("Required fields: vida_util", "error")
             setSubmitting(false)
             return
         }
 
-        const categoryValue = categoryInput ? categoryInput.value : ""
+        const categoryValue = categories.length
+            ? (categories[0].id_categoria || categories[0].id || categories[0].idCategoria || "")
+            : ""
         const providerValue = providerInput ? providerInput.value : ""
+
+        if (!categoryValue) {
+            setFormStatus("Category is required in the system.", "error")
+            setSubmitting(false)
+            return
+        }
 
         const payload = {
             id_categoria: Number(categoryValue) || categoryValue,
@@ -833,12 +1040,16 @@ document.addEventListener("DOMContentLoaded", function () {
             sede,
             piso,
             sala,
-            proveedor: supplierNameInput.value.trim() || undefined
+            proveedor: undefined
         }
 
         try {
             await api.createActivo(payload)
             setFormStatus("Asset saved successfully.", "success")
+            if (stockTableCard) {
+                stockTableCard.classList.add("stock-flash")
+                setTimeout(() => stockTableCard.classList.remove("stock-flash"), 900)
+            }
             await loadAssetsFromApi()
 
             form.reset()
@@ -850,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             const message = error && error.message
                 ? error.message
-                : "No se pudo guardar el activo en el servidor."
+                : "Could not save the asset on the server."
             setFormStatus(message, "error")
         } finally {
             setSubmitting(false)
