@@ -44,7 +44,7 @@ const render = async () => {
           <p id="detailDescription">-</p>
         </div>
         <div class="detail-section">
-          <h3>Soluciones sugeridas</h3>
+          <h3>Tickets similares y sugerencias</h3>
           <div id="detailSolutions" class="detail-solutions">
             <p class="muted">Sin sugerencias por ahora.</p>
           </div>
@@ -121,6 +121,28 @@ const renderSolutions = (list) => {
     if (typeof item === "string") {
       return `<div class="solution-card"><p>${item}</p></div>`;
     }
+    const hasIaShape = item.solucion || item.pasos || item.advertencias || item.confianza !== undefined;
+    if (hasIaShape) {
+      const titulo = item.titulo || "Sugerencia IA";
+      const solucion = item.solucion || "Sin solucion disponible.";
+      const pasos = Array.isArray(item.pasos) && item.pasos.length
+        ? `<ul>${item.pasos.map((p) => `<li>${p}</li>`).join("")}</ul>`
+        : "";
+      const advertencias = Array.isArray(item.advertencias) && item.advertencias.length
+        ? `<p class="muted">Advertencias: ${item.advertencias.join(" • ")}</p>`
+        : "";
+      const confianza = Number.isFinite(item.confianza) ? `Confianza: ${item.confianza.toFixed(2)}` : "";
+      return `
+        <div class="solution-card">
+          <p><strong>${titulo}</strong></p>
+          ${confianza ? `<p class="muted">${confianza}</p>` : ""}
+          <p>${solucion}</p>
+          ${pasos}
+          ${advertencias}
+        </div>
+      `;
+    }
+
     const desc = item.descripcion || item.diagnostico || "Sin descripcion";
     const score = typeof item.score === "number" ? item.score.toFixed(2) : "";
     const meta = [
@@ -133,7 +155,7 @@ const renderSolutions = (list) => {
       : "";
     return `
       <div class="solution-card">
-        <p><strong>${meta || "Sugerencia"}</strong></p>
+        <p><strong>${meta || "Ticket similar"}</strong></p>
         <p>${desc}</p>
         ${keywords}
       </div>

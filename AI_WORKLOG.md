@@ -510,3 +510,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/ticket-detail-actions-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Ajuste UI sugerencias Ticket Detail
+- Rama: developer (feature/task)
+- Objetivo: Diferenciar sugerencias IA vs tickets similares.
+- Cambios:
+  - `src/pages/TicketDetail.page.js`: Render IA shape y etiqueta de tickets similares.
+- Evidencia:
+  - `test/ticket-detail-suggestions-ui-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
