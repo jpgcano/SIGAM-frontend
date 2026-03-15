@@ -544,3 +544,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/ticket-detail-ui-v2-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Posibles causas en sugerencias IA
+- Rama: developer (feature/task)
+- Objetivo: Ocultar confianza y mostrar posibles causas cuando existan.
+- Cambios:
+  - `src/pages/TicketDetail.page.js`: Render de causas y sin confianza.
+- Evidencia:
+  - `test/ticket-detail-causes-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

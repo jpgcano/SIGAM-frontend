@@ -137,16 +137,26 @@ const renderSolutions = (list) => {
       const pasos = Array.isArray(item.pasos) && item.pasos.length
         ? `<ul>${item.pasos.map((p) => `<li>${p}</li>`).join("")}</ul>`
         : "";
+      const rawCausas =
+        item.causas ||
+        item.posibles_causas ||
+        item.causas_posibles ||
+        item.root_cause ||
+        item.causa_raiz ||
+        [];
+      const causas = Array.isArray(rawCausas) ? rawCausas.filter(Boolean) : [];
+      const causasHtml = causas.length
+        ? `<p class="muted">Posibles causas: ${causas.join(" • ")}</p>`
+        : "";
       const advertencias = Array.isArray(item.advertencias) && item.advertencias.length
         ? `<p class="muted">Advertencias: ${item.advertencias.join(" • ")}</p>`
         : "";
-      const confianza = Number.isFinite(item.confianza) ? `Confianza: ${item.confianza.toFixed(2)}` : "";
       return `
         <div class="solution-card">
           <p><strong>${titulo}</strong></p>
-          ${confianza ? `<p class="muted">${confianza}</p>` : ""}
           <p>${solucion}</p>
           ${pasos}
+          ${causasHtml}
           ${advertencias}
         </div>
       `;
