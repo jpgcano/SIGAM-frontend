@@ -11,21 +11,34 @@ const render = () => {
   return `
     <div class="page-register">
       <div class="container">
-        <h2>Create Account</h2>
+        <div class="login-logo">
+          <div class="bg-primary text-white rounded d-flex justify-content-center align-items-center" style="width: 48px; height: 48px; margin: 0 auto;">
+          </div>
+        </div>
+        <h2 class="login-title">Create Account</h2>
+        <p class="login-subtitle">Set up your profile to start using SIGAM.</p>
 
         <form id="registerForm" novalidate>
-          <input type="text" id="name" placeholder="Name" required>
-          <input type="text" id="surname" placeholder="Surname" required>
-          <input type="email" id="email" placeholder="Email" required>
-          <input type="password" id="password" placeholder="Password" required>
-          <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-          <select id="role">
-            <option value="Usuario">User</option>
-            <option value="Analista">Analyst</option>
-            <option value="Tecnico">Technician</option>
-            <option value="Gerente">Manager</option>
-            <option value="Auditor">Auditor</option>
-          </select>
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Name" required>
+          </div>
+          <div class="form-group">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" placeholder="Surname" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Password" required>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+          </div>
           <div id="registerStatus" class="form-status" aria-live="polite"></div>
           ${renderButton({
             id: "registerBtn",
@@ -34,8 +47,8 @@ const render = () => {
           })}
         </form>
 
-        <p>Do you already have an account?
-        <a href="/login" id="navigateToLogin">Login</a>
+        <p class="login-footer">Do you already have an account?
+          <a href="/login" id="navigateToLogin">Login</a>
         </p>
       </div>
     </div>
@@ -63,7 +76,7 @@ const init = () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
-    const role = document.getElementById("role").value;
+    const role = "Usuario";
 
     if (!name || !surname || !email || !password) {
       statusDiv.textContent = "Please complete all required fields.";

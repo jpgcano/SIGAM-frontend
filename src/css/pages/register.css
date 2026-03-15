@@ -1,63 +1,188 @@
+/* ==========================================================================
+   SIGAM - Register Page Styles
+   Mirrors login styles for consistency
+   ========================================================================== */
+
 body.page-register {
-    font-family: Arial, sans-serif;
-    background: #a1a1a1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+  font-family: var(--font-sans);
+  background: var(--color-slate-500);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-4);
 }
+
+/* ==========================================================================
+   REGISTER CONTAINER
+   ========================================================================== */
 
 body.page-register .container {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 300px;
-    display: flex;
-    flex-direction: column;
+  background: var(--card-bg);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
 }
 
-body.page-register input {
-    margin: 10px 0;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+/* ==========================================================================
+   LOGO / HEADER
+   ========================================================================== */
+
+body.page-register .login-logo {
+  text-align: center;
+  margin-bottom: var(--space-6);
 }
+
+body.page-register .login-logo img {
+  max-width: 120px;
+  margin: 0 auto;
+}
+
+body.page-register .login-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+
+body.page-register .login-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+/* ==========================================================================
+   FORM ELEMENTS
+   ========================================================================== */
+
+body.page-register .form-group {
+  margin-bottom: var(--space-4);
+}
+
+body.page-register label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+body.page-register input,
+body.page-register select {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--input-radius);
+  border: 1px solid var(--input-border);
+  font-size: var(--text-sm);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+body.page-register input:focus,
+body.page-register select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+body.page-register input::placeholder {
+  color: var(--color-slate-400);
+}
+
+/* ==========================================================================
+   BUTTON
+   ========================================================================== */
 
 body.page-register button {
-    padding: 10px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-600);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--btn-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  margin-top: var(--space-2);
 }
 
 body.page-register button:hover {
-    background: #388E3C;
+  background: var(--color-primary-700);
 }
+
+body.page-register button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+/* ==========================================================================
+   LINKS
+   ========================================================================== */
 
 body.page-register a {
-    color: green;
-    text-decoration: none;
+  color: var(--text-link);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: color var(--transition-fast);
 }
 
-@media (max-width: 480px) {
-    body.page-register {
-        padding: 16px;
-    }
+body.page-register a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
 
-    body.page-register .container {
-        width: 100%;
-        max-width: 360px;
-        padding: 20px;
-    }
+body.page-register .login-footer {
+  margin-top: var(--space-6);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+body.page-register .login-footer a {
+  color: var(--text-link);
+  font-weight: var(--font-medium);
+}
+
+/* ==========================================================================
+   ERROR MESSAGE
+   ========================================================================== */
+
+body.page-register .error-message {
+  background: var(--color-danger-light);
+  color: var(--color-danger-dark);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  body.page-register {
+    padding: var(--space-4);
+  }
+
+  body.page-register .container {
+    padding: var(--space-6);
+  }
 }
 
 @media (max-height: 600px) {
-    body.page-register {
-        align-items: flex-start;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
+  body.page-register {
+    align-items: flex-start;
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
 }
-
