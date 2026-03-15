@@ -134,6 +134,7 @@ body.page-inventory .asset-card {
   border-left: 4px solid transparent;
   box-shadow: var(--shadow-md);
   transition: box-shadow var(--transition-fast);
+  border-radius: var(--card-radius);
 }
 
 body.page-inventory .asset-card:hover {
@@ -146,6 +147,44 @@ body.page-inventory .asset-card.status-ok {
 
 body.page-inventory .asset-card.status-warning {
   border-left-color: var(--color-warning);
+}
+
+body.page-inventory .asset-card .card-body {
+  padding: var(--space-5);
+}
+
+body.page-inventory .asset-card h5 {
+  font-size: var(--text-lg);
+  line-height: 1.2;
+  margin-bottom: var(--space-1);
+}
+
+body.page-inventory .asset-card hr {
+  margin: var(--space-3) 0;
+}
+
+body.page-inventory .asset-card p {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+body.page-inventory .asset-card p strong {
+  display: block;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+body.page-inventory .asset-card-header {
+  gap: var(--space-2);
+}
+
+body.page-inventory .asset-card-header .btn {
+  padding: 2px 10px;
+  font-size: var(--text-xs);
+  line-height: 1.2;
 }
 
 body.page-inventory .card h3 {
@@ -359,6 +398,6 @@ body.page-inventory #mainContent .card p {
 
 @media (min-width: 1200px) {
   body.page-inventory #assetGrid {
-    grid-template-columns: repeat(4, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
   }
 }

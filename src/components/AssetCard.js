@@ -20,8 +20,8 @@ export const renderAssetCard = (asset) => {
   return `
     <div class="card shadow-sm h-100 asset-card ${statusClass}">
         <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <h5 class="fw-bold">${asset.name}</h5>
+          <div class="asset-card-header d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">${asset.name}</h5>
             ${renderButton({
               label: "Edit",
               variant: "outlineDark",
