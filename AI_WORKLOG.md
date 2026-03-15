@@ -358,3 +358,19 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Ticket detail renderiza datos, estado y sugerencias desde API.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-15 - IA: Codex
+- Issue: Normalizacion de colecciones API en vistas clave
+- Rama: developer (feature/task)
+- Objetivo: Evitar vistas vacias cuando la API envuelve datos en data/items/rows/results.
+- Cambios:
+  - `src/utils/normalize.js`: Utilidad central para extraer colecciones desde respuestas API comunes.
+  - `src/pages/Tickets.page.js`: Reusa normalizacion central.
+  - `src/pages/Inventory.page.js`: Reusa normalizacion central.
+  - `src/pages/Dashboard.page.js`: Reusa normalizacion central.
+  - `src/pages/Reports.page.js`: Reusa normalizacion central.
+  - `src/pages/Calendar.page.js`: Reusa normalizacion central.
+- Evidencia:
+  - `test/api-normalization-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

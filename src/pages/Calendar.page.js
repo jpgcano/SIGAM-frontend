@@ -3,6 +3,7 @@ import { api } from "../api-client.js";
 import SIGAM_CONFIG from "../config.js";
 import { getUser } from "../storage.js";
 import { router } from "../router.js";
+import { normalizeCollection } from "../utils/normalize.js";
 import "../css/pages/calendar.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Tecnico"];
@@ -454,20 +455,6 @@ const setScheduleStatus = (element, message, type) => {
   } else {
     element.classList.add("text-muted");
   }
-};
-
-const normalizeCollection = (payload) => {
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.data)) return payload.data;
-  if (payload && payload.data && Array.isArray(payload.data.data)) return payload.data.data;
-  if (payload && payload.data && Array.isArray(payload.data.categorias)) return payload.data.categorias;
-  if (payload && payload.data && Array.isArray(payload.data.categories)) return payload.data.categories;
-  if (payload && Array.isArray(payload.tickets)) return payload.tickets;
-  if (payload && Array.isArray(payload.activos)) return payload.activos;
-  if (payload && Array.isArray(payload.repuestos)) return payload.repuestos;
-  if (payload && Array.isArray(payload.categorias)) return payload.categorias;
-  if (payload && Array.isArray(payload.categories)) return payload.categories;
-  return [];
 };
 
 const normalizeMaintenance = (raw) => {

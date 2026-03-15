@@ -1,6 +1,7 @@
 import { Navbar } from "../components/Navbar.js";
 import { api } from "../api-client.js";
 import SIGAM_CONFIG from "../config.js";
+import { normalizeCollection } from "../utils/normalize.js";
 import "../css/pages/dashboard.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Analista", "Tecnico", "Auditor"];
@@ -104,20 +105,6 @@ const ensureChartJs = () => {
     script.onerror = () => reject(new Error('Chart.js failed to load'));
     document.head.appendChild(script);
   });
-};
-
-const normalizeCollection = (payload) => {
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.data)) return payload.data;
-  if (payload && payload.data && Array.isArray(payload.data.data)) return payload.data.data;
-  if (payload && payload.data && Array.isArray(payload.data.categorias)) return payload.data.categorias;
-  if (payload && payload.data && Array.isArray(payload.data.categories)) return payload.data.categories;
-  if (payload && Array.isArray(payload.tickets)) return payload.tickets;
-  if (payload && Array.isArray(payload.activos)) return payload.activos;
-  if (payload && Array.isArray(payload.repuestos)) return payload.repuestos;
-  if (payload && Array.isArray(payload.categorias)) return payload.categorias;
-  if (payload && Array.isArray(payload.categories)) return payload.categories;
-  return [];
 };
 
 const safeFetch = async (fn) => {
