@@ -333,3 +333,15 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Admin renderiza usuarios, filtros y acciones con datos de API o cache.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-15 - IA: Codex
+- Issue: Migración Register a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Register a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Register.page.js`: Registro con API real y validaciones.
+  - Eliminados: `src/legacy/pages/register.html`, `src/legacy/js/pages/register.page.js`, `src/legacy/js/register.js`.
+- Evidencia:
+  - Registro muestra estados y redirige a login al completar.
+- Commit(s):
+  - (Pendiente de aplicación)

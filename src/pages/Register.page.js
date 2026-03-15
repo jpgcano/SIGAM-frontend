@@ -1,82 +1,120 @@
-import { router } from '../router.js';
-import { api } from '../api.js';
-import '../css/pages/register.css';
+import { router } from "../router.js";
+import { api } from "../api-client.js";
+import SIGAM_CONFIG from "../config.js";
+import "../css/pages/register.css";
 
 /**
  * Renderiza el HTML de la página de registro.
  */
 const render = () => {
-    return `
-        <div class="page-register">
-            <div class="container">
-                <h2>Create Account</h2>
+  return `
+    <div class="page-register">
+      <div class="container">
+        <h2>Create Account</h2>
 
-                <form id="registerForm" novalidate>
-                    <input type="text" id="name" placeholder="Name" required>
-                    <input type="text" id="surname" placeholder="Surname" required>
-                    <input type="email" id="email" placeholder="Email" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-                    <select id="role">
-                        <option value="Usuario">User</option>
-                        <option value="Analista">Analyst</option>
-                        <option value="Tecnico">Technician</option>
-                        <option value="Gerente">Manager</option>
-                        <option value="Auditor">Auditor</option>
-                    </select>
-                    <div id="registerStatus" class="form-status" aria-live="polite"></div>
-                    <button id="registerBtn" type="submit">Create Account</button>
-                </form>
+        <form id="registerForm" novalidate>
+          <input type="text" id="name" placeholder="Name" required>
+          <input type="text" id="surname" placeholder="Surname" required>
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+          <select id="role">
+            <option value="Usuario">User</option>
+            <option value="Analista">Analyst</option>
+            <option value="Tecnico">Technician</option>
+            <option value="Gerente">Manager</option>
+            <option value="Auditor">Auditor</option>
+          </select>
+          <div id="registerStatus" class="form-status" aria-live="polite"></div>
+          <button id="registerBtn" type="submit">Create Account</button>
+        </form>
 
-                <p>Do you already have an account?
-                <a href="/login" id="navigateToLogin">Login</a>
-                </p>
-            </div>
-        </div>
-    `;
+        <p>Do you already have an account?
+        <a href="/login" id="navigateToLogin">Login</a>
+        </p>
+      </div>
+    </div>
+  `;
 };
 
 /**
  * Lógica e inicialización de eventos.
  */
 const init = () => {
-    const form = document.getElementById('registerForm');
-    const statusDiv = document.getElementById('registerStatus');
-    const loginLink = document.getElementById('navigateToLogin');
+  const form = document.getElementById("registerForm");
+  const statusDiv = document.getElementById("registerStatus");
+  const loginLink = document.getElementById("navigateToLogin");
+  const submitBtn = document.getElementById("registerBtn");
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const name = document.getElementById('name').value;
-        const surname = document.getElementById('surname').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const role = document.getElementById('role').value;
+  if (!form || !statusDiv) {
+    return;
+  }
 
-        if (password !== confirmPassword) {
-            statusDiv.textContent = 'Passwords do not match';
-            statusDiv.style.color = 'red';
-            return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const surname = document.getElementById("surname").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const role = document.getElementById("role").value;
+
+    if (!name || !surname || !email || !password) {
+      statusDiv.textContent = "Please complete all required fields.";
+      statusDiv.classList.add("text-danger");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      statusDiv.textContent = "Passwords do not match.";
+      statusDiv.classList.add("text-danger");
+      return;
+    }
+
+    if (!SIGAM_CONFIG.API_BASE_URL) {
+      statusDiv.textContent = "API config not loaded.";
+      statusDiv.classList.add("text-danger");
+      return;
+    }
+
+    statusDiv.textContent = "Creating account...";
+    statusDiv.classList.remove("text-danger");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+    }
+
+    try {
+      await api.apiRequest("/api/auth/register", {
+        method: "POST",
+        body: {
+          nombre: `${name} ${surname}`.trim(),
+          email,
+          password,
+          rol: role
         }
+      });
+      statusDiv.textContent = "Registration successful. Redirecting...";
+      statusDiv.classList.remove("text-danger");
+      router.navigateTo("/login");
+    } catch (error) {
+      statusDiv.textContent = error.message || "Registration error.";
+      statusDiv.classList.add("text-danger");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create Account";
+      }
+    }
+  });
 
-        statusDiv.textContent = 'Creating account...';
-        statusDiv.style.color = 'inherit';
-
-        try {
-            await api.auth.register({ name, surname, email, password, role });
-            alert('Account created successfully! Please login.');
-            router.navigateTo('/login');
-        } catch (error) {
-            statusDiv.textContent = error.message || 'Registration failed.';
-            statusDiv.style.color = 'red';
-        }
+  if (loginLink) {
+    loginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      router.navigateTo("/login");
     });
-
-    loginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        router.navigateTo('/login');
-    });
+  }
 };
 
-export const RegisterPage = { render, init };
+export const RegisterPage = { render, init, meta: { bodyClass: "page-register" } };
