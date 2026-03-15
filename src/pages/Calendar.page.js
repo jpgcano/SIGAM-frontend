@@ -591,17 +591,29 @@ const normalizeMaintenance = (raw) => {
   ].filter(Boolean);
   const ticketId = raw.id_ticket || raw.ticketId || "";
   const dateValue = raw.fecha_inicio || raw.date || "";
-  const assetValue = assetLabelParts.join(" - ") || raw.id_activo || raw.activo_id || "";
+  const assetValue =
+    assetLabelParts.join(" - ") ||
+    raw.asset?.label ||
+    raw.activo?.serial ||
+    (raw.ticket?.id_activo ? `Activo ${raw.ticket.id_activo}` : "") ||
+    (raw.ticket_id_activo ? `Activo ${raw.ticket_id_activo}` : "");
   const fallbackKey = [ticketId, dateValue, assetValue].filter(Boolean).join("|");
   const idOrden = raw.id_orden || raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "";
+  const ticketActivo = raw.ticket?.id_activo || raw.ticket_id_activo || raw.id_activo || raw.activo_id;
 
   return {
     id: idOrden,
     localId: raw.localId || (idOrden ? idOrden : `local-${fallbackKey || buildLocalId()}`),
     ticketId,
     technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
-    asset: assetValue,
-    assetId: raw.id_activo || raw.activo_id || null,
+    asset: {
+      label: assetValue,
+      serial: raw.asset?.serial || raw.serial || "",
+      modelo: raw.asset?.modelo || raw.modelo || "",
+      estado: raw.asset?.estado || raw.estado || "",
+      criticidad: raw.asset?.criticidad || raw.criticidad || ""
+    },
+    assetId: ticketActivo || raw.id_activo || raw.activo_id || null,
     type: raw.tipo || raw.type || "preventive",
     date: dateValue,
     notes: raw.diagnostico || raw.notes || ""
