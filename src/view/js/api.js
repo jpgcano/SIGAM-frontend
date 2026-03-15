@@ -8,6 +8,7 @@
     const repuestosEndpoint = config.REPUESTOS_ENDPOINT || '/api/repuestos';
     const dashboardEndpoint = config.DASHBOARD_ENDPOINT || '/api/dashboard';
     const categoriasEndpoint = config.CATEGORIAS_ENDPOINT || '/api/categorias';
+    const categoriasTicketEndpoint = config.CATEGORIAS_TICKET_ENDPOINT || '/api/tickets/categorias';
     const proveedoresEndpoint = config.PROVEEDORES_ENDPOINT || '/api/proveedores';
     const usuariosEndpoint = config.USUARIOS_ENDPOINT || '/api/usuarios';
     const mantenimientosEndpoint = config.MANTENIMIENTOS_ENDPOINT || '/api/mantenimientos';
@@ -117,8 +118,9 @@
         return [];
     }
 
-    async function getTickets() {
-        const payload = await apiRequest(ticketsEndpoint);
+    async function getTickets(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        const payload = await apiRequest(qs ? `${ticketsEndpoint}?${qs}` : ticketsEndpoint);
         return normalizeCollection(payload);
     }
 
@@ -135,8 +137,9 @@
         return apiRequest(dashboardEndpoint);
     }
 
-    async function getActivos() {
-        const payload = await apiRequest(activosEndpoint);
+    async function getActivos(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        const payload = await apiRequest(qs ? `${activosEndpoint}?${qs}` : activosEndpoint);
         return normalizeCollection(payload);
     }
 
@@ -151,6 +154,11 @@
 
     async function getCategorias() {
         const payload = await apiRequest(categoriasEndpoint);
+        return normalizeCollection(payload);
+    }
+
+    async function getCategoriasTicket() {
+        const payload = await apiRequest(categoriasTicketEndpoint);
         return normalizeCollection(payload);
     }
 

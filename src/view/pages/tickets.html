@@ -25,7 +25,7 @@
         <div class="header">
 
             <div>
-                <h1>soport ticket</h1>
+                <h1>Support tickets</h1>
                 <p class="subtitle">Management of incidents and technical requests</p>
             </div>
 
@@ -80,10 +80,19 @@
                 </form>
             </div>
         </div>
+        <!-- LISTA DE TICKETS -->
+        <div id="ticketList"></div>
+        <div class="pagination" id="ticketPagination">
+            <button id="prevPage" class="btn-page">Prev</button>
+            <span id="pageInfo" class="page-info">Page 1</span>
+            <button id="nextPage" class="btn-page">Next</button>
+            <select id="pageSize" class="page-size">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
     </div>
-
-    <!-- LISTA DE TICKETS -->
-    <div id="ticketList"></div>
 
 
     <script src="../services/navbar.js"></script>

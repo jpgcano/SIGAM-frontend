@@ -332,6 +332,60 @@ select{
     transform:scale(0.95);
 }
 
+.pagination{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:flex-end;
+    margin:12px auto 32px;
+    max-width:1100px;
+}
+
+.btn-page{
+    background:#0f172a;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+}
+
+.btn-page:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.page-info{
+    font-size:13px;
+    color:#6b7280;
+}
+
+.page-size{
+    border-radius:8px;
+    padding:8px 10px;
+}
+
+.ticket-status.status-abierto{
+    background:#dbeafe;
+    color:#1d4ed8;
+}
+
+.ticket-status.status-en-proceso{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.ticket-status.status-cerrado{
+    background:#d1fae5;
+    color:#065f46;
+}
+
+.ticket-status.status-resuelto{
+    background:#e0f2fe;
+    color:#0369a1;
+}
+
 @media (max-width: 750px){
     .container{
         width:94%;

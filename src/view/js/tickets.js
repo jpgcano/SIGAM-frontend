@@ -20,6 +20,19 @@ const searchInput = document.getElementById("searchInput");
 const ticketStatusEl = document.getElementById("ticketStatus");
 const ticketsCount = document.getElementById("contadorTickets");
 
+const prevPageBtn = document.getElementById("prevPage");
+const nextPageBtn = document.getElementById("nextPage");
+const pageInfo = document.getElementById("pageInfo");
+const pageSizeSelect = document.getElementById("pageSize");
+
+let currentPage = 1;
+let pageSize = 20;
+let hasMore = false;
+
+if (pageSizeSelect) {
+    pageSize = Number(pageSizeSelect.value) || pageSize;
+}
+
 const titleInput = document.getElementById("title");
 const descriptionInput = document.getElementById("description");
 const deviceInput = document.getElementById("device");
@@ -180,7 +193,7 @@ function normalizeTicket(raw) {
     const activoInfo = activosMap.get(String(idActivo)) || {};
     const rawStatus = raw.status || raw.estado || "";
     const normalizedStatus = normalizeToken(rawStatus);
-    const categoryId = raw.id_categoria || raw.categoria_id || raw.categoriaId;
+    const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
         raw.category ||
         raw.categoria ||
@@ -212,6 +225,15 @@ function normalizeToken(value) {
         .trim();
 }
 
+function mapStatusClass(status) {
+    const key = normalizeToken(status);
+    if (key.includes('abierto')) return 'status-abierto';
+    if (key.includes('proceso')) return 'status-en-proceso';
+    if (key.includes('cerrado')) return 'status-cerrado';
+    if (key.includes('resuelto')) return 'status-resuelto';
+    return '';
+}
+
 function getActivoSerial(activo) {
     return (
         activo.serial ||
@@ -228,7 +250,7 @@ async function loadActivos() {
         return;
     }
     try {
-        const data = await api.getActivos();
+        const data = await api.getActivos({ limit: 500, offset: 0 });
         activosList = Array.isArray(data) ? data : [];
         activosMap = new Map(
             activosList.map((activo) => {
@@ -274,7 +296,7 @@ async function loadCategorias() {
         return;
     }
     try {
-        const data = await api.getCategorias();
+        const data = api.getCategoriasTicket ? await api.getCategoriasTicket() : await api.getCategorias();
         categoriasList = normalizeCategorias(data);
         renderCategorias();
     } catch (error) {
@@ -314,7 +336,7 @@ function renderCategorias() {
 
     categoriasMap = new Map(
         categoriasList.map((categoria) => {
-            const id = categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
+            const id = categoria.id_categoria_ticket || categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
             const label = getCategoriaLabel(categoria) || String(id || "Categoria");
             return [String(id), label];
         })
@@ -354,23 +376,41 @@ function renderStatusFilter() {
     statusFilter.innerHTML = placeholder + options;
 }
 
-async function loadTickets() {
+function updatePaginationControls() {
+    if (pageInfo) {
+        pageInfo.textContent = `Page ${currentPage}`;
+    }
+    if (prevPageBtn) {
+        prevPageBtn.disabled = currentPage <= 1;
+    }
+    if (nextPageBtn) {
+        nextPageBtn.disabled = !hasMore;
+    }
+}
+
+async function loadTickets(page = 1) {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
         return;
     }
     try {
-        const data = await api.getTickets();
+        currentPage = page;
+        const offset = (currentPage - 1) * pageSize;
+        const data = await api.getTickets({ limit: pageSize, offset });
         tickets = (data || []).map(normalizeTicket);
+        hasMore = Array.isArray(data) && data.length === pageSize;
         localStorage.setItem("tickets", JSON.stringify(tickets));
         renderStatusFilter();
         applyFilters();
+        updatePaginationControls();
     } catch (error) {
         setTicketStatus("Unable to load tickets from API.", "error");
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
+        hasMore = false;
         renderStatusFilter();
         applyFilters();
+        updatePaginationControls();
     }
 }
 
@@ -418,12 +458,12 @@ if (ticketForm) {
 
         const categoryValue = categoryInput.value;
         if (categoryValue) {
-            ticketPayload.id_categoria = Number(categoryValue) || categoryValue;
+            ticketPayload.id_categoria_ticket = Number(categoryValue) || categoryValue;
         }
 
         try {
             await api.createTicket(ticketPayload);
-            await loadTickets();
+            await loadTickets(currentPage);
             ticketForm.reset();
             clearFormErrors();
             setTicketStatus("Ticket created successfully.", "success");
@@ -448,13 +488,13 @@ function renderTickets(list) {
         const div = document.createElement("div");
         div.classList.add("ticket");
         div.innerHTML = `
-            <div class="ticket-status">${ticket.status || "Pending"}</div>
+            <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
 
             <div class="ticket-title">
                 ${ticket.title || "Ticket"}
             </div>
 
-            <div class="ticket-info">
+            <div class="ticket-desc">
                 ${ticket.description}
             </div>
 
@@ -536,7 +576,31 @@ if (categoryFilter) {
     categoryFilter.addEventListener("change", applyFilters);
 }
 
+if (prevPageBtn) {
+    prevPageBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+            loadTickets(currentPage - 1);
+        }
+    });
+}
+
+if (nextPageBtn) {
+    nextPageBtn.addEventListener("click", () => {
+        if (hasMore) {
+            loadTickets(currentPage + 1);
+        }
+    });
+}
+
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", () => {
+        const nextSize = Number(pageSizeSelect.value) || 20;
+        pageSize = nextSize;
+        loadTickets(1);
+    });
+}
+
 setCreatedByFromSession();
 Promise.all([loadActivos(), loadCategorias()]).then(() => {
-    loadTickets();
+    loadTickets(1);
 });
