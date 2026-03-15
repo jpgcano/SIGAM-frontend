@@ -110,7 +110,7 @@ body.page-inventory .grid {
 body.page-inventory #assetGrid {
   margin-top: var(--space-2);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: 1fr;
   row-gap: var(--space-6);
   column-gap: var(--space-6);
 }
@@ -348,5 +348,17 @@ body.page-inventory #mainContent .card p {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
+  }
+}
+
+@media (min-width: 768px) {
+  body.page-inventory #assetGrid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  body.page-inventory #assetGrid {
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
   }
 }
