@@ -2,15 +2,6 @@ const api = window.SIGAM_API
 let users = []
 let usingApi = false
 const statusEl = document.getElementById("adminStatus")
-const searchInput = document.getElementById("searchInput")
-const roleFilter = document.getElementById("roleFilter")
-const tabs = document.getElementById("admin-tabs")
-const sections = {
-    users: document.getElementById("section-users"),
-    configuration: document.getElementById("section-configuration"),
-    security: document.getElementById("section-security"),
-    backup: document.getElementById("section-backup")
-}
 
 function setStatus(message, type) {
     if (!statusEl) {
@@ -186,10 +177,6 @@ function saveUser() {
         const userId = target.id
 
         if (editIndex === "") {
-            if (!name || !email || !role) {
-                alert("Name, email and role are required")
-                return
-            }
             if (!password) {
                 alert("Password is required")
                 return
@@ -210,23 +197,11 @@ function saveUser() {
             return
         } else if (userId) {
             const updates = []
-            if (api.updateUsuario) {
-                const payload = {}
-                if (name) payload.nombre = name
-                if (email) payload.email = email
-                if (role) payload.rol = role
-                if (Object.keys(payload).length > 0) {
-                    updates.push(api.updateUsuario(userId, payload))
-                }
-            } else if (role) {
+            if (role) {
                 updates.push(api.updateUsuarioRol(userId, role))
             }
             if (password) {
                 updates.push(api.updateUsuarioPassword(userId, password))
-            }
-            if (updates.length === 0) {
-                setStatus("No changes to update.", "error")
-                return
             }
             Promise.allSettled(updates).then(() => {
                 setStatus("User updated in the API.", "success")
@@ -279,18 +254,7 @@ function deleteUser(index) {
     if (confirm("Delete user?")) {
 
         if (usingApi) {
-            const target = users[index] || {}
-            const userId = target.id
-            if (api && api.deleteUsuario && userId) {
-                api.deleteUsuario(userId).then(() => {
-                    setStatus("User deleted in the API.", "success")
-                    loadUsers()
-                }).catch(() => {
-                    setStatus("Could not delete user in the API.", "error")
-                })
-                return
-            }
-            alert("No API endpoint available to delete users.")
+            alert("No hay endpoint para eliminar usuarios en API.")
             return
         }
 
@@ -423,30 +387,6 @@ if (backupRestore) {
     })
 }
 
-function hydrateSettings() {
-    try {
-        const config = JSON.parse(localStorage.getItem("admin_config") || "null")
-        if (config) {
-            if (document.getElementById("configCompany")) document.getElementById("configCompany").value = config.company || ""
-            if (document.getElementById("configDefaultRole")) document.getElementById("configDefaultRole").value = config.defaultRole || "Usuario"
-            if (document.getElementById("configTimeout")) document.getElementById("configTimeout").value = config.timeout || "60"
-            if (document.getElementById("configNotifications")) document.getElementById("configNotifications").value = config.notifications || "Enabled"
-        }
-        const security = JSON.parse(localStorage.getItem("admin_security") || "null")
-        if (security) {
-            if (document.getElementById("securityMinLength")) document.getElementById("securityMinLength").value = security.minLength || "8"
-            if (document.getElementById("securitySpecial")) document.getElementById("securitySpecial").value = security.special || "Yes"
-            if (document.getElementById("security2fa")) document.getElementById("security2fa").value = security.twofa || "No"
-            if (document.getElementById("securityLockout")) document.getElementById("securityLockout").value = security.lockout || "5"
-        }
-        const backup = JSON.parse(localStorage.getItem("admin_backup") || "null")
-        if (backup) {
-            if (document.getElementById("backupFrequency")) document.getElementById("backupFrequency").value = backup.frequency || "Daily"
-            if (document.getElementById("backupRetention")) document.getElementById("backupRetention").value = backup.retention || "30"
-        }
-    } catch {
-        // ignore localStorage errors
-    }
-}
+loadUsers()
 
-hydrateSettings()
+setInterval(loadUsers, 60000)

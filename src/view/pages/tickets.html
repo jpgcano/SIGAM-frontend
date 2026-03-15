@@ -25,7 +25,7 @@
         <div class="header">
 
             <div>
-                <h1>Support Ticket</h1>
+                <h1>Support tickets</h1>
                 <p class="subtitle">Management of incidents and technical requests</p>
             </div>
 
@@ -34,10 +34,13 @@
         <div class="filters">
             <input id="searchInput" type="text" placeholder="Search tickets..." class="search">
             <select id="statusFilter">
-                <option value="all">All Statuses</option>
-                <option value="abierto">Open</option>
-                <option value="en proceso">In Progress</option>
-                <option value="cerrado">Closed</option>
+                <option value="all">All the states</option>
+                <option value="abierto">Abierto</option>
+                <option value="en proceso">En Proceso</option>
+                <option value="cerrado">Cerrado</option>
+            </select>
+            <select id="categoryFilter">
+                <option value="all">All categories</option>
             </select>
             <select id="categoryFilter">
                 <option value="all">All Categories</option>
@@ -63,11 +66,11 @@
                     <div class="field-error" id="titleError"></div>
                     <textarea id="description" placeholder="Description" required></textarea>
                     <div class="field-error" id="descriptionError"></div>
-                    <input id="device" list="deviceList" placeholder="Asset Serial" required>
+                    <input id="device" list="deviceList" placeholder="Serial del activo" required>
                     <datalist id="deviceList"></datalist>
                     <div class="field-error" id="deviceError"></div>
                     <select id="category" required>
-                        <option value="">Select Category</option>
+                        <option value="">Selecciona categoria</option>
                     </select>
                     <div class="field-error" id="categoryError"></div>
                     <input id="createdBy" placeholder="Created By" required readonly>
@@ -77,10 +80,10 @@
                     <input id="estimate" placeholder="Estimated Time (e.g., 2h)">
                     <div class="field-error" id="estimateError"></div>
                     <select id="status" required>
-                        <option value="">Select Status</option>
-                        <option value="Abierto">Open</option>
-                        <option value="En Proceso">In Progress</option>
-                        <option value="Cerrado">Closed</option>
+                        <option value="">Select status</option>
+                        <option value="Abierto">Abierto</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Cerrado">Cerrado</option>
                     </select>
                     <div class="field-error" id="statusError"></div>
                     <div class="ticket-status" id="ticketStatus" aria-live="polite"></div>
@@ -88,10 +91,19 @@
                 </form>
             </div>
         </div>
+        <!-- LISTA DE TICKETS -->
+        <div id="ticketList"></div>
+        <div class="pagination" id="ticketPagination">
+            <button id="prevPage" class="btn-page">Prev</button>
+            <span id="pageInfo" class="page-info">Page 1</span>
+            <button id="nextPage" class="btn-page">Next</button>
+            <select id="pageSize" class="page-size">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
     </div>
-
-    <!-- LISTA DE TICKETS -->
-    <div id="ticketList"></div>
 
 
     <script src="../services/navbar.js"></script>

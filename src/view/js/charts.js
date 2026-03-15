@@ -170,8 +170,8 @@ function buildDashboardData(activos, tickets, mantenimientos) {
             ticket.categoria ||
             ticket.category ||
             ticket.tipo ||
-            "No category";
-        const label = String(category || "No category");
+            "Sin categoria";
+        const label = String(category || "Sin categoria");
         ticketsByCategory[label] = (ticketsByCategory[label] || 0) + 1;
     });
 
@@ -296,7 +296,7 @@ function createBarChart(data) {
     barChartInstance = new Chart(barChart, {
         type: "bar",
         data: {
-            labels: labels.length ? labels : ["No category"],
+            labels: labels.length ? labels : ["Sin categoria"],
             datasets: [{
                 label: "Tickets",
                 data: [
@@ -350,15 +350,11 @@ function renderUpcomingMaintenance(container, list) {
         container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
         return;
     }
-    const normalized = maints.map(normalizeMaintenance);
-    const withDate = normalized.filter((m) => m.date);
-    const withoutDate = normalized.filter((m) => !m.date);
-
-    // show all maintenance records from API, ordered by date if present
-    const upcoming = [
-        ...withDate.sort((a, b) => (a.date || "").localeCompare(b.date || "")),
-        ...withoutDate
-    ];
+    const upcoming = maints
+        .map(normalizeMaintenance)
+        .filter((m) => m.date && m.date >= todayISO())
+        .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
+        .slice(0, 5);
 
     if (!upcoming.length) {
         container.innerHTML = '<p class="ticket-empty">No upcoming maintenance.</p>';
@@ -369,7 +365,7 @@ function renderUpcomingMaintenance(container, list) {
     upcoming.forEach((m) => {
         const title = m.asset || (m.ticketId ? `Ticket #${m.ticketId}` : "Maintenance");
         const subtitle = m.notes || m.type || "Maintenance scheduled";
-        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "No date";
+        const dateLabel = m.date ? new Date(m.date).toLocaleDateString() : "";
         const item = document.createElement("div");
         item.className = "maintenance-next";
         item.innerHTML = `
@@ -382,39 +378,18 @@ function renderUpcomingMaintenance(container, list) {
 }
 
 function normalizeMaintenance(raw) {
-    const rawDate =
-        raw.fecha_inicio ||
-        raw.fecha_programada ||
-        raw.fecha_mantenimiento ||
-        raw.fecha ||
-        raw.date;
-    const normalizedDate = normalizeDate(rawDate);
     return {
         id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
         ticketId: raw.id_ticket || raw.ticketId || "",
         asset: raw.activo || raw.asset || raw.assetName || "",
         type: raw.tipo || raw.type || "",
-        date: normalizedDate || "",
+        date: raw.fecha_inicio || raw.fecha_programada || raw.date || "",
         notes: raw.diagnostico || raw.notes || ""
     };
 }
 
 function todayISO() {
     return new Date().toISOString().split("T")[0];
-}
-
-function normalizeDate(value) {
-    if (!value) {
-        return "";
-    }
-    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-        return value.slice(0, 10);
-    }
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-        return "";
-    }
-    return parsed.toISOString().split("T")[0];
 }
 
 function countUpcoming(list, days) {

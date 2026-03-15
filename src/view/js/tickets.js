@@ -24,6 +24,19 @@ const searchInput = document.getElementById("searchInput");
 const ticketStatusEl = document.getElementById("ticketStatus");
 const ticketsCount = document.getElementById("contadorTickets");
 
+const prevPageBtn = document.getElementById("prevPage");
+const nextPageBtn = document.getElementById("nextPage");
+const pageInfo = document.getElementById("pageInfo");
+const pageSizeSelect = document.getElementById("pageSize");
+
+let currentPage = 1;
+let pageSize = 20;
+let hasMore = false;
+
+if (pageSizeSelect) {
+    pageSize = Number(pageSizeSelect.value) || pageSize;
+}
+
 const titleInput = document.getElementById("title");
 const descriptionInput = document.getElementById("description");
 const deviceInput = document.getElementById("device");
@@ -202,7 +215,7 @@ function normalizeTicket(raw) {
     const activoInfo = activosMap.get(String(idActivo)) || {};
     const rawStatus = raw.status || raw.estado || "";
     const normalizedStatus = normalizeToken(rawStatus);
-    const categoryId = raw.id_categoria || raw.categoria_id || raw.categoriaId;
+    const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
         raw.category ||
         raw.categoria ||
@@ -234,6 +247,15 @@ function normalizeToken(value) {
         .trim();
 }
 
+function mapStatusClass(status) {
+    const key = normalizeToken(status);
+    if (key.includes('abierto')) return 'status-abierto';
+    if (key.includes('proceso')) return 'status-en-proceso';
+    if (key.includes('cerrado')) return 'status-cerrado';
+    if (key.includes('resuelto')) return 'status-resuelto';
+    return '';
+}
+
 function getActivoSerial(activo) {
     return (
         activo.serial ||
@@ -250,7 +272,7 @@ async function loadActivos() {
         return;
     }
     try {
-        const data = await api.getActivos({ limit: 50, offset: 0 });
+        const data = await api.getActivos({ limit: 500, offset: 0 });
         activosList = Array.isArray(data) ? data : [];
         activosMap = new Map(
             activosList.map((activo) => {
@@ -296,7 +318,7 @@ async function loadCategorias() {
         return;
     }
     try {
-        const data = await api.getCategorias({ limit: 50, offset: 0 });
+        const data = api.getCategoriasTicket ? await api.getCategoriasTicket() : await api.getCategorias();
         categoriasList = normalizeCategorias(data);
         renderCategorias();
     } catch (error) {
@@ -336,20 +358,20 @@ function renderCategorias() {
 
     categoriasMap = new Map(
         categoriasList.map((categoria) => {
-            const id = categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
-            const label = getCategoriaLabel(categoria) || String(id || "Category");
+            const id = categoria.id_categoria_ticket || categoria.id_categoria || categoria.id || categoria.idCategoria || getCategoriaLabel(categoria);
+            const label = getCategoriaLabel(categoria) || String(id || "Categoria");
             return [String(id), label];
         })
     );
 
-    const placeholder = '<option value="">Select Category</option>';
+    const placeholder = '<option value="">Selecciona categoria</option>';
     const options = Array.from(categoriasMap.entries())
         .map(([id, label]) => `<option value="${id}">${label}</option>`)
         .join("");
     categoryInput.innerHTML = placeholder + options;
 
     if (categoryFilter) {
-        const filterPlaceholder = '<option value="all">All Categories</option>';
+        const filterPlaceholder = '<option value="all">All categories</option>';
         const filterOptions = Array.from(categoriasMap.entries())
             .map(([id, label]) => `<option value="${normalizeToken(label)}">${label}</option>`)
             .join("");
@@ -369,58 +391,41 @@ function renderStatusFilter() {
         }
         unique.set(normalizeToken(label), label);
     });
-    const placeholder = '<option value="all">All Statuses</option>';
+    const placeholder = '<option value="all">All the states</option>';
     const options = Array.from(unique.entries())
         .map(([value, label]) => `<option value="${value}">${label}</option>`)
         .join("");
     statusFilter.innerHTML = placeholder + options;
 }
 
-function buildTicketQuery() {
-    const params = {
-        limit: TICKETS_PAGE_SIZE,
-        offset: ticketOffset
-    };
-    const statusValue = statusFilter ? statusFilter.value : "all";
-    const categoryValue = categoryFilter ? categoryFilter.value : "all";
-    const searchValue = searchInput ? searchInput.value.trim() : "";
-
-    if (statusValue && statusValue !== "all") {
-        params.estado = statusValue;
+function updatePaginationControls() {
+    if (pageInfo) {
+        pageInfo.textContent = `Page ${currentPage}`;
     }
-    if (categoryValue && categoryValue !== "all") {
-        params.categoria = categoryValue;
+    if (prevPageBtn) {
+        prevPageBtn.disabled = currentPage <= 1;
     }
-    if (searchValue) {
-        params.search = searchValue;
+    if (nextPageBtn) {
+        nextPageBtn.disabled = !hasMore;
     }
-    return params;
 }
 
-function scheduleTicketsRefresh() {
-    if (ticketFetchTimer) {
-        clearTimeout(ticketFetchTimer);
-    }
-    ticketFetchTimer = setTimeout(() => {
-        ticketOffset = 0;
-        loadTickets();
-    }, 500);
-}
-
-async function loadTickets() {
+async function loadTickets(page = 1) {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
         setListStatus("API not available.", "error");
         return;
     }
     try {
-        const data = await api.getTickets(buildTicketQuery());
+        currentPage = page;
+        const offset = (currentPage - 1) * pageSize;
+        const data = await api.getTickets({ limit: pageSize, offset });
         tickets = (data || []).map(normalizeTicket);
+        hasMore = Array.isArray(data) && data.length === pageSize;
         localStorage.setItem("tickets", JSON.stringify(tickets));
         renderStatusFilter();
         applyFilters();
-        setListStatus("");
-        updateTicketPagination(tickets.length);
+        updatePaginationControls();
     } catch (error) {
         const status = error && error.status ? error.status : null;
         if (status === 401) {
@@ -437,22 +442,10 @@ async function loadTickets() {
         }
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
+        hasMore = false;
         renderStatusFilter();
         applyFilters();
-        updateTicketPagination(tickets.length);
-    }
-}
-
-function updateTicketPagination(count) {
-    if (ticketPageInfo) {
-        const page = Math.floor(ticketOffset / TICKETS_PAGE_SIZE) + 1;
-        ticketPageInfo.textContent = `Page ${page}`;
-    }
-    if (ticketPrevBtn) {
-        ticketPrevBtn.disabled = ticketOffset <= 0;
-    }
-    if (ticketNextBtn) {
-        ticketNextBtn.disabled = count < TICKETS_PAGE_SIZE;
+        updatePaginationControls();
     }
 }
 
@@ -493,6 +486,12 @@ if (ticketForm) {
             return;
         }
 
+        if (!assetId) {
+            setTicketStatus("Serial no encontrado. Verifica el activo.", "error");
+            setSubmitting(false);
+            return;
+        }
+
         const ticketPayload = {
             id_activo: Number(assetId) || assetId,
             descripcion: descriptionInput.value.trim()
@@ -500,12 +499,12 @@ if (ticketForm) {
 
         const categoryValue = categoryInput.value;
         if (categoryValue) {
-            ticketPayload.id_categoria = Number(categoryValue) || categoryValue;
+            ticketPayload.id_categoria_ticket = Number(categoryValue) || categoryValue;
         }
 
         try {
             await api.createTicket(ticketPayload);
-            await loadTickets();
+            await loadTickets(currentPage);
             ticketForm.reset();
             clearFormErrors();
             setTicketStatus("Ticket created successfully.", "success");
@@ -547,27 +546,27 @@ function renderTickets(list) {
         const div = document.createElement("div");
         div.classList.add("ticket");
         div.innerHTML = `
-            <div class="ticket-status">${ticket.status || "Pending"}</div>
+            <div class="ticket-status ${mapStatusClass(ticket.status)}">${ticket.status || "Pending"}</div>
 
             <div class="ticket-title">
                 ${ticket.title || "Ticket"}
             </div>
 
-            <div class="ticket-info">
+            <div class="ticket-desc">
                 ${ticket.description}
             </div>
 
             <div class="ticket-info ticket-line">
                 <span>TK-${ticket.id || index + 1}</span>
-                <span>${ticket.device || "Asset"}</span>
-                <span>${ticket.category || "No category"}</span>
+                <span>${ticket.device || "Activo"}</span>
+                <span>${ticket.category || "Sin categoria"}</span>
             </div>
 
             <div class="ticket-info ticket-meta">
-                <span>Created by: ${ticket.createdBy || "No user"}</span>
-                <span>Assigned to: ${ticket.assignedTo || "Unassigned"}</span>
+                <span>Creado por: ${ticket.createdBy || "Sin usuario"}</span>
+                <span>Asignado a: ${ticket.assignedTo || "Sin asignar"}</span>
                 <span>${ticket.date}</span>
-                <span>${ticket.estimate || "No estimate"}</span>
+                <span>${ticket.estimate || "Sin estimado"}</span>
             </div>
 
             <button class="delete-btn" onclick="deleteTicket(${index})">Delete</button>
@@ -629,22 +628,37 @@ function applyFilters() {
     }
 }
 
-searchInput.addEventListener("input", () => {
-    applyFilters();
-    scheduleTicketsRefresh();
-});
-statusFilter.addEventListener("change", () => {
-    applyFilters();
-    scheduleTicketsRefresh();
-});
+searchInput.addEventListener("input", applyFilters);
+statusFilter.addEventListener("change", applyFilters);
 if (categoryFilter) {
-    categoryFilter.addEventListener("change", () => {
-        applyFilters();
-        scheduleTicketsRefresh();
+    categoryFilter.addEventListener("change", applyFilters);
+}
+
+if (prevPageBtn) {
+    prevPageBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+            loadTickets(currentPage - 1);
+        }
+    });
+}
+
+if (nextPageBtn) {
+    nextPageBtn.addEventListener("click", () => {
+        if (hasMore) {
+            loadTickets(currentPage + 1);
+        }
+    });
+}
+
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", () => {
+        const nextSize = Number(pageSizeSelect.value) || 20;
+        pageSize = nextSize;
+        loadTickets(1);
     });
 }
 
 setCreatedByFromSession();
 Promise.all([loadActivos(), loadCategorias()]).then(() => {
-    loadTickets();
+    loadTickets(1);
 });
