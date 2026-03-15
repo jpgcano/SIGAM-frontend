@@ -4,6 +4,7 @@ import SIGAM_CONFIG from "../services/config.js";
 import { getUser } from "../state/storage.js";
 import { router } from "../router.js";
 import { normalizeCollection } from "../utils/normalize.js";
+import { renderButton } from "../components/Button.js";
 import "../css/pages/calendar.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Tecnico"];
@@ -27,13 +28,11 @@ const render = async () => {
           </p>
         </div>
 
-        <button
-          class="btn btn-dark"
-          data-bs-toggle="modal"
-          data-bs-target="#scheduleModal"
-        >
-          + Schedule Maintenance
-        </button>
+        ${renderButton({
+          label: "+ Schedule Maintenance",
+          variant: "dark",
+          attrs: { "data-bs-toggle": "modal", "data-bs-target": "#scheduleModal" }
+        })}
       </div>
 
       <div class="row mb-4">
@@ -64,19 +63,31 @@ const render = async () => {
 
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-2">
-          <button id="prevPeriodBtn" class="btn btn-light">&lsaquo;</button>
+          ${renderButton({
+            id: "prevPeriodBtn",
+            content: "&lsaquo;",
+            variant: "light"
+          })}
           <h5 id="monthLabel" class="mb-0"></h5>
-          <button id="nextPeriodBtn" class="btn btn-light">&rsaquo;</button>
+          ${renderButton({
+            id: "nextPeriodBtn",
+            content: "&rsaquo;",
+            variant: "light"
+          })}
         </div>
 
         <div class="d-flex gap-2">
           <div class="btn-group" role="group" aria-label="Calendar view">
-            <button id="viewWeekBtn" class="btn btn-outline-dark">
-              Week
-            </button>
-            <button id="viewMonthBtn" class="btn btn-outline-dark">
-              Month
-            </button>
+            ${renderButton({
+              id: "viewWeekBtn",
+              label: "Week",
+              variant: "outlineDark"
+            })}
+            ${renderButton({
+              id: "viewMonthBtn",
+              label: "Month",
+              variant: "outlineDark"
+            })}
           </div>
           <select class="form-select">
             <option>All Types</option>
@@ -84,7 +95,11 @@ const render = async () => {
             <option>In inspection</option>
             <option>Repair</option>
           </select>
-          <button id="goTodayBtn" class="btn btn-light">Today</button>
+          ${renderButton({
+            id: "goTodayBtn",
+            label: "Today",
+            variant: "light"
+          })}
         </div>
       </div>
 
@@ -132,12 +147,18 @@ const render = async () => {
             </div>
 
             <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">
-                Cancel
-              </button>
+              ${renderButton({
+                label: "Cancel",
+                variant: "secondary",
+                attrs: { "data-bs-dismiss": "modal" }
+              })}
 
               <div id="scheduleStatus" class="me-auto small text-muted" aria-live="polite"></div>
-              <button type="submit" class="btn btn-dark">Save Schedule</button>
+              ${renderButton({
+                label: "Save Schedule",
+                type: "submit",
+                variant: "dark"
+              })}
             </div>
           </form>
         </div>
@@ -161,17 +182,23 @@ const render = async () => {
           </div>
 
           <div class="modal-footer">
-            <button id="deleteMaintenanceBtn" class="btn btn-danger">
-              Delete
-            </button>
+            ${renderButton({
+              id: "deleteMaintenanceBtn",
+              label: "Delete",
+              variant: "danger"
+            })}
 
-            <button id="editMaintenanceBtn" class="btn btn-primary">
-              Edit
-            </button>
+            ${renderButton({
+              id: "editMaintenanceBtn",
+              label: "Edit",
+              variant: "primaryBootstrap"
+            })}
 
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-              Close
-            </button>
+            ${renderButton({
+              label: "Close",
+              variant: "secondary",
+              attrs: { "data-bs-dismiss": "modal" }
+            })}
           </div>
         </div>
       </div>

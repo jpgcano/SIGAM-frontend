@@ -1,5 +1,32 @@
 import './services/env.js';
+
+// ==========================================================================
+// SIGAM - CSS Imports
+// Sistema de diseño estandarizado
+// ==========================================================================
+
+// Global styles & variables
 import './css/global.css';
+
+// Component styles
+import './css/components/buttons.css';
+import './css/components/sections.css';
+import './css/components/cards.css';
+import './css/components/tables.css';
+import './css/components/badges.css';
+import './css/components/forms.css';
+import './css/components/modals.css';
+import './css/components/grid.css';
+import './css/components/charts.css';
+import './css/components/footer.css';
+
+// Layout components
+import './css/navbar.css';
+
+// ==========================================================================
+// Router & Pages
+// ==========================================================================
+
 import { router } from './router.js';
 import { LoginPage } from './pages/Login.page.js';
 import { RegisterPage } from './pages/Register.page.js';
