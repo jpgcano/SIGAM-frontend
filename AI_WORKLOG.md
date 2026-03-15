@@ -247,3 +247,18 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Dashboard renderiza cards, listas y gráficos con Chart.js cargado dinámicamente.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Inventory a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Inventory a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Inventory.page.js`: Vista SPA con inventario, modales y lógica CRUD.
+  - `src/components/Navbar.js`: Agregado enlace a Inventory.
+  - `src/router.js`: Soporte de múltiples clases en `body`.
+  - `src/main.js`: Ruta `/inventory`.
+  - Eliminados: `src/legacy/pages/inventory.html`, `src/legacy/js/pages/inventory.page.js`, `src/legacy/js/inventory.js`.
+- Evidencia:
+  - Inventory renderiza grid/lista, tabla de stock y proveedores; modales funcionan con Bootstrap JS cargado dinámicamente.
+- Commit(s):
+  - (Pendiente de aplicación)

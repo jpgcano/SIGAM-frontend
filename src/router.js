@@ -8,7 +8,7 @@ export const router = {
     routes: {},
     publicRoutes: new Set(['/login', '/register']),
     defaultRouteResolver: null,
-    currentBodyClass: '',
+    currentBodyClasses: [],
 
     /**
      * Registra una ruta y su componente asociado.
@@ -117,17 +117,21 @@ export const router = {
         }
 
         if (pageModule && pageModule.meta && pageModule.meta.bodyClass !== undefined) {
-            const nextClass = String(pageModule.meta.bodyClass || '');
-            if (this.currentBodyClass && this.currentBodyClass !== nextClass) {
-                document.body.classList.remove(this.currentBodyClass);
+            const nextClasses = Array.isArray(pageModule.meta.bodyClass)
+                ? pageModule.meta.bodyClass
+                : String(pageModule.meta.bodyClass || '')
+                    .split(/\s+/)
+                    .filter(Boolean);
+            if (this.currentBodyClasses.length) {
+                document.body.classList.remove(...this.currentBodyClasses);
             }
-            if (nextClass) {
-                document.body.classList.add(nextClass);
+            if (nextClasses.length) {
+                document.body.classList.add(...nextClasses);
             }
-            this.currentBodyClass = nextClass;
-        } else if (this.currentBodyClass) {
-            document.body.classList.remove(this.currentBodyClass);
-            this.currentBodyClass = '';
+            this.currentBodyClasses = nextClasses;
+        } else if (this.currentBodyClasses.length) {
+            document.body.classList.remove(...this.currentBodyClasses);
+            this.currentBodyClasses = [];
         }
 
         if (pageModule && typeof pageModule.render === 'function') {

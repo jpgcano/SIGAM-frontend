@@ -42,6 +42,12 @@ const render = () => {
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/inventory" data-route="/inventory" data-role="inventory">
+                <i class="bi bi-box-seam"></i>
+                Inventory
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link d-flex align-items-center gap-2" href="/admin" data-route="/admin" data-role="admin">
                 <i class="bi bi-gear"></i>
                 Admin
@@ -90,6 +96,7 @@ const init = () => {
   const userBox = document.querySelector('#navbar-user');
   const logoutBtn = document.querySelector('#navbar-logout');
   const adminLink = document.querySelector('[data-role="admin"]');
+  const inventoryLink = document.querySelector('[data-role="inventory"]');
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
@@ -109,6 +116,10 @@ const init = () => {
 
   if (adminLink && !['gerente', 'administrador', 'admin'].includes(roleKey)) {
     adminLink.classList.add('d-none');
+  }
+
+  if (inventoryLink && !['gerente', 'analista'].includes(roleKey)) {
+    inventoryLink.classList.add('d-none');
   }
 
   if (logoutBtn) {
