@@ -915,7 +915,7 @@ const openDetailModal = (state, maintenance) => {
   const detailNotes = document.querySelector("#detailNotes");
   state.editIndex = state.maintenances.indexOf(maintenance);
   if (detailTicket) detailTicket.textContent = maintenance.ticketId || "-";
-  if (detailAsset) detailAsset.textContent = maintenance.asset || "";
+  if (detailAsset) detailAsset.textContent = getAssetLabel(maintenance.asset) || "";
   if (detailType) detailType.textContent = maintenance.type || "";
   if (detailDate) detailDate.textContent = maintenance.date || "";
   if (detailNotes) detailNotes.textContent = maintenance.notes || "-";
