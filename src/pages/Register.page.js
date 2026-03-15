@@ -10,33 +10,50 @@ import "../css/pages/register.css";
 const render = () => {
   return `
     <div class="page-register">
-      <div class="container">
-        <h2>Create Account</h2>
+      <div class="register-shell">
+        <div class="register-card">
+          <div class="register-brand">
+            <img src="/logo_circular.png" alt="J-AXON" class="register-logo" />
+            <div class="register-brand-text">
+              <h1>Create a J-AXON Account</h1>
+              <p>Start managing users and services.</p>
+            </div>
+          </div>
 
-        <form id="registerForm" novalidate>
-          <input type="text" id="name" placeholder="Name" required>
-          <input type="text" id="surname" placeholder="Surname" required>
-          <input type="email" id="email" placeholder="Email" required>
-          <input type="password" id="password" placeholder="Password" required>
-          <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-          <select id="role">
-            <option value="Usuario">User</option>
-            <option value="Analista">Analyst</option>
-            <option value="Tecnico">Technician</option>
-            <option value="Gerente">Manager</option>
-            <option value="Auditor">Auditor</option>
-          </select>
-          <div id="registerStatus" class="form-status" aria-live="polite"></div>
-          ${renderButton({
-            id: "registerBtn",
-            label: "Create Account",
-            type: "submit"
-          })}
-        </form>
+          <form id="registerForm" novalidate>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" placeholder="Name" required>
+            </div>
+            <div class="form-group">
+              <label for="surname">Last Name</label>
+              <input type="text" id="surname" placeholder="Last Name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="tu@empresa.com" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="••••••••" required>
+            </div>
+  \
+            <div id="registerStatus" class="form-status" aria-live="polite"></div>
+            ${renderButton({
+              id: "registerBtn",
+              label: "Create Account",
+              type: "submit"
+            })}
+          </form>
 
-        <p>Do you already have an account?
-        <a href="/login" id="navigateToLogin">Login</a>
-        </p>
+          <p class="register-footer">Already have an account?
+          <a href="/login" id="navigateToLogin"> Sign in</a>
+          </p>
+        </div>
       </div>
     </div>
   `;
