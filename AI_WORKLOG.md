@@ -555,3 +555,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/ticket-detail-causes-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Ajustes CSS tickets
+- Rama: developer (feature/task)
+- Objetivo: Separar elementos y destacar estados en UI.
+- Cambios:
+  - `src/css/pages/tickets.css`: Espaciado, badges y ajustes de acciones.
+- Evidencia:
+  - `test/tickets-css-spacing-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

@@ -78,6 +78,7 @@ body.page-tickets .filters {
     border-radius: 16px;
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
+    margin-bottom: 20px;
 }
 
 body.page-tickets .search {
@@ -155,6 +156,17 @@ body.page-tickets .ticket-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 12px;
+}
+
+body.page-tickets .ticket-line span,
+body.page-tickets .ticket-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
 }
 
 body.page-tickets .ticket-status {
@@ -311,6 +323,19 @@ body.page-tickets .detail-grid .ticket-status {
     gap: 6px;
 }
 
+body.page-tickets .detail-grid span {
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+body.page-tickets .detail-grid .ticket-status {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
 body.page-tickets .detail-section {
     margin-top: 18px;
 }
@@ -336,6 +361,10 @@ body.page-tickets .detail-actions {
 
 body.page-tickets .detail-actions select {
     min-width: 220px;
+}
+
+body.page-tickets .detail-actions button {
+    min-width: 160px;
 }
 
 @media (max-width: 900px) {
