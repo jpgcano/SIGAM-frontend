@@ -521,3 +521,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/ticket-detail-suggestions-ui-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Mostrar solo soluciones IA
+- Rama: developer (feature/task)
+- Objetivo: Ocultar sugerencias historicas y mostrar solo IA.
+- Cambios:
+  - `src/pages/TicketDetail.page.js`: Filtra sugerencias no IA y cambia el titulo.
+- Evidencia:
+  - `test/ticket-detail-ia-only-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)

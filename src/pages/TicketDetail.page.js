@@ -44,7 +44,7 @@ const render = async () => {
           <p id="detailDescription">-</p>
         </div>
         <div class="detail-section">
-          <h3>Tickets similares y sugerencias</h3>
+          <h3>Soluciones IA</h3>
           <div id="detailSolutions" class="detail-solutions">
             <p class="muted">Sin sugerencias por ahora.</p>
           </div>
@@ -114,10 +114,18 @@ const renderSolutions = (list) => {
   const detailSolutions = document.getElementById("detailSolutions");
   if (!detailSolutions) return;
   if (!Array.isArray(list) || list.length === 0) {
-    detailSolutions.innerHTML = '<p class="muted">Sin sugerencias por ahora.</p>';
+    detailSolutions.innerHTML = '<p class="muted">IA no disponible o sin respuesta.</p>';
     return;
   }
-  detailSolutions.innerHTML = list.map((item) => {
+  const iaOnly = list.filter((item) => {
+    if (typeof item === "string") return false;
+    return Boolean(item && (item.solucion || item.pasos || item.advertencias || item.confianza !== undefined));
+  });
+  if (iaOnly.length === 0) {
+    detailSolutions.innerHTML = '<p class="muted">IA no disponible o sin respuesta.</p>';
+    return;
+  }
+  detailSolutions.innerHTML = iaOnly.map((item) => {
     if (typeof item === "string") {
       return `<div class="solution-card"><p>${item}</p></div>`;
     }
@@ -143,23 +151,7 @@ const renderSolutions = (list) => {
       `;
     }
 
-    const desc = item.descripcion || item.diagnostico || "Sin descripcion";
-    const score = typeof item.score === "number" ? item.score.toFixed(2) : "";
-    const meta = [
-      item.id_ticket ? `Ticket #${item.id_ticket}` : "",
-      score ? `Score: ${score}` : "",
-      item.estado ? `Estado: ${item.estado}` : ""
-    ].filter(Boolean).join(" • ");
-    const keywords = Array.isArray(item.matched_keywords) && item.matched_keywords.length
-      ? `<p>Coincidencias: ${item.matched_keywords.join(", ")}</p>`
-      : "";
-    return `
-      <div class="solution-card">
-        <p><strong>${meta || "Ticket similar"}</strong></p>
-        <p>${desc}</p>
-        ${keywords}
-      </div>
-    `;
+    return "";
   }).join("");
 };
 
