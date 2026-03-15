@@ -60,7 +60,11 @@
 
 .sigam-navbar .navbar-brand small {
   font-size: var(--text-xs);
-  color: rgba(226, 232, 240, 0.8);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.sigam-navbar .text-muted {
+  color: rgba(226, 232, 240, 0.8) !important;
 }
 
 /* ==========================================================================
