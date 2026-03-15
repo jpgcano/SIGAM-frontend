@@ -277,3 +277,17 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Tickets renderiza lista, modal y filtros; carga activos y categorias desde API.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Calendar a SPA (open-source Calendar.js)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Calendar a SPA usando librería open-source y datos reales.
+- Cambios:
+  - `src/pages/Calendar.page.js`: Vista SPA con Calendar.js y modales de mantenimiento.
+  - `src/components/Navbar.js`: Agregado enlace a Calendar.
+  - `src/main.js`: Ruta `/calendar`.
+  - Eliminados: `src/legacy/pages/calendar.html`, `src/legacy/js/pages/calendar.page.js`, `src/legacy/js/calendar.js`.
+- Evidencia:
+  - Calendar renderiza eventos desde API, permite drag-and-drop y CRUD básico.
+- Commit(s):
+  - (Pendiente de aplicación)
