@@ -566,3 +566,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-css-spacing-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Ajuste estilo tarjetas tickets
+- Rama: developer (feature/task)
+- Objetivo: Mejorar apariencia de cards.
+- Cambios:
+  - `src/css/pages/tickets.css`: Tarjetas mas limpias y sobrias.
+- Evidencia:
+  - `test/tickets-card-style-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
