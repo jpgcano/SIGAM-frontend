@@ -14,5 +14,6 @@ window.__ENV__ = {
 };
 `;
 
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, content, 'utf8');
 console.log(`runtime env written to ${outputPath}`);

@@ -21,3 +21,6 @@ coverage/
 .DS_Store
 .vscode/
 *.swp
+
+# Build-time runtime env
+src/legacy/js/runtime-env.js
