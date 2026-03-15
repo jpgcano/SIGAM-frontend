@@ -1,6 +1,6 @@
 import { Navbar } from "../components/Navbar.js";
-import { api } from "../api-client.js";
-import { getUser, clearStorage } from "../storage.js";
+import { api } from "../services/api-client.js";
+import { getUser, clearStorage } from "../state/storage.js";
 import { router } from "../router.js";
 import "../css/pages/profile.css";
 

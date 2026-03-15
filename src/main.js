@@ -1,4 +1,4 @@
-import './env.js';
+import './services/env.js';
 import './css/global.css';
 import { router } from './router.js';
 import { LoginPage } from './pages/Login.page.js';

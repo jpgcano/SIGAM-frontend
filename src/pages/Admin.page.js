@@ -1,6 +1,6 @@
 import { Navbar } from "../components/Navbar.js";
-import { api } from "../api-client.js";
-import SIGAM_CONFIG from "../config.js";
+import { api } from "../services/api-client.js";
+import SIGAM_CONFIG from "../services/config.js";
 import "../css/pages/admin.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Auditor", "Admin", "Administrador"];

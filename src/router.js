@@ -1,4 +1,4 @@
-import { getToken, getUser } from './storage.js';
+import { getToken, getUser } from './state/storage.js';
 
 /**
  * Router básico para SPA.

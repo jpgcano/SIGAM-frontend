@@ -1,5 +1,5 @@
 import { router } from '../router.js';
-import { getUser, clearStorage } from '../storage.js';
+import { getUser, clearStorage } from '../state/storage.js';
 import '../css/navbar.css';
 
 const ROLE_LABELS = {

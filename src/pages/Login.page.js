@@ -1,5 +1,5 @@
 import { router } from '../router.js';
-import { api } from '../api-client.js';
+import { api } from '../services/api-client.js';
 
 // Importamos los estilos específicos de la página.
 // Vite se encargará de inyectarlos en el head.

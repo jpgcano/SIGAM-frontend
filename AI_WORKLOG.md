@@ -462,3 +462,16 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/remove-empty-folders-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Reencarpetado modular de src
+- Rama: developer (feature/task)
+- Objetivo: Separar servicios y estado en carpetas dedicadas.
+- Cambios:
+  - `src/services/`: `api-client.js`, `config.js`, `env.js`, `api.js`.
+  - `src/state/`: `storage.js`.
+  - Actualizacion de imports en pages/router/components.
+- Evidencia:
+  - `test/restructure-src-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
