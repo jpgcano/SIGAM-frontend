@@ -913,33 +913,37 @@ const updateStats = (state, scheduledEl, overdueEl, assetsEl) => {
   if (assetsEl) assetsEl.innerText = uniqueAssets.size;
 };
 
+const toAssetEntry = (asset) => {
+  const id = asset.id_activo || asset.id || asset.idActivo || asset.name || "";
+  const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
+  const label = labelParts.join(" - ") || asset.nombre || asset.name || `Asset ${id}`;
+  return { id, label };
+};
+
 const loadAssets = async (state, select) => {
   if (!select) return;
   select.innerHTML = "";
+
+  const renderOptions = (list) => {
+    if (!list.length) {
+      select.innerHTML = '<option value="">No assets available</option>';
+      return;
+    }
+    list.forEach((asset) => {
+      select.innerHTML += `
+        <option value="${asset.id}">
+          ${asset.label}
+        </option>
+      `;
+    });
+  };
 
   if (SIGAM_CONFIG.API_BASE_URL) {
     try {
       const payload = await api.apiRequest(SIGAM_CONFIG.ACTIVOS_ENDPOINT);
       const data = normalizeCollection(payload);
-      state.assetsList = Array.isArray(data)
-        ? data.map((asset) => {
-            const id = asset.id_activo || asset.id || asset.idActivo || "";
-            const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
-            const label = labelParts.join(" - ") || asset.nombre || `Asset ${id}`;
-            return { id, label };
-          })
-        : [];
-      if (state.assetsList.length === 0) {
-        select.innerHTML = '<option value="">No assets available</option>';
-        return;
-      }
-      state.assetsList.forEach((asset) => {
-        select.innerHTML += `
-          <option value="${asset.id}">
-            ${asset.label}
-          </option>
-        `;
-      });
+      state.assetsList = Array.isArray(data) ? data.map(toAssetEntry) : [];
+      renderOptions(state.assetsList);
       return;
     } catch {
       select.innerHTML = '<option value="">No assets available</option>';
@@ -952,15 +956,8 @@ const loadAssets = async (state, select) => {
     select.innerHTML = '<option value="">No assets available</option>';
     return;
   }
-
-  assets.forEach((asset) => {
-    const label = asset.name;
-    select.innerHTML += `
-      <option value="${label}">
-        ${label}
-      </option>
-    `;
-  });
+  state.assetsList = assets.map(toAssetEntry);
+  renderOptions(state.assetsList);
 };
 
 const upsertMaintenanceInApi = async (maintenance, scheduleStatus, state) => {
