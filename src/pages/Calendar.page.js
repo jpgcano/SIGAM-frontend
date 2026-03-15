@@ -695,7 +695,7 @@ const applyTypeFilter = (maintenances, filter) => {
 
 const applyAssetFilter = (maintenances, filter) => {
   if (!filter || filter === "all") return maintenances;
-  return maintenances.filter((m) => String(m.asset || "") === filter);
+  return maintenances.filter((m) => String(m.assetId || m.asset || "") === filter);
 };
 
 const applyTechFilter = (maintenances, filter) => {
@@ -787,17 +787,17 @@ const updateFilterOptions = (state) => {
 
   if (assetFilter) {
     const current = assetFilter.value || "all";
-    const assets = Array.from(
-      new Set(state.maintenances.map((m) => m.asset).filter(Boolean))
-    ).sort();
+    const assetOptions = state.assetsList
+      .filter((asset) => asset && asset.id && asset.label)
+      .map((asset) => ({ id: asset.id, label: asset.label }));
     assetFilter.innerHTML = '<option value="all">All Assets</option>';
-    assets.forEach((asset) => {
+    assetOptions.forEach(({ id, label }) => {
       const option = document.createElement("option");
-      option.value = asset;
-      option.textContent = asset;
+      option.value = id;
+      option.textContent = label;
       assetFilter.appendChild(option);
     });
-    assetFilter.value = assets.includes(current) ? current : "all";
+    assetFilter.value = assetOptions.some((entry) => entry.id === current) ? current : "all";
   }
 
   if (techFilter) {
