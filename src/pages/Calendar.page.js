@@ -16,12 +16,6 @@ const ROLE_ALLOWLIST = ["Gerente", "Tecnico"];
 let calendarInstance = null;
 let currentView = "dayGridMonth";
 
-const getAssetLabel = (asset) => {
-  if (!asset) return "";
-  if (typeof asset === "string") return asset;
-  return asset.label || asset.nombre || "";
-};
-
 const render = async () => {
   const navbarHTML = Navbar.render();
 
@@ -725,6 +719,12 @@ const applyAssetFilter = (maintenances, filter) => {
   return maintenances.filter((m) => String(m.assetId || getAssetLabel(m.asset) || "") === filter);
 };
 
+const getAssetLabel = (asset) => {
+  if (!asset) return "";
+  if (typeof asset === "string") return asset;
+  return asset.label || asset.nombre || "";
+};
+
 const applyTechFilter = (maintenances, filter) => {
   if (!filter || filter === "all") return maintenances;
   return maintenances.filter((m) => String(m.technicianId || "") === filter);
@@ -805,12 +805,6 @@ const renderSidebarLists = (state, upcomingEl, overdueEl, filters) => {
   overdueEl.innerHTML = overdue.length
     ? overdue.map(renderItem).join("")
     : '<div class="calendar-empty">No overdue items. Aquí verás mantenimientos vencidos.</div>';
-};
-
-const getAssetLabel = (asset) => {
-  if (!asset) return "";
-  if (typeof asset === "string") return asset;
-  return asset.label || asset.nombre || "";
 };
 
 const updateFilterOptions = (state) => {
