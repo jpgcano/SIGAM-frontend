@@ -18,8 +18,7 @@ export const renderAssetCard = (asset) => {
   const badge = getStatusBadgeClass(asset.status);
   const statusClass = getStatusClass(asset.status);
   return `
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100 asset-card ${statusClass}">
+    <div class="card shadow-sm h-100 asset-card ${statusClass}">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start">
             <h5 class="fw-bold">${asset.name}</h5>
@@ -48,6 +47,5 @@ export const renderAssetCard = (asset) => {
           </div>
         </div>
       </div>
-    </div>
   `;
 };
