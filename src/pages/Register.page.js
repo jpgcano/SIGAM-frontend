@@ -80,7 +80,7 @@ const init = () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
-    const role = document.getElementById("role").value;
+    const role = "Usuario";
 
     if (!name || !surname || !email || !password) {
       statusDiv.textContent = "Please complete all required fields.";
