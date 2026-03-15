@@ -163,6 +163,12 @@
         return normalizeCollection(payload);
     }
 
+    async function getTicket(ticketId, { suggestions = false } = {}) {
+        const safeId = encodeURIComponent(ticketId);
+        const qs = suggestions ? '?suggestions=true' : '';
+        return apiRequest(`${ticketsEndpoint}/${safeId}${qs}`);
+    }
+
     async function createTicket(body) {
         return apiRequest(ticketsEndpoint, { method: 'POST', body });
     }
@@ -285,6 +291,7 @@
     window.SIGAM_API = {
         apiRequest,
         getTickets,
+        getTicket,
         createTicket,
         deleteTicket,
         getDashboard,

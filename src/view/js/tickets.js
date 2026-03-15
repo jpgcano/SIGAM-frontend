@@ -217,6 +217,7 @@ function normalizeTicket(raw) {
     const normalizedStatus = normalizeToken(rawStatus);
     const categoryId = raw.id_categoria_ticket || raw.id_categoria || raw.categoria_id || raw.categoriaId;
     const categoryLabel =
+        raw.clasificacion_nlp ||
         raw.category ||
         raw.categoria ||
         raw.categoria_nombre ||
@@ -559,7 +560,7 @@ function renderTickets(list) {
             <div class="ticket-info ticket-line">
                 <span>TK-${ticket.id || index + 1}</span>
                 <span>${ticket.device || "Activo"}</span>
-                <span>${ticket.category || "Sin categoria"}</span>
+                <span>${ticket.category || "Sin clasificacion"}</span>
             </div>
 
             <div class="ticket-info ticket-meta">
