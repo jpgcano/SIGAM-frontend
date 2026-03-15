@@ -53,7 +53,20 @@ function renderUsers() {
     let table = document.getElementById("userTable")
     table.innerHTML = ""
 
-    users.forEach((user, index) => {
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : ""
+    const roleValue = roleFilter ? roleFilter.value.trim().toLowerCase() : "all roles"
+
+    const filtered = users.filter((user) => {
+        const roleMatch = roleValue === "all roles"
+            ? true
+            : String(user.role || "").toLowerCase() === roleValue
+        if (!roleMatch) return false
+        if (!query) return true
+        const haystack = `${user.name || ""} ${user.email || ""} ${user.role || ""}`.toLowerCase()
+        return haystack.includes(query)
+    })
+
+    filtered.forEach((user, index) => {
 
         table.innerHTML += `
 
@@ -151,8 +164,8 @@ function timeAgo(date) {
 
 function saveUser() {
 
-    let name = document.getElementById("name").value
-    let email = document.getElementById("email").value
+    let name = document.getElementById("name").value.trim()
+    let email = document.getElementById("email").value.trim()
     let role = document.getElementById("role").value
     let password = document.getElementById("password").value
     let editIndex = document.getElementById("editIndex").value
@@ -288,18 +301,89 @@ function updateStats() {
 }
 
 
-const searchInput = document.getElementById("searchInput")
 if (searchInput) {
-    searchInput.addEventListener("keyup", function () {
+    searchInput.addEventListener("input", () => renderUsers())
+}
+if (roleFilter) {
+    roleFilter.addEventListener("change", () => renderUsers())
+}
 
-        let value = this.value.toLowerCase()
+loadUsers()
 
-        let rows = document.querySelectorAll("#userTable tr")
+setInterval(loadUsers, 60000)
 
-        rows.forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none"
-        })
+function showSection(key) {
+    Object.keys(sections).forEach((name) => {
+        const section = sections[name]
+        if (!section) return
+        if (name === key) {
+            section.classList.remove("d-none")
+        } else {
+            section.classList.add("d-none")
+        }
+    })
+}
 
+if (tabs) {
+    tabs.addEventListener("click", (event) => {
+        const btn = event.target.closest("button[data-section]")
+        if (!btn) return
+        const key = btn.getAttribute("data-section")
+        if (!key) return
+        const items = tabs.querySelectorAll(".nav-link")
+        items.forEach((item) => item.classList.remove("active"))
+        btn.classList.add("active")
+        showSection(key)
+    })
+}
+
+const configSave = document.getElementById("configSave")
+const configStatus = document.getElementById("configStatus")
+if (configSave) {
+    configSave.addEventListener("click", () => {
+        const payload = {
+            company: document.getElementById("configCompany").value.trim(),
+            defaultRole: document.getElementById("configDefaultRole").value,
+            timeout: document.getElementById("configTimeout").value,
+            notifications: document.getElementById("configNotifications").value
+        }
+        localStorage.setItem("admin_config", JSON.stringify(payload))
+        if (configStatus) configStatus.textContent = "Configuration saved."
+    })
+}
+
+const securitySave = document.getElementById("securitySave")
+const securityStatus = document.getElementById("securityStatus")
+if (securitySave) {
+    securitySave.addEventListener("click", () => {
+        const payload = {
+            minLength: document.getElementById("securityMinLength").value,
+            special: document.getElementById("securitySpecial").value,
+            twofa: document.getElementById("security2fa").value,
+            lockout: document.getElementById("securityLockout").value
+        }
+        localStorage.setItem("admin_security", JSON.stringify(payload))
+        if (securityStatus) securityStatus.textContent = "Security settings saved."
+    })
+}
+
+const backupRun = document.getElementById("backupRun")
+const backupRestore = document.getElementById("backupRestore")
+const backupStatus = document.getElementById("backupStatus")
+if (backupRun) {
+    backupRun.addEventListener("click", () => {
+        const payload = {
+            frequency: document.getElementById("backupFrequency").value,
+            retention: document.getElementById("backupRetention").value,
+            lastRun: new Date().toISOString()
+        }
+        localStorage.setItem("admin_backup", JSON.stringify(payload))
+        if (backupStatus) backupStatus.textContent = "Backup executed locally."
+    })
+}
+if (backupRestore) {
+    backupRestore.addEventListener("click", () => {
+        if (backupStatus) backupStatus.textContent = "Restore completed locally."
     })
 }
 

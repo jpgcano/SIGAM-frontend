@@ -1,12 +1,10 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard">
-            <img
-                src="../services/logo_circular.png"
-                alt="SIGAM"
-                width="35"
-                height="35"
-            >
+        <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.html">
+            <div
+                class="bg-primary text-white rounded d-flex justify-content-center align-items-center"
+                style="width: 35px; height: 35px">
+            </div>
             <div>
                 <strong>J-AXON</strong><br />
                 <small class="text-muted">Anticipate the failure</small>
@@ -23,42 +21,50 @@
         <div class="collapse navbar-collapse" id="menu">
             <ul class="navbar-nav ms-4">
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/dashboard" data-page="dashboard">
+                    <a class="nav-link d-flex align-items-center gap-2" href="dashboard.html" data-page="dashboard.html">
                         <i class="bi bi-speedometer2"></i>
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/inventory" data-page="inventory">
+                    <a class="nav-link d-flex align-items-center gap-2" href="inventory.html" data-page="inventory.html">
                         <i class="bi bi-box-seam"></i>
                         Inventory
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/tickets" data-page="tickets">
+                    <a class="nav-link d-flex align-items-center gap-2" href="tickets.html" data-page="tickets.html">
                         <i class="bi bi-ticket"></i>
                         Tickets
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/calendar" data-page="calendar">
+                    <a class="nav-link d-flex align-items-center gap-2" href="calendar.html" data-page="calendar.html">
                         <i class="bi bi-calendar-event"></i>
                         Calendar
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/reports" data-page="reports">
+                    <a class="nav-link d-flex align-items-center gap-2" href="reports.html" data-page="reports.html">
                         <i class="bi bi-bar-chart"></i>
                         Reports
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="/admin" data-page="admin">
+                    <a class="nav-link d-flex align-items-center gap-2" href="admin.html" data-page="admin.html">
                         <i class="bi bi-gear"></i>
                         Admin
                     </a>
                 </li>
             </ul>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div id="navbar-user" class="text-end d-none">
+                    <div class="fw-semibold" id="navbar-user-name"></div>
+                    <div class="small text-muted" id="navbar-user-email"></div>
+                </div>
+                <span id="navbar-user-role" class="badge bg-primary d-none"></span>
+                <button id="navbar-logout" type="button" class="btn btn-sm btn-outline-secondary d-none">Salir</button>
+            </div>
         </div>
     </div>
 </nav>

@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             setStatus("Registro exitoso. Redirigiendo...", "success")
-            window.location.href = "/login"
+            window.location.href = "login.html"
         } catch (error) {
             setStatus(error.message || "Error de registro.", "error")
         } finally {

@@ -1,11 +1,12 @@
 // Global runtime config for static pages.
-// API base URL comes from runtime env or local storage.
+// API base URL comes from runtime env or local storage, with a safe default.
 (function initSigamConfig() {
   const envApi = window.__ENV__ && window.__ENV__.SIGAM_API;
   const globalApi = window.SIGAM_API;
   const storedApi = window.localStorage ? window.localStorage.getItem('SIGAM_API') : '';
+  const defaultApi = 'https://sigam-backend.vercel.app';
 
-  const apiBaseUrl = (envApi || globalApi || storedApi || '').trim();
+  const apiBaseUrl = (envApi || globalApi || storedApi || defaultApi || '').trim();
 
   if (!apiBaseUrl) {
     console.warn('SIGAM_CONFIG: API_BASE_URL is empty. Set SIGAM_API in the environment or localStorage.');
