@@ -361,11 +361,6 @@ const initTickets = () => {
     return api.apiRequest(SIGAM_CONFIG.TICKETS_ENDPOINT, { method: "POST", body });
   };
 
-  const deleteTicket = async (ticketId) => {
-    const safeId = encodeURIComponent(ticketId);
-    return api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${safeId}`, { method: "DELETE" });
-  };
-
   const getCategorias = async () => {
     const endpoint = SIGAM_CONFIG.CATEGORIAS_TICKET_ENDPOINT || "/api/tickets/categorias";
     const payload = await api.apiRequest(endpoint);
@@ -607,8 +602,6 @@ const initTickets = () => {
         <div class="ticket-info ticket-meta">
             <span>Clasificacion IA: ${classificationLabel}</span>
         </div>
-
-        <button class="delete-btn" data-index="${index}">Delete</button>
       `;
       div.addEventListener("click", (event) => {
         if (event.target.closest(".delete-btn")) return;
@@ -619,29 +612,6 @@ const initTickets = () => {
       ticketList.appendChild(div);
     });
 
-    ticketList.querySelectorAll(".delete-btn").forEach((btn) => {
-      btn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const idx = Number(btn.dataset.index);
-        deleteTicketByIndex(idx);
-      });
-    });
-  };
-
-  const deleteTicketByIndex = async (index) => {
-    const ticket = ticketsState.tickets[index];
-    if (!ticket) return;
-    if (ticket.id) {
-      try {
-        await deleteTicket(ticket.id);
-      } catch (error) {
-        setTicketStatus("Unable to delete ticket from API.", "error");
-        return;
-      }
-    }
-    ticketsState.tickets.splice(index, 1);
-    localStorage.setItem("tickets", JSON.stringify(ticketsState.tickets));
-    applyFilters();
   };
 
   const applyFilters = () => {

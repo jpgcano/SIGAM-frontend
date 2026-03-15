@@ -2,9 +2,13 @@ import { Navbar } from "../components/Navbar.js";
 import { api } from "../services/api-client.js";
 import SIGAM_CONFIG from "../services/config.js";
 import { router } from "../router.js";
+import { getUser } from "../state/storage.js";
+import { normalizeCollection } from "../utils/normalize.js";
 import "../css/pages/tickets.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Analista", "Tecnico", "Usuario"];
+const ROLE_CAN_UPDATE_STATUS = ["Gerente", "Tecnico"];
+const ROLE_CAN_ASSIGN = ["Gerente"];
 
 const render = async () => {
   const navbarHTML = Navbar.render();
@@ -45,6 +49,26 @@ const render = async () => {
             <p class="muted">Sin sugerencias por ahora.</p>
           </div>
         </div>
+        <div class="detail-section" id="detailActions" hidden>
+          <h3>Gestion de estado</h3>
+          <div class="detail-actions" id="statusActions">
+            <select id="statusSelect">
+              <option value="Abierto">Abierto</option>
+              <option value="Asignado">Asignado</option>
+              <option value="En Proceso">En Proceso</option>
+              <option value="Resuelto">Resuelto</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+            <button class="btn-nuevo" id="updateStatusBtn">Actualizar estado</button>
+          </div>
+          <div class="detail-actions" id="assignActions">
+            <select id="assignSelect">
+              <option value="">Selecciona tecnico</option>
+            </select>
+            <button class="btn-nuevo" id="assignBtn">Reasignar</button>
+          </div>
+          <p id="detailActionStatus" class="muted"></p>
+        </div>
       </div>
     </div>
   `;
@@ -67,6 +91,14 @@ const normalizeToken = (value) => {
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
+};
+
+const normalizeRole = (value) => {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
 };
 
 const mapStatusClass = (status) => {
@@ -190,6 +222,105 @@ const loadTicket = async () => {
   if (detailDescription) detailDescription.textContent = ticket.description || "-";
 
   renderSolutions(payload?.suggestions || []);
+  setupActions(ticket, id);
+};
+
+const setupActions = async (ticket, ticketId) => {
+  const user = getUser() || {};
+  const roleRaw = user.role || user.rol || "";
+  const role = normalizeRole(roleRaw);
+  const canUpdate = ROLE_CAN_UPDATE_STATUS.some((r) => normalizeRole(r) === role);
+  const canAssign = ROLE_CAN_ASSIGN.some((r) => normalizeRole(r) === role);
+
+  const actionsEl = document.getElementById("detailActions");
+  const statusActions = document.getElementById("statusActions");
+  const assignActions = document.getElementById("assignActions");
+  const statusSelect = document.getElementById("statusSelect");
+  const updateStatusBtn = document.getElementById("updateStatusBtn");
+  const assignSelect = document.getElementById("assignSelect");
+  const assignBtn = document.getElementById("assignBtn");
+  const actionStatus = document.getElementById("detailActionStatus");
+
+  if (!actionsEl) return;
+
+  actionsEl.hidden = !(canUpdate || canAssign);
+
+  if (!canUpdate && statusActions) statusActions.style.display = "none";
+  if (!canAssign && assignActions) assignActions.style.display = "none";
+
+  if (statusSelect && ticket.status) {
+    statusSelect.value = ticket.status;
+  }
+
+  const setActionStatus = (message, type) => {
+    if (!actionStatus) return;
+    actionStatus.textContent = message || "";
+    actionStatus.className = "muted";
+    if (type === "error") actionStatus.classList.add("text-danger");
+    if (type === "success") actionStatus.classList.add("text-success");
+  };
+
+  if (canUpdate && updateStatusBtn && statusSelect) {
+    updateStatusBtn.addEventListener("click", async () => {
+      const nextStatus = statusSelect.value;
+      if (!nextStatus) return;
+      setActionStatus("Actualizando estado...", "loading");
+      try {
+        const payload = await api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${encodeURIComponent(ticketId)}/estado`, {
+          method: "PATCH",
+          body: { estado: nextStatus }
+        });
+        const updated = normalizeTicket(payload || ticket);
+        const detailStatus = document.getElementById("detailStatus");
+        const detailEstado = document.getElementById("detailEstado");
+        if (detailStatus) {
+          detailStatus.textContent = updated.status || nextStatus;
+          detailStatus.className = `ticket-status ${mapStatusClass(updated.status || nextStatus)}`;
+        }
+        if (detailEstado) detailEstado.textContent = updated.status || nextStatus;
+        setActionStatus("Estado actualizado.", "success");
+      } catch (error) {
+        setActionStatus("No se pudo actualizar el estado.", "error");
+      }
+    });
+  }
+
+  if (canAssign && assignSelect && assignBtn) {
+    try {
+      const payload = await api.apiRequest(`${SIGAM_CONFIG.USUARIOS_ENDPOINT}?limit=200&offset=0`);
+      const users = normalizeCollection(payload);
+      const options = users
+        .filter((item) => normalizeRole(item.rol || item.role) === "tecnico")
+        .map((item) => ({
+          id: item.id_usuario || item.id,
+          label: item.nombre || item.name || item.email || `Usuario ${item.id_usuario || item.id}`
+        }))
+        .filter((item) => item.id);
+      assignSelect.innerHTML = '<option value=\"\">Selecciona tecnico</option>' + options
+        .map((item) => `<option value=\"${item.id}\">${item.label}</option>`)
+        .join("");
+    } catch {
+      assignSelect.innerHTML = '<option value=\"\">Sin tecnicos disponibles</option>';
+    }
+
+    assignBtn.addEventListener("click", async () => {
+      const tecnicoId = assignSelect.value;
+      if (!tecnicoId) return;
+      setActionStatus("Reasignando ticket...", "loading");
+      try {
+        await api.apiRequest(`${SIGAM_CONFIG.TICKETS_ENDPOINT}/${encodeURIComponent(ticketId)}/asignar`, {
+          method: "POST",
+          body: { id_usuario_tecnico: Number(tecnicoId) || tecnicoId }
+        });
+        const detailAssigned = document.getElementById("detailAssigned");
+        const selected = assignSelect.options[assignSelect.selectedIndex];
+        if (detailAssigned && selected) detailAssigned.textContent = selected.textContent;
+        setActionStatus("Ticket reasignado.", "success");
+      } catch (error) {
+        setActionStatus("No se pudo reasignar el ticket.", "error");
+      }
+    });
+  }
 };
 
 export const TicketDetailPage = {

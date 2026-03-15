@@ -321,6 +321,17 @@ body.page-tickets .solution-card {
     padding: 12px;
 }
 
+body.page-tickets .detail-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+body.page-tickets .detail-actions select {
+    min-width: 220px;
+}
+
 @media (max-width: 900px) {
     body.page-tickets .header {
         flex-direction: column;

@@ -497,3 +497,16 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-styles-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Acciones Ticket Detail y removal delete
+- Rama: developer (feature/task)
+- Objetivo: Evitar eliminacion de tickets y permitir cambio de estado/reasignacion por rol.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Elimina opcion de borrar.
+  - `src/pages/TicketDetail.page.js`: Acciones de estado y reasignacion por rol.
+  - `src/css/pages/tickets.css`: Estilos para acciones.
+- Evidencia:
+  - `test/ticket-detail-actions-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
