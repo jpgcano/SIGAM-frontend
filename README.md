@@ -2,6 +2,138 @@
 
 Frontend estatico de SIGAM (HTML, CSS y JavaScript vanilla) migrado a SPA con Vite. Este repo consume un backend REST y se despliega como sitio estatico en Vercel.
 
+---
+
+## Sistema de Diseno
+
+SIGAM utiliza un sistema de diseno estandarizado basado en CSS custom properties (variables CSS) para mantener consistencia visual en toda la aplicacion.
+
+### Estructura de Archivos CSS
+
+```
+src/css/
+├── variables.css          # Design tokens (colores, tipografia, espaciado, etc.)
+├── global.css             # Estilos base y utilidades globales
+├── navbar.css             # Estilos del navbar
+├── components/
+│   ├── buttons.css        # Sistema de botones
+│   ├── cards.css          # Tarjetas y stat cards
+│   ├── tables.css         # Tablas con paginacion y toolbar
+│   ├── badges.css         # Badges y status indicators
+│   ├── forms.css          # Formularios e inputs
+│   ├── modals.css         # Modales, drawers y toasts
+│   ├── sections.css       # Secciones y contenedores
+│   ├── grid.css           # Sistema de grid y layout
+│   ├── charts.css         # Configuracion de graficos Chart.js
+│   └── footer.css         # Footer component
+└── pages/
+    ├── dashboard.css      # Estilos especificos del dashboard
+    ├── tickets.css        # Estilos de tickets
+    ├── inventory.css      # Estilos de inventario
+    ├── calendar.css       # Estilos del calendario
+    ├── reports.css        # Estilos de reportes
+    ├── login.css          # Estilos de login
+    ├── admin.css          # Estilos de admin
+    └── profile.css        # Estilos de perfil
+```
+
+### Paleta de Colores
+
+El sistema usa una paleta Azul/Slate:
+
+| Variable | Uso |
+|----------|-----|
+| `--color-primary-*` | Color principal (azul) - 50 a 900 |
+| `--color-slate-*` | Neutros (grises) - 50 a 900 |
+| `--color-success` | Exito, completado |
+| `--color-warning` | Advertencias, en progreso |
+| `--color-danger` | Errores, urgente |
+| `--color-info` | Informacion |
+
+### Uso de Variables
+
+```css
+/* En lugar de valores hardcodeados */
+.mi-componente {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--space-4);
+  color: var(--text-primary);
+}
+```
+
+### Clases de Componentes
+
+#### Botones
+```html
+<button class="sigam-btn sigam-btn-primary sigam-btn-md">Primario</button>
+<button class="sigam-btn sigam-btn-secondary sigam-btn-md">Secundario</button>
+<button class="sigam-btn sigam-btn-outline sigam-btn-md">Outline</button>
+<button class="sigam-btn sigam-btn-ghost sigam-btn-md">Ghost</button>
+```
+
+#### Badges
+```html
+<span class="sigam-badge sigam-badge-primary">Badge</span>
+<span class="sigam-status-badge sigam-status-open">Abierto</span>
+<span class="sigam-status-badge sigam-status-progress">En Progreso</span>
+<span class="sigam-status-badge sigam-status-closed">Cerrado</span>
+```
+
+#### Cards
+```html
+<div class="sigam-card">
+  <div class="sigam-card-header">
+    <h3 class="sigam-card-title">Titulo</h3>
+  </div>
+  <div class="sigam-card-body">
+    Contenido
+  </div>
+</div>
+```
+
+#### Tablas
+```html
+<div class="sigam-table-container">
+  <table class="sigam-table sigam-table-striped">
+    <thead>...</thead>
+    <tbody>...</tbody>
+  </table>
+</div>
+```
+
+#### Grid
+```html
+<div class="sigam-grid sigam-grid-cols-4 sigam-gap-4">
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
+  <div>Item 4</div>
+</div>
+```
+
+### Librerias Utilizadas
+
+| Libreria | Version | Uso |
+|----------|---------|-----|
+| Bootstrap CSS | 5.3.2 | Grid base y utilidades |
+| Bootstrap Icons | 1.11.1 | Iconografia |
+| Chart.js | (incluido) | Graficos y visualizaciones |
+| Calendar.js | (incluido) | Componente de calendario |
+
+### Componentes JavaScript
+
+| Componente | Archivo | Descripcion |
+|------------|---------|-------------|
+| Navbar | `src/components/Navbar.js` | Barra de navegacion principal |
+| Footer | `src/components/Footer.js` | Pie de pagina (simple y completo) |
+| Button | `src/components/Button.js` | Componente de boton reutilizable |
+| AssetCard | `src/components/AssetCard.js` | Tarjeta de activo |
+| TicketCard | `src/components/TicketCard.js` | Tarjeta de ticket |
+
+---
+
 ## Requisitos
 - Node.js solo para el build de Vercel.
 - Backend accesible para pruebas de login, tickets e inventario.

@@ -1,62 +1,212 @@
+/* ==========================================================================
+   SIGAM - Login Page Styles
+   Usa variables de variables.css
+   ========================================================================== */
+
 body.page-login {
-    font-family: Arial, sans-serif;
-    background: #a1a1a1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+  font-family: var(--font-sans);
+  background: var(--color-slate-500);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-4);
 }
 
+/* ==========================================================================
+   LOGIN CONTAINER
+   ========================================================================== */
+
 body.page-login .container {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 300px;
-    display: flex;
-    flex-direction: column;
+  background: var(--card-bg);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+}
+
+/* ==========================================================================
+   LOGO
+   ========================================================================== */
+
+body.page-login .login-logo {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+body.page-login .login-logo img {
+  max-width: 120px;
+  margin: 0 auto;
+}
+
+body.page-login .login-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+
+body.page-login .login-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+/* ==========================================================================
+   FORM ELEMENTS
+   ========================================================================== */
+
+body.page-login .form-group {
+  margin-bottom: var(--space-4);
+}
+
+body.page-login label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
 }
 
 body.page-login input {
-    margin: 10px 0;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--input-radius);
+  border: 1px solid var(--input-border);
+  font-size: var(--text-sm);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
+body.page-login input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+body.page-login input::placeholder {
+  color: var(--color-slate-400);
+}
+
+/* ==========================================================================
+   BUTTON
+   ========================================================================== */
+
 body.page-login button {
-    padding: 10px;
-    background: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-600);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--btn-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  margin-top: var(--space-2);
 }
 
 body.page-login button:hover {
-    background: #1976D2;
+  background: var(--color-primary-700);
 }
+
+body.page-login button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+/* ==========================================================================
+   LINKS
+   ========================================================================== */
 
 body.page-login a {
-    color: blue;
-    text-decoration: none;
+  color: var(--text-link);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: color var(--transition-fast);
 }
 
-@media (max-width: 480px) {
-    body.page-login {
-        padding: 16px;
-    }
+body.page-login a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
 
-    body.page-login .container {
-        width: 100%;
-        max-width: 360px;
-        padding: 20px;
-    }
+body.page-login .login-footer {
+  margin-top: var(--space-6);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+body.page-login .login-footer a {
+  color: var(--text-link);
+  font-weight: var(--font-medium);
+}
+
+/* ==========================================================================
+   REMEMBER ME
+   ========================================================================== */
+
+body.page-login .remember-me {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+body.page-login .remember-me label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+body.page-login .remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+}
+
+/* ==========================================================================
+   ERROR MESSAGE
+   ========================================================================== */
+
+body.page-login .error-message {
+  background: var(--color-danger-light);
+  color: var(--color-danger-dark);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  body.page-login {
+    padding: var(--space-4);
+  }
+
+  body.page-login .container {
+    padding: var(--space-6);
+  }
 }
 
 @media (max-height: 600px) {
-    body.page-login {
-        align-items: flex-start;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
+  body.page-login {
+    align-items: flex-start;
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
 }
