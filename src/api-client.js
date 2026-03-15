@@ -43,7 +43,8 @@ const apiRequest = async (path, options = {}) => {
     body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(url, { method, headers, body });
+  const cache = options.cache ?? 'no-store';
+  const response = await fetch(url, { method, headers, body, cache });
   const contentType = response.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
   const payload = isJson ? await response.json() : await response.text();

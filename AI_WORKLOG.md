@@ -396,3 +396,14 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/tickets-load-categories-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Evitar respuestas 304 sin body en API
+- Rama: developer (feature/task)
+- Objetivo: Forzar `fetch` a no usar cache y evitar 304 en endpoints de tickets.
+- Cambios:
+  - `src/api-client.js`: Usa `cache: 'no-store'` por defecto.
+- Evidencia:
+  - `test/api-cache-no-store-2026-03-15.md`
+- Commit(s):
+  - (Pendiente de aplicacion)
