@@ -1,0 +1,19 @@
+body.page-profile {
+  background: #f8fafc;
+}
+
+body.page-profile .profile-card {
+  border-radius: 16px;
+}
+
+body.page-profile .profile-card .form-control[readonly] {
+  background-color: #f1f5f9;
+}
+
+body.page-profile #passwordStatus.text-success {
+  color: #059669 !important;
+}
+
+body.page-profile #passwordStatus.text-danger {
+  color: #dc2626 !important;
+}

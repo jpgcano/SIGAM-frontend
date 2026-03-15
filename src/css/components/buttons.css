@@ -1,0 +1,51 @@
+.sigam-btn {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.sigam-btn.btn-link {
+  border-radius: 0;
+}
+
+.sigam-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sigam-btn.btn-nuevo {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+}
+
+.sigam-btn.btn-nuevo.btn-small {
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.sigam-btn.btn-page {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+}
+
+.sigam-btn.btn-outline-dark {
+  border: 1px solid #cbd5f5;
+  color: #1e3a8a;
+  background: #ffffff;
+}
+
+.sigam-btn.btn-light {
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #0f172a;
+}

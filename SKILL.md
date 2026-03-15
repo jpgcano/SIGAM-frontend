@@ -21,7 +21,7 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 5. Cada tarea/issue debe salir desde `developer` con nomenclatura `feature/task`.
 6. Hacer commits por tarea/issue (cambios pequenos, trazables y con mensaje claro).
 7. Centralizar consumo HTTP en una capa comun (cliente `fetch`) con manejo uniforme de errores.
-8. No hardcodear URLs de API, secretos o credenciales; usar configuracion central en `src/view/js/config.js` (objeto `SIGAM_CONFIG`).
+8. No hardcodear URLs de API, secretos o credenciales; usar configuracion central en `src/config.js` (objeto `SIGAM_CONFIG`).
 9. Toda vista protegida debe validar sesion/token y rol antes de renderizar acciones sensibles.
 10. Toda accion de mutacion debe mostrar feedback visual (`loading`, `success`, `error`) y evitar doble envio.
 11. Priorizar cambios pequenos y verificables; incluir evidencia de prueba por cada issue.
@@ -103,4 +103,4 @@ Estandarizar como el equipo implementa tareas del frontend con ayuda de IA, mant
 - Nombres de funciones en `camelCase`; constantes globales en `UPPER_SNAKE_CASE`.
 - Manejar serializacion de fechas y numeros en una utilidad comun para evitar inconsistencias de formato.
 - En tablas criticas, usar estados visuales consistentes para prioridad, criticidad y disponibilidad.
- - Centralizar HTTP en `src/view/js/api.js` y leer la base URL desde `src/view/js/config.js`.
+ - Centralizar HTTP en `src/api-client.js` y leer la base URL desde `src/config.js`.
