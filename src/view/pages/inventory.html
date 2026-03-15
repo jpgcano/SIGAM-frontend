@@ -260,7 +260,14 @@
     </div>
 
     <!-- Aquí JS mostrará cuántos resultados hay -->
-    <p id="resultCount" class="text-muted"></p>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
+      <p id="resultCount" class="text-muted mb-0"></p>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Assets pagination">
+        <button id="assetsPrevBtn" type="button" class="btn btn-outline-dark">Prev</button>
+        <button id="assetsNextBtn" type="button" class="btn btn-outline-dark">Next</button>
+      </div>
+      <div id="assetsPageInfo" class="text-muted small"></div>
+    </div>
 
     <!-- ========================= -->
     <!-- TABLA DE STOCK -->

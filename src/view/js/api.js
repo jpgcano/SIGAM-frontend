@@ -46,11 +46,28 @@
         localStorage.removeItem('sigam_user');
     }
 
+    function buildQueryString(params = {}) {
+        const search = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value === undefined || value === null || value === "") {
+                return;
+            }
+            search.append(key, String(value));
+        });
+        const query = search.toString();
+        return query ? `?${query}` : "";
+    }
+
+    function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     async function apiRequest(path, options = {}) {
         if (!baseUrl) {
             throw new Error('API base URL is not configured.');
         }
-        const url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+        const query = options.query ? buildQueryString(options.query) : "";
+        const url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}${query}`;
         const method = (options.method || 'GET').toUpperCase();
         const headers = Object.assign({}, options.headers || {});
         const token = getToken();
@@ -65,12 +82,36 @@
             body = JSON.stringify(options.body);
         }
 
-        const response = await fetch(url, { method, headers, body });
-        const contentType = response.headers.get('content-type') || '';
-        const isJson = contentType.includes('application/json');
-        const payload = isJson ? await response.json() : await response.text();
+        const isAuthEndpoint = /\/api\/auth\/(login|register)/i.test(path);
+        const maxRetries = isAuthEndpoint ? 0 : (options.maxRetries ?? (method === 'GET' ? 2 : 0));
+        const retryOn429 = isAuthEndpoint ? false : (options.retryOn429 ?? (method === 'GET'));
+        let attempt = 0;
 
-        if (!response.ok) {
+        while (true) {
+            const response = await fetch(url, { method, headers, body });
+            const contentType = response.headers.get('content-type') || '';
+            const isJson = contentType.includes('application/json');
+            const payload = isJson ? await response.json() : await response.text();
+
+            if (response.ok) {
+                return payload;
+            }
+
+            if (response.status === 401) {
+                clearToken();
+                clearUser();
+            }
+
+            if (response.status === 429 && retryOn429 && attempt < maxRetries) {
+                const retryAfter = Number.parseInt(response.headers.get('retry-after') || "0", 10);
+                const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+                    ? retryAfter * 1000
+                    : 500 * Math.pow(2, attempt);
+                attempt += 1;
+                await sleep(waitMs);
+                continue;
+            }
+
             const message = isJson && payload && payload.message
                 ? payload.message
                 : `Request failed (${response.status})`;
@@ -79,8 +120,6 @@
             error.payload = payload;
             throw error;
         }
-
-        return payload;
     }
 
     function normalizeCollection(payload) {
@@ -126,8 +165,21 @@
         return [];
     }
 
-    async function getTickets() {
-        const payload = await apiRequest(ticketsEndpoint);
+    const DEFAULT_LIMIT = 50;
+    const DEFAULT_OFFSET = 0;
+
+    function withPagination(params = {}) {
+        return {
+            limit: params.limit ?? DEFAULT_LIMIT,
+            offset: params.offset ?? DEFAULT_OFFSET,
+            ...params
+        };
+    }
+
+    async function getTickets(params = {}) {
+        const payload = await apiRequest(ticketsEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
@@ -144,8 +196,10 @@
         return apiRequest(dashboardEndpoint);
     }
 
-    async function getActivos() {
-        const payload = await apiRequest(activosEndpoint);
+    async function getActivos(params = {}) {
+        const payload = await apiRequest(activosEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
@@ -158,18 +212,24 @@
         return apiRequest(`${activosEndpoint}/${safeId}`, { method: 'PUT', body });
     }
 
-    async function getCategorias() {
-        const payload = await apiRequest(categoriasEndpoint);
+    async function getCategorias(params = {}) {
+        const payload = await apiRequest(categoriasEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
-    async function getProveedores() {
-        const payload = await apiRequest(proveedoresEndpoint);
+    async function getProveedores(params = {}) {
+        const payload = await apiRequest(proveedoresEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
-    async function getUsuarios() {
-        const payload = await apiRequest(usuariosEndpoint);
+    async function getUsuarios(params = {}) {
+        const payload = await apiRequest(usuariosEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
@@ -206,8 +266,10 @@
         return apiRequest(`${usuariosEndpoint}/${safeId}`, { method: 'DELETE' });
     }
 
-    async function getMantenimientos() {
-        const payload = await apiRequest(mantenimientosEndpoint);
+    async function getMantenimientos(params = {}) {
+        const payload = await apiRequest(mantenimientosEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
@@ -225,13 +287,17 @@
         return apiRequest(`${mantenimientosEndpoint}/${safeId}`, { method: 'DELETE' });
     }
 
-    async function getRepuestos() {
-        const payload = await apiRequest(repuestosEndpoint);
+    async function getRepuestos(params = {}) {
+        const payload = await apiRequest(repuestosEndpoint, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 
-    async function getRepuestosBajoStock() {
-        const payload = await apiRequest(`${repuestosEndpoint}/bajo-stock`);
+    async function getRepuestosBajoStock(params = {}) {
+        const payload = await apiRequest(`${repuestosEndpoint}/bajo-stock`, {
+            query: withPagination(params)
+        });
         return normalizeCollection(payload);
     }
 

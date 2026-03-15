@@ -15,6 +15,10 @@ const closeBtn = document.querySelector(".close");
 const ticketForm = document.getElementById("ticketForm");
 const addTicketBtn = document.getElementById("addTicket");
 const ticketList = document.getElementById("ticketList");
+const ticketListStatus = document.getElementById("ticketListStatus");
+const ticketPrevBtn = document.getElementById("ticketPrevBtn");
+const ticketNextBtn = document.getElementById("ticketNextBtn");
+const ticketPageInfo = document.getElementById("ticketPageInfo");
 
 const searchInput = document.getElementById("searchInput");
 const ticketStatusEl = document.getElementById("ticketStatus");
@@ -29,6 +33,24 @@ const createdByInput = document.getElementById("createdBy");
 const assignedToInput = document.getElementById("assignedTo");
 const estimateInput = document.getElementById("estimate");
 const statusInput = document.getElementById("status");
+
+const TICKETS_PAGE_SIZE = 50;
+let ticketOffset = 0;
+let ticketFetchTimer = null;
+
+function setListStatus(message, type) {
+    if (!ticketListStatus) {
+        return;
+    }
+    ticketListStatus.textContent = message || "";
+    ticketListStatus.style.color = "#6b7280";
+    if (type === "error") {
+        ticketListStatus.style.color = "#dc2626";
+    }
+    if (type === "success") {
+        ticketListStatus.style.color = "#059669";
+    }
+}
 
 /* abrir modal */
 openBtn.onclick = () => {
@@ -228,7 +250,7 @@ async function loadActivos() {
         return;
     }
     try {
-        const data = await api.getActivos();
+        const data = await api.getActivos({ limit: 50, offset: 0 });
         activosList = Array.isArray(data) ? data : [];
         activosMap = new Map(
             activosList.map((activo) => {
@@ -274,7 +296,7 @@ async function loadCategorias() {
         return;
     }
     try {
-        const data = await api.getCategorias();
+        const data = await api.getCategorias({ limit: 50, offset: 0 });
         categoriasList = normalizeCategorias(data);
         renderCategorias();
     } catch (error) {
@@ -327,7 +349,7 @@ function renderCategorias() {
     categoryInput.innerHTML = placeholder + options;
 
     if (categoryFilter) {
-        const filterPlaceholder = '<option value="all">All categories</option>';
+        const filterPlaceholder = '<option value="all">All Categories</option>';
         const filterOptions = Array.from(categoriasMap.entries())
             .map(([id, label]) => `<option value="${normalizeToken(label)}">${label}</option>`)
             .join("");
@@ -347,30 +369,90 @@ function renderStatusFilter() {
         }
         unique.set(normalizeToken(label), label);
     });
-    const placeholder = '<option value="all">All the states</option>';
+    const placeholder = '<option value="all">All Statuses</option>';
     const options = Array.from(unique.entries())
         .map(([value, label]) => `<option value="${value}">${label}</option>`)
         .join("");
     statusFilter.innerHTML = placeholder + options;
 }
 
+function buildTicketQuery() {
+    const params = {
+        limit: TICKETS_PAGE_SIZE,
+        offset: ticketOffset
+    };
+    const statusValue = statusFilter ? statusFilter.value : "all";
+    const categoryValue = categoryFilter ? categoryFilter.value : "all";
+    const searchValue = searchInput ? searchInput.value.trim() : "";
+
+    if (statusValue && statusValue !== "all") {
+        params.estado = statusValue;
+    }
+    if (categoryValue && categoryValue !== "all") {
+        params.categoria = categoryValue;
+    }
+    if (searchValue) {
+        params.search = searchValue;
+    }
+    return params;
+}
+
+function scheduleTicketsRefresh() {
+    if (ticketFetchTimer) {
+        clearTimeout(ticketFetchTimer);
+    }
+    ticketFetchTimer = setTimeout(() => {
+        ticketOffset = 0;
+        loadTickets();
+    }, 500);
+}
+
 async function loadTickets() {
     if (!api || !api.getTickets) {
         setTicketStatus("API not available.", "error");
+        setListStatus("API not available.", "error");
         return;
     }
     try {
-        const data = await api.getTickets();
+        const data = await api.getTickets(buildTicketQuery());
         tickets = (data || []).map(normalizeTicket);
         localStorage.setItem("tickets", JSON.stringify(tickets));
         renderStatusFilter();
         applyFilters();
+        setListStatus("");
+        updateTicketPagination(tickets.length);
     } catch (error) {
-        setTicketStatus("Unable to load tickets from API.", "error");
+        const status = error && error.status ? error.status : null;
+        if (status === 401) {
+            setListStatus("Session expired. Please log in again.", "error");
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 800);
+        } else if (status === 429) {
+            setListStatus("Too many requests. Please wait and try again.", "error");
+        } else if (status === 500) {
+            setListStatus("Server error loading tickets.", "error");
+        } else {
+            setListStatus("Unable to load tickets from API.", "error");
+        }
         const cached = JSON.parse(localStorage.getItem("tickets") || "[]");
         tickets = cached.map(normalizeTicket);
         renderStatusFilter();
         applyFilters();
+        updateTicketPagination(tickets.length);
+    }
+}
+
+function updateTicketPagination(count) {
+    if (ticketPageInfo) {
+        const page = Math.floor(ticketOffset / TICKETS_PAGE_SIZE) + 1;
+        ticketPageInfo.textContent = `Page ${page}`;
+    }
+    if (ticketPrevBtn) {
+        ticketPrevBtn.disabled = ticketOffset <= 0;
+    }
+    if (ticketNextBtn) {
+        ticketNextBtn.disabled = count < TICKETS_PAGE_SIZE;
     }
 }
 
@@ -406,7 +488,7 @@ if (ticketForm) {
         }
 
         if (!assetId) {
-            setTicketStatus("Serial no encontrado. Verifica el activo.", "error");
+            setTicketStatus("Serial not found. Please verify the asset.", "error");
             setSubmitting(false);
             return;
         }
@@ -433,6 +515,23 @@ if (ticketForm) {
         } finally {
             setSubmitting(false);
         }
+    });
+}
+
+if (ticketPrevBtn) {
+    ticketPrevBtn.addEventListener("click", () => {
+        if (ticketOffset <= 0) {
+            return;
+        }
+        ticketOffset = Math.max(0, ticketOffset - TICKETS_PAGE_SIZE);
+        loadTickets();
+    });
+}
+
+if (ticketNextBtn) {
+    ticketNextBtn.addEventListener("click", () => {
+        ticketOffset += TICKETS_PAGE_SIZE;
+        loadTickets();
     });
 }
 
@@ -530,10 +629,19 @@ function applyFilters() {
     }
 }
 
-searchInput.addEventListener("input", applyFilters);
-statusFilter.addEventListener("change", applyFilters);
+searchInput.addEventListener("input", () => {
+    applyFilters();
+    scheduleTicketsRefresh();
+});
+statusFilter.addEventListener("change", () => {
+    applyFilters();
+    scheduleTicketsRefresh();
+});
 if (categoryFilter) {
-    categoryFilter.addEventListener("change", applyFilters);
+    categoryFilter.addEventListener("change", () => {
+        applyFilters();
+        scheduleTicketsRefresh();
+    });
 }
 
 setCreatedByFromSession();

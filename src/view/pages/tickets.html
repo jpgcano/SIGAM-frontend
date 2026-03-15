@@ -43,7 +43,15 @@
                 <option value="all">All Categories</option>
             </select>
         </div>
-        <p id="contadorTickets" class="contador"></p>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <p id="contadorTickets" class="contador mb-0"></p>
+            <div class="ticket-pagination">
+                <button id="ticketPrevBtn" type="button" class="btn-nuevo btn-small">Prev</button>
+                <button id="ticketNextBtn" type="button" class="btn-nuevo btn-small">Next</button>
+                <span id="ticketPageInfo" class="ticket-page-info"></span>
+            </div>
+        </div>
+        <p id="ticketListStatus" class="contador"></p>
         <!-- FORMULARIO -->
         <div id="ticketModal" class="modal">
             <div class="modal-content">

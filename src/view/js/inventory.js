@@ -30,6 +30,13 @@ const assetViewListBtn = document.getElementById("assetViewList")
 const assetListView = document.getElementById("assetListView")
 const assetListBody = document.getElementById("assetListBody")
 const stockTableCard = document.getElementById("stockTableCard")
+const assetsPrevBtn = document.getElementById("assetsPrevBtn")
+const assetsNextBtn = document.getElementById("assetsNextBtn")
+const assetsPageInfo = document.getElementById("assetsPageInfo")
+
+const ASSETS_PAGE_SIZE = 50
+let assetsOffset = 0
+let assetsFetchTimer = null
 
 const assetEditForm = document.getElementById("assetEditForm")
 const editName = document.getElementById("editName")
@@ -201,7 +208,7 @@ async function loadCategoriesAndProviders() {
     }
     try {
         if (api.getCategorias) {
-            categories = await api.getCategorias()
+            categories = await api.getCategorias({ limit: 50, offset: 0 })
             fillSelect(document.getElementById("categoryId"), categories, "Select category")
             fillSelect(editCategoryId, categories, "Select category")
         }
@@ -211,13 +218,49 @@ async function loadCategoriesAndProviders() {
 
     try {
         if (api.getProveedores) {
-            providers = await api.getProveedores()
+            providers = await api.getProveedores({ limit: 50, offset: 0 })
             fillSelect(document.getElementById("providerId"), providers, "Select provider")
             fillSelect(editProviderId, providers, "Select provider")
         }
     } catch {
         // ignore
     }
+}
+
+function buildAssetsQuery() {
+    const params = {
+        limit: ASSETS_PAGE_SIZE,
+        offset: assetsOffset
+    }
+    const searchValue = searchInput ? searchInput.value.trim() : ""
+    const statusValue = statusFilter ? statusFilter.value : "all"
+    const typeValue = typeFilter ? typeFilter.value : "all"
+    const locationValue = locationFilter ? locationFilter.value : "all"
+
+    if (searchValue) {
+        params.search = searchValue
+    }
+    if (statusValue && statusValue !== "all") {
+        params.estado = statusValue
+    }
+    if (typeValue && typeValue !== "all") {
+        params.tipo = typeValue
+    }
+    if (locationValue && locationValue !== "all") {
+        params.ubicacion = locationValue
+    }
+
+    return params
+}
+
+function scheduleAssetsRefresh() {
+    if (assetsFetchTimer) {
+        clearTimeout(assetsFetchTimer)
+    }
+    assetsFetchTimer = setTimeout(() => {
+        assetsOffset = 0
+        loadAssetsFromApi()
+    }, 600)
 }
 
 async function loadAssetsFromApi() {
@@ -236,19 +279,46 @@ async function loadAssetsFromApi() {
         }
     }
     try {
-        const data = await api.getActivos()
+        const data = await api.getActivos(buildAssetsQuery())
         const mapped = (data || []).map(normalizeApiAsset)
         hydrateAssets(mapped)
         localStorage.setItem("assets", JSON.stringify(mapped))
         setInventoryStatus(`Loaded ${mapped.length} assets.`)
+        updateAssetsPagination(mapped.length)
     } catch (error) {
         hydrateAssets([])
         if (assetFormStatus) {
         assetFormStatus.textContent = "Could not load assets from the server."
             assetFormStatus.className = "me-auto small text-danger"
         }
-        const status = error && error.status ? ` (${error.status})` : ""
-        setInventoryStatus(`Failed to load assets${status}.`)
+        const statusCode = error && error.status ? error.status : null
+        if (statusCode === 401) {
+            setInventoryStatus("Session expired. Please log in again.")
+            setTimeout(() => {
+                window.location.href = "login.html"
+            }, 800)
+        } else if (statusCode === 429) {
+            setInventoryStatus("Too many requests. Please wait and try again.")
+        } else if (statusCode === 500) {
+            setInventoryStatus("Server error loading assets.")
+        } else {
+            const status = statusCode ? ` (${statusCode})` : ""
+            setInventoryStatus(`Failed to load assets${status}.`)
+        }
+        updateAssetsPagination(assets.length)
+    }
+}
+
+function updateAssetsPagination(count) {
+    if (assetsPageInfo) {
+        const page = Math.floor(assetsOffset / ASSETS_PAGE_SIZE) + 1
+        assetsPageInfo.textContent = `Page ${page}`
+    }
+    if (assetsPrevBtn) {
+        assetsPrevBtn.disabled = assetsOffset <= 0
+    }
+    if (assetsNextBtn) {
+        assetsNextBtn.disabled = count < ASSETS_PAGE_SIZE
     }
 }
 
@@ -679,11 +749,40 @@ function filterAssets() {
 
 // wire up input events so that the list refreshes whenever the user types or
 // changes a filter dropdown.
-searchInput.addEventListener("input", filterAssets)
-statusFilter.addEventListener("change", filterAssets)
-typeFilter.addEventListener("change", filterAssets)
+searchInput.addEventListener("input", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
+statusFilter.addEventListener("change", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
+typeFilter.addEventListener("change", () => {
+    filterAssets()
+    scheduleAssetsRefresh()
+})
 if (locationFilter) {
-    locationFilter.addEventListener("change", filterAssets)
+    locationFilter.addEventListener("change", () => {
+        filterAssets()
+        scheduleAssetsRefresh()
+    })
+}
+
+if (assetsPrevBtn) {
+    assetsPrevBtn.addEventListener("click", () => {
+        if (assetsOffset <= 0) {
+            return
+        }
+        assetsOffset = Math.max(0, assetsOffset - ASSETS_PAGE_SIZE)
+        loadAssetsFromApi()
+    })
+}
+
+if (assetsNextBtn) {
+    assetsNextBtn.addEventListener("click", () => {
+        assetsOffset += ASSETS_PAGE_SIZE
+        loadAssetsFromApi()
+    })
 }
 
 if (assetViewGridBtn) {

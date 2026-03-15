@@ -104,6 +104,23 @@ select{
     font-size:14px;
 }
 
+.ticket-pagination{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.btn-small{
+    padding:8px 12px;
+    font-size:12px;
+    border-radius:8px;
+}
+
+.ticket-page-info{
+    font-size:12px;
+    color:#6b7280;
+}
+
 
 /* LISTA TICKETS */
 

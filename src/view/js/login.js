@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const passwordInput = document.getElementById("password")
     const statusEl = document.getElementById("loginStatus")
     const submitBtn = document.getElementById("loginBtn")
+    let loginAttempts = 0
 
     function setStatus(message, type) {
         if (!statusEl) {
@@ -71,6 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
             setStatus("Login successful. Redirecting...", "success")
             window.location.href = "dashboard.html"
         } catch (error) {
+            loginAttempts += 1
+            if (loginAttempts >= 3) {
+                setStatus("Too many failed attempts. Please wait and try again.", "error")
+                submitBtn.disabled = true
+                return
+            }
             setStatus(error.message || "Authentication error.", "error")
         } finally {
             setSubmitting(false)

@@ -41,7 +41,7 @@ function normalizeUser(raw) {
 async function loadUsers() {
     if (api && api.getUsuarios) {
         try {
-            const data = await api.getUsuarios()
+            const data = await api.getUsuarios({ limit: 50, offset: 0 })
             users = (data || []).map(normalizeUser)
             usingApi = true
             setStatus("Users loaded from the API.", "success")

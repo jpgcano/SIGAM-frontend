@@ -48,7 +48,7 @@ function normalizeMaintenance(raw) {
 async function refreshMaintenances() {
   if (api && api.getMantenimientos) {
     try {
-      const data = await api.getMantenimientos()
+      const data = await api.getMantenimientos({ limit: 50, offset: 0 })
       usingApi = true
       saveMaintenances((data || []).map(normalizeMaintenance))
       setScheduleStatus("Maintenance loaded from the API.", "success")
@@ -396,7 +396,7 @@ function loadAssets() {
   select.innerHTML = ""
 
   if (api && api.getActivos) {
-    api.getActivos().then((assets) => {
+    api.getActivos({ limit: 50, offset: 0 }).then((assets) => {
       assetsList = Array.isArray(assets) ? assets : []
       if (assetsList.length === 0) {
         select.innerHTML = '<option value="">No assets available</option>'
