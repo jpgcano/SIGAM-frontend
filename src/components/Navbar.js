@@ -24,7 +24,8 @@ const render = () => {
     <nav class="navbar sigam-navbar navbar-expand-lg navbar-light bg-white border-bottom">
       <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard">
-          <div class="bg-primary text-white rounded d-flex justify-content-center align-items-center" style="width: 35px; height: 35px">
+          <div class="navbar-logo">
+            <img src="/logo_circular.png" alt="SIGAM" />
           </div>
           <div>
             <strong>J-AXON</strong><br />

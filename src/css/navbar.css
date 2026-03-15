@@ -4,8 +4,8 @@
    ========================================================================== */
 
 .sigam-navbar {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(90deg, #0f1b33 0%, #1b2b4d 55%, #243a6b 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: var(--space-2) 0;
   min-height: var(--navbar-height);
   position: sticky;
@@ -31,16 +31,36 @@
   align-items: center;
 }
 
+.sigam-navbar .navbar-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ffffff;
+  padding: 2px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.sigam-navbar .navbar-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
 .sigam-navbar .navbar-brand strong {
   font-size: var(--text-lg);
   line-height: 1.1;
-  color: var(--color-primary-700);
+  color: #ffffff;
   font-weight: var(--font-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sigam-navbar .navbar-brand small {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: rgba(226, 232, 240, 0.8);
 }
 
 /* ==========================================================================
@@ -50,20 +70,21 @@
 .sigam-navbar .nav-link {
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
-  color: var(--color-primary-600);
+  color: rgba(226, 232, 240, 0.9);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), background var(--transition-fast);
 }
 
 .sigam-navbar .nav-link:hover {
-  background: var(--bg-hover);
-  color: var(--color-primary-700);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 .sigam-navbar .nav-link.active,
 .sigam-navbar .nav-link.text-primary {
-  color: var(--color-primary-900) !important;
-  font-weight: var(--font-medium);
+  color: #ffffff !important;
+  font-weight: var(--font-semibold);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* ==========================================================================
@@ -93,7 +114,7 @@
 .sigam-navbar #navbar-user {
   line-height: 1.1;
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  color: rgba(226, 232, 240, 0.9);
 }
 
 /* ==========================================================================
@@ -104,16 +125,16 @@
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
   background: transparent;
-  border: 1px solid var(--color-primary-200);
-  color: var(--color-primary-800);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
 
 .sigam-navbar .btn:hover,
 .sigam-navbar .btn.btn-outline-secondary:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary-300);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
 /* ==========================================================================
@@ -121,13 +142,13 @@
    ========================================================================== */
 
 .sigam-navbar .navbar-toggler {
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   padding: var(--space-2);
   border-radius: var(--radius-md);
 }
 
 .sigam-navbar .navbar-toggler:focus {
-  box-shadow: 0 0 0 3px var(--color-primary-100);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
 /* ==========================================================================
