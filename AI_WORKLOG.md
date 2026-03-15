@@ -262,3 +262,18 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Inventory renderiza grid/lista, tabla de stock y proveedores; modales funcionan con Bootstrap JS cargado dinámicamente.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Tickets a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Tickets a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Tickets.page.js`: Vista SPA con filtros, modal y CRUD.
+  - `src/components/Navbar.js`: Agregado enlace a Tickets.
+  - `src/config.js`: Agregado `CATEGORIAS_TICKET_ENDPOINT`.
+  - `src/main.js`: Ruta `/tickets`.
+  - Eliminados: `src/legacy/pages/tickets.html`, `src/legacy/js/pages/tickets.page.js`, `src/legacy/js/tickets.js`.
+- Evidencia:
+  - Tickets renderiza lista, modal y filtros; carga activos y categorias desde API.
+- Commit(s):
+  - (Pendiente de aplicación)

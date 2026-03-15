@@ -48,6 +48,12 @@ const render = () => {
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/tickets" data-route="/tickets" data-role="tickets">
+                <i class="bi bi-ticket"></i>
+                Tickets
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link d-flex align-items-center gap-2" href="/admin" data-route="/admin" data-role="admin">
                 <i class="bi bi-gear"></i>
                 Admin
@@ -97,6 +103,7 @@ const init = () => {
   const logoutBtn = document.querySelector('#navbar-logout');
   const adminLink = document.querySelector('[data-role="admin"]');
   const inventoryLink = document.querySelector('[data-role="inventory"]');
+  const ticketsLink = document.querySelector('[data-role="tickets"]');
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
@@ -120,6 +127,10 @@ const init = () => {
 
   if (inventoryLink && !['gerente', 'analista'].includes(roleKey)) {
     inventoryLink.classList.add('d-none');
+  }
+
+  if (ticketsLink && !['gerente', 'analista', 'tecnico', 'usuario'].includes(roleKey)) {
+    ticketsLink.classList.add('d-none');
   }
 
   if (logoutBtn) {

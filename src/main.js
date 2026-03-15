@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/Register.page.js';
 import { DashboardPage } from './pages/Dashboard.page.js';
 import { AdminPage } from './pages/Admin.page.js';
 import { InventoryPage } from './pages/Inventory.page.js';
+import { TicketsPage } from './pages/Tickets.page.js';
 
 // Importar aquí estilos globales adicionales si fuera necesario
 // import '../css/main.css';
@@ -59,6 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inventario (restringido por rol)
     router.addRoute('/inventory', InventoryPage);
+
+    // Tickets (restringido por rol)
+    router.addRoute('/tickets', TicketsPage);
 
     // Panel de administración (restringido por rol)
     router.addRoute('/admin', {
