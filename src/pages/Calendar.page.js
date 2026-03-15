@@ -169,6 +169,11 @@ const render = async () => {
               </div>
 
               <div class="mb-3">
+                <label class="form-label">Técnico</label>
+                <select id="maintenanceTechnician" class="form-select"></select>
+              </div>
+
+              <div class="mb-3">
                 <label class="form-label">Maintenance Type</label>
                 <select id="maintenanceType" class="form-select">
                   <option value="preventive">Preventive</option>
@@ -280,6 +285,7 @@ const initCalendar = async () => {
   const state = {
     maintenances: [],
     assetsList: [],
+    techniciansList: [],
     usingApi: false,
     editIndex: null
   };
@@ -319,6 +325,7 @@ const initCalendar = async () => {
 
   const ticketIdInput = document.querySelector("#ticketId");
   const assetSelect = document.querySelector("#assetName");
+  const maintenanceTechnicianSelect = document.querySelector("#maintenanceTechnician");
   const typeSelect = document.querySelector("#maintenanceType");
   const dateInput = document.querySelector("#maintenanceDate");
   const notesInput = document.querySelector("#notes");
@@ -346,7 +353,7 @@ const initCalendar = async () => {
       return type ? [`type-${type}`] : [];
     },
     eventContent: (arg) => {
-      const asset = arg.event.extendedProps.asset || "Asset";
+      const asset = getAssetLabel(arg.event.extendedProps.asset) || "Asset";
       const type = arg.event.extendedProps.type || "maintenance";
       const ticket = arg.event.extendedProps.ticketId || "-";
       return {
@@ -354,7 +361,7 @@ const initCalendar = async () => {
       };
     },
     eventDidMount: (info) => {
-      const asset = info.event.extendedProps.asset || "Asset";
+      const asset = getAssetLabel(info.event.extendedProps.asset) || "Asset";
       const type = info.event.extendedProps.type || "maintenance";
       const ticket = info.event.extendedProps.ticketId || "-";
       info.el.setAttribute("title", `${asset} · ${type} · #${ticket}`);
@@ -447,7 +454,10 @@ const initCalendar = async () => {
     scheduleForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const ticketId = ticketIdInput ? ticketIdInput.value.trim() : "";
-      const assetValue = assetSelect ? assetSelect.value : "";
+      const selectedAssetId = assetSelect ? assetSelect.value : "";
+      const assetOption = state.assetsList.find((a) => String(a.id) === String(selectedAssetId));
+      const assetValue = assetOption ? assetOption.label : "";
+      const selectedTechnicianId = maintenanceTechnicianSelect ? maintenanceTechnicianSelect.value : "";
       const typeValue = typeSelect ? typeSelect.value : "preventive";
       const dateValue = dateInput ? dateInput.value : "";
       const notesValue = notesInput ? notesInput.value : "";
@@ -458,7 +468,7 @@ const initCalendar = async () => {
       }
 
       const user = getUser();
-      const technicianId = user && (user.id || user.id_usuario || user.userId);
+      const technicianId = selectedTechnicianId || (user && (user.id || user.id_usuario || user.userId));
 
       if (!technicianId) {
         setScheduleStatus(scheduleStatus, "Debes iniciar sesion para programar mantenimiento.", "error");
@@ -472,6 +482,7 @@ const initCalendar = async () => {
         ticketId,
         technicianId,
         asset: assetValue,
+        assetId: assetOption ? assetOption.id : null,
         type: typeValue,
         date: dateValue,
         notes: notesValue
@@ -552,6 +563,7 @@ const initCalendar = async () => {
   bindListHandlers(state, upcomingList, overdueList);
   await refreshMaintenances(state, scheduleStatus, scheduledEl, overdueEl, assetsEl);
   await loadAssets(state, assetSelect);
+  await loadTechnicians(state, maintenanceTechnicianSelect);
 };
 
 const setScheduleStatus = (element, message, type) => {
@@ -579,15 +591,29 @@ const normalizeMaintenance = (raw) => {
   ].filter(Boolean);
   const ticketId = raw.id_ticket || raw.ticketId || "";
   const dateValue = raw.fecha_inicio || raw.date || "";
-  const assetValue = assetLabelParts.join(" - ") || raw.id_activo || raw.activo_id || "";
+  const assetValue =
+    assetLabelParts.join(" - ") ||
+    raw.asset?.label ||
+    raw.activo?.serial ||
+    (raw.ticket?.id_activo ? `Activo ${raw.ticket.id_activo}` : "") ||
+    (raw.ticket_id_activo ? `Activo ${raw.ticket_id_activo}` : "");
   const fallbackKey = [ticketId, dateValue, assetValue].filter(Boolean).join("|");
+  const idOrden = raw.id_orden || raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "";
+  const ticketActivo = raw.ticket?.id_activo || raw.ticket_id_activo || raw.id_activo || raw.activo_id;
 
   return {
-    id: raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "",
-    localId: raw.localId || (raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden ? "" : `local-${fallbackKey || buildLocalId()}`),
+    id: idOrden,
+    localId: raw.localId || (idOrden ? idOrden : `local-${fallbackKey || buildLocalId()}`),
     ticketId,
     technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
-    asset: assetValue,
+    asset: {
+      label: assetValue,
+      serial: raw.asset?.serial || raw.serial || "",
+      modelo: raw.asset?.modelo || raw.modelo || "",
+      estado: raw.asset?.estado || raw.estado || "",
+      criticidad: raw.asset?.criticidad || raw.criticidad || ""
+    },
+    assetId: ticketActivo || raw.id_activo || raw.activo_id || null,
     type: raw.tipo || raw.type || "preventive",
     date: dateValue,
     notes: raw.diagnostico || raw.notes || ""
@@ -602,7 +628,8 @@ const refreshMaintenances = async (state, scheduleStatus, scheduledEl, overdueEl
       const payload = await api.apiRequest(SIGAM_CONFIG.MANTENIMIENTOS_ENDPOINT);
       const data = normalizeCollection(payload);
       state.usingApi = true;
-      state.maintenances = (data || []).map((item) => normalizeMaintenance(item));
+      const previous = state.maintenances || [];
+      state.maintenances = (data || []).map((item) => mergeMaintenanceItem(normalizeMaintenance(item), previous));
       persistMaintenances(state);
       syncCalendarEvents(state.maintenances, getFilters());
       setScheduleStatus(scheduleStatus, "Maintenance loaded from the API.", "success");
@@ -633,7 +660,7 @@ const syncCalendarEvents = (maintenances, filters) => {
   const filtered = applyAllFilters(maintenances, filters);
   const events = filtered.map((m) => ({
     id: m.id || m.localId || buildLocalId(),
-    title: `${m.asset || "Asset"} · ${m.type || "maintenance"} · #${m.ticketId || "-"}`,
+    title: `${getAssetLabel(m.asset)} · ${m.type || "maintenance"} · #${m.ticketId || "-"}`,
     start: m.date ? `${m.date}T00:00:00` : new Date(),
     end: m.date ? `${m.date}T23:59:59` : new Date(),
     allDay: true,
@@ -689,7 +716,13 @@ const applyTypeFilter = (maintenances, filter) => {
 
 const applyAssetFilter = (maintenances, filter) => {
   if (!filter || filter === "all") return maintenances;
-  return maintenances.filter((m) => String(m.asset || "") === filter);
+  return maintenances.filter((m) => String(m.assetId || getAssetLabel(m.asset) || "") === filter);
+};
+
+const getAssetLabel = (asset) => {
+  if (!asset) return "";
+  if (typeof asset === "string") return asset;
+  return asset.label || asset.nombre || "";
 };
 
 const applyTechFilter = (maintenances, filter) => {
@@ -757,7 +790,7 @@ const renderSidebarLists = (state, upcomingEl, overdueEl, filters) => {
     );
     return `
     <div class="calendar-list-item type-${item.type || "preventive"}" data-index="${index}">
-      <div class="calendar-list-title">${item.asset || "Asset"}</div>
+    <div class="calendar-list-title">${getAssetLabel(item.asset) || "Asset"}</div>
       <div class="calendar-list-meta">${item.date || "No date"} · ${item.type || "maintenance"} · #${item.ticketId || "-"}</div>
       <div class="calendar-list-actions">
         <button type="button" class="btn btn-sm btn-outline-primary" data-action="edit">Edit</button>
@@ -781,38 +814,61 @@ const updateFilterOptions = (state) => {
 
   if (assetFilter) {
     const current = assetFilter.value || "all";
-    const assets = Array.from(
-      new Set(state.maintenances.map((m) => m.asset).filter(Boolean))
-    ).sort();
+    const assetOptions = state.assetsList
+      .filter((asset) => asset && asset.id && asset.label)
+      .map((asset) => ({ id: asset.id, label: asset.label }));
     assetFilter.innerHTML = '<option value="all">All Assets</option>';
-    assets.forEach((asset) => {
+    assetOptions.forEach(({ id, label }) => {
       const option = document.createElement("option");
-      option.value = asset;
-      option.textContent = asset;
+      option.value = id;
+      option.textContent = label;
       assetFilter.appendChild(option);
     });
-    assetFilter.value = assets.includes(current) ? current : "all";
+    assetFilter.value = assetOptions.some((entry) => entry.id === current) ? current : "all";
   }
 
   if (techFilter) {
     const current = techFilter.value || "all";
-    const techs = Array.from(
-      new Set(state.maintenances.map((m) => m.technicianId).filter(Boolean))
-    ).sort();
+    const techOptions = state.techniciansList
+      .filter((tech) => tech && tech.id && tech.label)
+      .map((tech) => ({ id: tech.id, label: tech.label }));
     techFilter.innerHTML = '<option value="all">All Technicians</option>';
-    techs.forEach((tech) => {
+    techOptions.forEach(({ id, label }) => {
       const option = document.createElement("option");
-      option.value = tech;
-      option.textContent = `Technician ${tech}`;
+      option.value = id;
+      option.textContent = label;
       techFilter.appendChild(option);
     });
-    techFilter.value = techs.includes(current) ? current : "all";
+    techFilter.value = techOptions.some((entry) => entry.id === current) ? current : "all";
   }
+};
+
+const mergeMaintenanceItem = (item, previousList = []) => {
+  const matches = previousList.find((candidate) => {
+    if (item.id && candidate.id) {
+      return String(candidate.id) === String(item.id);
+    }
+    if (item.localId && candidate.localId) {
+      return String(candidate.localId) === String(item.localId);
+    }
+    if (candidate.ticketId && item.ticketId && candidate.date && item.date) {
+      return candidate.ticketId === item.ticketId && candidate.date === item.date;
+    }
+    return false;
+  });
+  return matches
+    ? {
+        ...item,
+        asset: item.asset || matches.asset,
+        assetId: item.assetId || matches.assetId
+      }
+    : item;
 };
 
 const openEditModal = (state, maintenance) => {
   const ticketIdInput = document.querySelector("#ticketId");
   const assetSelect = document.querySelector("#assetName");
+  const maintenanceTechnicianSelect = document.querySelector("#maintenanceTechnician");
   const typeSelect = document.querySelector("#maintenanceType");
   const dateInput = document.querySelector("#maintenanceDate");
   const notesInput = document.querySelector("#notes");
@@ -820,10 +876,14 @@ const openEditModal = (state, maintenance) => {
     state.editIndex = state.maintenances.indexOf(maintenance);
   }
   if (ticketIdInput) ticketIdInput.value = maintenance.ticketId || "";
-  if (assetSelect) assetSelect.value = maintenance.asset || "";
+  if (assetSelect) assetSelect.value = maintenance.assetId || assetSelect.value;
   if (typeSelect) typeSelect.value = maintenance.type || "preventive";
   if (dateInput) dateInput.value = maintenance.date || "";
   if (notesInput) notesInput.value = maintenance.notes || "";
+  if (maintenanceTechnicianSelect) {
+    const techValue = maintenance.technicianId || maintenanceTechnicianSelect.value;
+    maintenanceTechnicianSelect.value = techValue;
+  }
   const modal = new window.bootstrap.Modal(document.getElementById("scheduleModal"));
   modal.show();
 };
@@ -855,7 +915,7 @@ const openDetailModal = (state, maintenance) => {
   const detailNotes = document.querySelector("#detailNotes");
   state.editIndex = state.maintenances.indexOf(maintenance);
   if (detailTicket) detailTicket.textContent = maintenance.ticketId || "-";
-  if (detailAsset) detailAsset.textContent = maintenance.asset || "";
+  if (detailAsset) detailAsset.textContent = getAssetLabel(maintenance.asset) || "";
   if (detailType) detailType.textContent = maintenance.type || "";
   if (detailDate) detailDate.textContent = maintenance.date || "";
   if (detailNotes) detailNotes.textContent = maintenance.notes || "-";
@@ -885,29 +945,37 @@ const updateStats = (state, scheduledEl, overdueEl, assetsEl) => {
   if (assetsEl) assetsEl.innerText = uniqueAssets.size;
 };
 
+const toAssetEntry = (asset) => {
+  const id = asset.id_activo || asset.id || asset.idActivo || asset.name || "";
+  const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
+  const label = labelParts.join(" - ") || asset.nombre || asset.name || `Asset ${id}`;
+  return { id, label };
+};
+
 const loadAssets = async (state, select) => {
   if (!select) return;
   select.innerHTML = "";
+
+  const renderOptions = (list) => {
+    if (!list.length) {
+      select.innerHTML = '<option value="">No assets available</option>';
+      return;
+    }
+    list.forEach((asset) => {
+      select.innerHTML += `
+        <option value="${asset.id}">
+          ${asset.label}
+        </option>
+      `;
+    });
+  };
 
   if (SIGAM_CONFIG.API_BASE_URL) {
     try {
       const payload = await api.apiRequest(SIGAM_CONFIG.ACTIVOS_ENDPOINT);
       const data = normalizeCollection(payload);
-      state.assetsList = Array.isArray(data) ? data : [];
-      if (state.assetsList.length === 0) {
-        select.innerHTML = '<option value="">No assets available</option>';
-        return;
-      }
-      state.assetsList.forEach((asset) => {
-        const id = asset.id_activo || asset.id || asset.idActivo || "";
-        const labelParts = [asset.modelo, asset.serial, asset.sede, asset.sala].filter(Boolean);
-        const label = labelParts.join(" - ") || asset.nombre || `Asset ${id}`;
-        select.innerHTML += `
-          <option value="${label}">
-            ${label}
-          </option>
-        `;
-      });
+      state.assetsList = Array.isArray(data) ? data.map(toAssetEntry) : [];
+      renderOptions(state.assetsList);
       return;
     } catch {
       select.innerHTML = '<option value="">No assets available</option>';
@@ -920,14 +988,8 @@ const loadAssets = async (state, select) => {
     select.innerHTML = '<option value="">No assets available</option>';
     return;
   }
-
-  assets.forEach((asset) => {
-    select.innerHTML += `
-      <option value="${asset.name}">
-        ${asset.name}
-      </option>
-    `;
-  });
+  state.assetsList = assets.map(toAssetEntry);
+  renderOptions(state.assetsList);
 };
 
 const upsertMaintenanceInApi = async (maintenance, scheduleStatus, state) => {
@@ -935,7 +997,8 @@ const upsertMaintenanceInApi = async (maintenance, scheduleStatus, state) => {
     id_ticket: Number(maintenance.ticketId) || maintenance.ticketId,
     id_usuario_tecnico: maintenance.technicianId,
     diagnostico: maintenance.notes,
-    fecha_inicio: maintenance.date
+    fecha_inicio: maintenance.date,
+    id_activo: maintenance.assetId || undefined
   };
 
   try {
@@ -957,9 +1020,55 @@ const upsertMaintenanceInApi = async (maintenance, scheduleStatus, state) => {
     }
     setScheduleStatus(scheduleStatus, "Maintenance saved in the API.", "success");
     await refreshMaintenances(state, scheduleStatus);
-  } catch {
-    setScheduleStatus(scheduleStatus, "Could not save maintenance in the API.", "error");
+  } catch (error) {
+    console.error("Saving maintenance failed", error);
+    setScheduleStatus(
+      scheduleStatus,
+      error?.message ? `No se pudo guardar: ${error.message}` : "Could not save maintenance in the API.",
+      "error"
+    );
   }
+};
+
+const loadTechnicians = async (state, select) => {
+  if (!select) return;
+  select.innerHTML = "";
+
+  const renderOptions = (list) => {
+    if (!list.length) {
+      select.innerHTML = '<option value="">No technicians available</option>';
+      return;
+    }
+    list.forEach((tech) => {
+      select.innerHTML += `
+        <option value="${tech.id}">
+          ${tech.label}
+        </option>
+      `;
+    });
+  };
+
+  if (SIGAM_CONFIG.API_BASE_URL) {
+    try {
+      const payload = await api.apiRequest(SIGAM_CONFIG.USUARIOS_ENDPOINT);
+      const data = normalizeCollection(payload);
+      state.techniciansList = Array.isArray(data)
+        ? data
+            .filter((user) => user.rol && String(user.rol).toLowerCase().includes("tecnico"))
+            .map((user) => ({
+              id: user.id_usuario || user.id || "",
+              label: user.nombre || user.name || `Tecnico ${user.id || user.id_usuario}`
+            }))
+        : [];
+      renderOptions(state.techniciansList);
+      return;
+    } catch {
+      select.innerHTML = '<option value="">No technicians available</option>';
+      return;
+    }
+  }
+
+  select.innerHTML = '<option value="">No technicians available</option>';
 };
 
 const updateMaintenanceInApi = async (maintenance) => {
@@ -968,7 +1077,8 @@ const updateMaintenanceInApi = async (maintenance) => {
     id_ticket: Number(maintenance.ticketId) || maintenance.ticketId,
     id_usuario_tecnico: maintenance.technicianId,
     diagnostico: maintenance.notes,
-    fecha_inicio: maintenance.date
+    fecha_inicio: maintenance.date,
+    id_activo: maintenance.assetId || undefined
   };
   const safeId = encodeURIComponent(maintenance.id);
   try {
@@ -976,8 +1086,8 @@ const updateMaintenanceInApi = async (maintenance) => {
       method: "PUT",
       body: payload
     });
-  } catch {
-    // ignore update errors here
+  } catch (error) {
+    console.error("Update maintenance failed", error);
   }
 };
 
