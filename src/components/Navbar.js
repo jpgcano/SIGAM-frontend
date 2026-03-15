@@ -11,6 +11,14 @@ const ROLE_LABELS = {
   usuario: 'User'
 };
 
+const ROLE_MENU = {
+  gerente: ['dashboard', 'inventory', 'reports', 'profile', 'admin'],
+  analista: ['dashboard', 'inventory', 'tickets', 'reports', 'profile'],
+  tecnico: ['dashboard', 'tickets', 'calendar', 'profile'],
+  auditor: ['dashboard', 'inventory', 'reports', 'profile'],
+  usuario: ['dashboard', 'tickets', 'profile']
+};
+
 const normalizeRole = (role) => {
   return String(role || '')
     .normalize('NFD')
@@ -38,7 +46,7 @@ const render = () => {
         <div class="collapse navbar-collapse" id="menu">
           <ul class="navbar-nav ms-4">
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard">
+              <a class="nav-link d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard" data-role="dashboard">
                 <i class="bi bi-speedometer2"></i>
                 Dashboard
               </a>
@@ -127,17 +135,13 @@ const init = () => {
   const roleEl = document.querySelector('#navbar-user-role');
   const userBox = document.querySelector('#navbar-user');
   const logoutBtn = document.querySelector('#navbar-logout');
-  const adminLink = document.querySelector('[data-role="admin"]');
-  const inventoryLink = document.querySelector('[data-role="inventory"]');
-  const ticketsLink = document.querySelector('[data-role="tickets"]');
-  const calendarLink = document.querySelector('[data-role="calendar"]');
-  const reportsLink = document.querySelector('[data-role="reports"]');
-  const profileLink = document.querySelector('[data-role="profile"]');
+  const roleLinks = document.querySelectorAll('[data-role]');
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
   const roleRaw = user.rol || user.role || user.Rol || user.ROLE || '';
   const roleKey = normalizeRole(roleRaw);
+  const allowed = ROLE_MENU[roleKey] || ROLE_MENU.usuario || [];
 
   if (userBox && (name || email)) {
     userBox.classList.remove('d-none');
@@ -150,29 +154,15 @@ const init = () => {
     roleEl.textContent = ROLE_LABELS[roleKey] || roleRaw;
   }
 
-  if (adminLink && !['gerente', 'administrador', 'admin'].includes(roleKey)) {
-    adminLink.classList.add('d-none');
-  }
-
-  if (inventoryLink && !['gerente', 'analista'].includes(roleKey)) {
-    inventoryLink.classList.add('d-none');
-  }
-
-  if (ticketsLink && !['gerente', 'analista', 'tecnico', 'usuario'].includes(roleKey)) {
-    ticketsLink.classList.add('d-none');
-  }
-
-  if (calendarLink && !['gerente', 'tecnico'].includes(roleKey)) {
-    calendarLink.classList.add('d-none');
-  }
-
-  if (reportsLink && !['gerente', 'analista', 'auditor'].includes(roleKey)) {
-    reportsLink.classList.add('d-none');
-  }
-
-  if (profileLink && !['gerente', 'analista', 'tecnico', 'usuario', 'auditor'].includes(roleKey)) {
-    profileLink.classList.add('d-none');
-  }
+  roleLinks.forEach((link) => {
+    const key = link.getAttribute('data-role');
+    if (!key) return;
+    if (allowed.includes(key)) {
+      link.classList.remove('d-none');
+    } else {
+      link.classList.add('d-none');
+    }
+  });
 
   if (logoutBtn) {
     logoutBtn.classList.remove('d-none');
