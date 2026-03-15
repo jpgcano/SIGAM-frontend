@@ -77,12 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     router.addRoute('/profile', ProfilePage);
 
     // Panel de administración (restringido por rol)
-    router.addRoute('/admin', {
-        ...AdminPage,
-        meta: {
-            roles: ['Gerente', 'Administrador', 'Admin']
-        }
-    });
+    router.addRoute('/admin', AdminPage);
 
     // Ruta para 404
     router.addRoute('/404', {

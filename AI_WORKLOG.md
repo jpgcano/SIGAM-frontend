@@ -319,3 +319,17 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - Perfil renderiza datos de sesión y permite actualizar password.
 - Commit(s):
   - (Pendiente de aplicación)
+
+### 2026-03-14 - IA: Codex
+- Issue: Migración Admin a SPA (estilos + lógica)
+- Rama: developer (feature/task)
+- Objetivo: Migrar la vista Admin a SPA usando estilos y lógica legacy.
+- Cambios:
+  - `src/pages/Admin.page.js`: Vista SPA completa con usuarios, configuración, seguridad y backup.
+  - `src/components/Navbar.js`: Agregado enlace a Profile (roles).
+  - `src/main.js`: Ruta `/admin` usa `AdminPage` con meta de roles.
+  - Eliminados: `src/legacy/pages/admin.html`, `src/legacy/js/pages/admin.page.js`, `src/legacy/js/admin.js`.
+- Evidencia:
+  - Admin renderiza usuarios, filtros y acciones con datos de API o cache.
+- Commit(s):
+  - (Pendiente de aplicación)
