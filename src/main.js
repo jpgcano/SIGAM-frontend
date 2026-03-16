@@ -38,6 +38,7 @@ import { CalendarPage } from './pages/Calendar.page.js';
 import { ReportsPage } from './pages/Reports.page.js';
 import { ProfilePage } from './pages/Profile.page.js';
 import { TicketDetailPage } from './pages/TicketDetail.page.js';
+import { AssetHistoryPage } from './pages/AssetHistory.page.js';
 
 // Importar aquí estilos globales adicionales si fuera necesario
 // import '../css/main.css';
@@ -106,6 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ticket detail
     router.addRoute('/ticket-detail', TicketDetailPage);
+
+    // Hoja de vida de activos
+    router.addRoute('/asset-history', AssetHistoryPage);
 
     // Panel de administración (restringido por rol)
     router.addRoute('/admin', AdminPage);

@@ -511,6 +511,7 @@ const initInventory = () => {
   const assetsNextBtn = document.getElementById("assetsNextBtn");
   const assetsPageInfo = document.getElementById("assetsPageInfo");
 
+
   const ASSETS_PAGE_SIZE = 50;
   let assetsOffset = 0;
   let assetsFetchTimer = null;
@@ -636,6 +637,47 @@ const initInventory = () => {
         : []
     };
   };
+
+  const handleAssetNavigation = (assetId) => {
+    if (!assetId) return;
+    const encoded = encodeURIComponent(assetId);
+    router.navigateTo(`/asset-history?id=${encoded}`);
+  };
+
+  const handleAssetCardClick = (event) => {
+    const card = event.target.closest("[data-asset-history-id]");
+    if (!card) return;
+    if (event.target.closest(".asset-edit")) {
+      return;
+    }
+    handleAssetNavigation(card.dataset.assetHistoryId);
+  };
+
+  const handleAssetCardKey = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    handleAssetCardClick(event);
+  };
+
+  if (grid) {
+    grid.addEventListener("click", handleAssetCardClick);
+    grid.addEventListener("keydown", handleAssetCardKey);
+  }
+
+  const handleAssetRowClick = (event) => {
+    const row = event.target.closest("[data-asset-id]");
+    if (!row) return;
+    handleAssetNavigation(row.dataset.assetId);
+  };
+
+  const handleAssetRowKey = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    handleAssetRowClick(event);
+  };
+
+  if (assetListBody) {
+    assetListBody.addEventListener("click", handleAssetRowClick);
+    assetListBody.addEventListener("keydown", handleAssetRowKey);
+  }
 
   const applyAssetsView = (displayList, referenceList = null) => {
     const normalizedDisplay = normalizeAssets(displayList);
@@ -899,7 +941,7 @@ const initInventory = () => {
         : '<span class="badge bg-success">Active</span>';
       const statusClass = asset.status === "maintenance" ? "status-warning" : "status-ok";
       rows.push(`
-        <tr class="asset-row ${statusClass}">
+        <tr class="asset-row ${statusClass}" data-asset-id="${asset.id}" tabindex="0" role="button" aria-label="Abrir hoja de vida del activo ${asset.name}">
           <td>${asset.name}</td>
           <td class="text-muted">${asset.type}</td>
           <td class="text-muted">${asset.location}</td>

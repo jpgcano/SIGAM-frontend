@@ -476,13 +476,17 @@ const initCalendar = async () => {
       }
 
       const target = state.maintenances[state.editIndex] || {};
+      const assetRecord = {
+        label: assetValue,
+        assetId: assetOption ? String(assetOption.id) : null
+      };
       const maintenance = {
         id: target.id || "",
         localId: state.editIndex === null ? buildLocalId() : target.localId,
         ticketId,
         technicianId,
-        asset: assetValue,
-        assetId: assetOption ? assetOption.id : null,
+        asset: assetRecord,
+        assetId: assetRecord.assetId,
         type: typeValue,
         date: dateValue,
         notes: notesValue
@@ -579,44 +583,81 @@ const setScheduleStatus = (element, message, type) => {
   }
 };
 
-const normalizeMaintenance = (raw) => {
-  const assetLabelParts = [
-    raw.asset,
-    raw.activo,
+const getTicketField = (raw, key) => {
+  if (!raw) return undefined;
+  if (raw.ticket && raw.ticket[key] !== undefined) return raw.ticket[key];
+  if (raw.tickets && raw.tickets[key] !== undefined) return raw.tickets[key];
+  const alias = raw[`ticket_${key}`];
+  if (alias !== undefined) return alias;
+  return undefined;
+};
+
+const getAssetField = (raw, keys = []) => {
+  if (!raw) return undefined;
+  const sources = [raw.asset, raw.activo, raw];
+  for (const key of keys) {
+    for (const source of sources) {
+      if (source && source[key] !== undefined) return source[key];
+    }
+    if (raw[`asset_${key}`] !== undefined) return raw[`asset_${key}`];
+  }
+  return undefined;
+};
+
+const buildAssetMetadata = (raw) => {
+  const assetId =
+    getTicketField(raw, "id_activo") ||
+    raw.id_activo ||
+    raw.activo_id ||
+    raw.assetId ||
+    null;
+  const labelParts = [
+    raw.asset?.label,
     raw.assetName,
     raw.nombre_activo,
     raw.nombre,
-    raw.modelo,
-    raw.serial
-  ].filter(Boolean);
-  const ticketId = raw.id_ticket || raw.ticketId || "";
+    raw.activo?.nombre,
+    getAssetField(raw, ["modelo"]),
+    getAssetField(raw, ["serial"]),
+    getTicketField(raw, "descripcion"),
+    raw.ticket_descripcion
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  const label = labelParts.join(" · ") || (assetId ? `Activo ${assetId}` : "Activo sin nombre");
+  return {
+    assetId: assetId ? String(assetId) : null,
+    label,
+    serial:
+      getAssetField(raw, ["serial"]) || raw.serial || raw.asset_serial || "",
+    modelo:
+      getAssetField(raw, ["modelo"]) || raw.modelo || raw.asset_modelo || "",
+    estado:
+      getAssetField(raw, ["estado_activo", "estado"]) || raw.asset_estado_activo || raw.estado || "",
+    criticidad:
+      getAssetField(raw, ["nivel_criticidad", "criticidad"]) || raw.asset_nivel_criticidad || raw.criticidad || ""
+  };
+};
+
+const normalizeMaintenance = (raw) => {
+  const ticketId = raw.id_ticket || raw.ticketId || getTicketField(raw, "id_ticket") || "";
   const dateValue = raw.fecha_inicio || raw.date || "";
-  const assetValue =
-    assetLabelParts.join(" - ") ||
-    raw.asset?.label ||
-    raw.activo?.serial ||
-    (raw.ticket?.id_activo ? `Activo ${raw.ticket.id_activo}` : "") ||
-    (raw.ticket_id_activo ? `Activo ${raw.ticket_id_activo}` : "");
-  const fallbackKey = [ticketId, dateValue, assetValue].filter(Boolean).join("|");
+  const assetMetadata = buildAssetMetadata(raw);
+  const fallbackKey = [ticketId, dateValue, assetMetadata.label].filter(Boolean).join("|");
   const idOrden = raw.id_orden || raw.id || raw.id_mantenimiento || raw.id_mantenimiento_orden || "";
-  const ticketActivo = raw.ticket?.id_activo || raw.ticket_id_activo || raw.id_activo || raw.activo_id;
 
   return {
     id: idOrden,
     localId: raw.localId || (idOrden ? idOrden : `local-${fallbackKey || buildLocalId()}`),
     ticketId,
     technicianId: raw.id_usuario_tecnico || raw.technicianId || "",
-    asset: {
-      label: assetValue,
-      serial: raw.asset?.serial || raw.serial || "",
-      modelo: raw.asset?.modelo || raw.modelo || "",
-      estado: raw.asset?.estado || raw.estado || "",
-      criticidad: raw.asset?.criticidad || raw.criticidad || ""
-    },
-    assetId: ticketActivo || raw.id_activo || raw.activo_id || null,
-    type: raw.tipo || raw.type || "preventive",
+    asset: assetMetadata,
+    assetId: assetMetadata.assetId,
+    type: raw.tipo || raw.type || getTicketField(raw, "tipo_ticket") || "preventive",
     date: dateValue,
-    notes: raw.diagnostico || raw.notes || ""
+    notes:
+      raw.diagnostico || raw.notes || getTicketField(raw, "descripcion") || ""
   };
 };
 
@@ -843,6 +884,18 @@ const updateFilterOptions = (state) => {
   }
 };
 
+const mergeAssetFields = (primary = {}, fallback = {}, fallbackId = null) => {
+  const assetId = primary.assetId || fallback.assetId || fallbackId || null;
+  return {
+    assetId: assetId ? String(assetId) : null,
+    label: primary.label || fallback.label || "",
+    serial: primary.serial || fallback.serial || "",
+    modelo: primary.modelo || fallback.modelo || "",
+    estado: primary.estado || fallback.estado || "",
+    criticidad: primary.criticidad || fallback.criticidad || ""
+  };
+};
+
 const mergeMaintenanceItem = (item, previousList = []) => {
   const matches = previousList.find((candidate) => {
     if (item.id && candidate.id) {
@@ -856,13 +909,13 @@ const mergeMaintenanceItem = (item, previousList = []) => {
     }
     return false;
   });
-  return matches
-    ? {
-        ...item,
-        asset: item.asset || matches.asset,
-        assetId: item.assetId || matches.assetId
-      }
-    : item;
+  if (!matches) return item;
+  const mergedAsset = mergeAssetFields(item.asset, matches.asset, item.assetId || matches.assetId);
+  return {
+    ...item,
+    asset: mergedAsset,
+    assetId: mergedAsset.assetId
+  };
 };
 
 const openEditModal = (state, maintenance) => {
@@ -944,6 +997,11 @@ const updateStats = (state, scheduledEl, overdueEl, assetsEl) => {
   const uniqueAssets = new Set(state.maintenances.map((m) => m.asset));
   if (assetsEl) assetsEl.innerText = uniqueAssets.size;
 };
+
+const removeDiacritics = (value = "") =>
+  String(value)
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "");
 
 const toAssetEntry = (asset) => {
   const id = asset.id_activo || asset.id || asset.idActivo || asset.name || "";
@@ -1054,7 +1112,10 @@ const loadTechnicians = async (state, select) => {
       const data = normalizeCollection(payload);
       state.techniciansList = Array.isArray(data)
         ? data
-            .filter((user) => user.rol && String(user.rol).toLowerCase().includes("tecnico"))
+            .filter((user) => {
+              const role = removeDiacritics(user.rol || user.role || "").toLowerCase();
+              return role.includes("tecnico");
+            })
             .map((user) => ({
               id: user.id_usuario || user.id || "",
               label: user.nombre || user.name || `Tecnico ${user.id || user.id_usuario}`
