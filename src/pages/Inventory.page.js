@@ -177,111 +177,126 @@ const render = async () => {
         </div>
       </div>
 
-      <div class="card p-3 mb-4 sigam-section" id="stockTableCard">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">Stock Alerts</h5>
-          <small class="text-muted">Only assets below minimum</small>
-        </div>
+      <ul class="nav nav-tabs mb-3" id="inventoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="assets-tab" data-bs-toggle="tab" data-bs-target="#assets-tab-pane" type="button" role="tab" aria-controls="assets-tab-pane" aria-selected="true">Assets</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="suppliers-tab" data-bs-toggle="tab" data-bs-target="#suppliers-tab-pane" type="button" role="tab" aria-controls="suppliers-tab-pane" aria-selected="false">Suppliers Comparison</button>
+        </li>
+      </ul>
 
-        <div class="table-responsive inventory-scroll-body" style="max-height:420px; overflow-y:auto;">
-          <table class="table table-sm align-middle" id="stockTable">
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Type</th>
-                <th>Location</th>
-                <th class="text-end">Stock</th>
-                <th class="text-end">Min Stock</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="stockTableBody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="tab-content" id="inventoryTabsContent">
+        <div class="tab-pane fade show active" id="assets-tab-pane" role="tabpanel" aria-labelledby="assets-tab" tabindex="0">
+          <div class="card p-3 mb-4 sigam-section" id="stockTableCard">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Stock Alerts</h5>
+              <small class="text-muted">Only assets below minimum</small>
+            </div>
 
-      <div class="card p-3 mb-4 inventory-scroll sigam-section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">Suppliers Comparison</h5>
-          <div class="d-flex align-items-center gap-2">
-            <small class="text-muted">Cards by supplier</small>
-            <div class="btn-group btn-group-sm" role="group" aria-label="Supplier view toggle">
+            <div class="table-responsive inventory-scroll-body" style="max-height:420px; overflow-y:auto;">
+              <table class="table table-sm align-middle" id="stockTable">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th class="text-end">Stock</th>
+                    <th class="text-end">Min Stock</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="stockTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
+            <p id="resultCount" class="text-muted mb-0"></p>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Asset view toggle">
               ${renderButton({
-                id: "supplierViewGrid",
-                label: "Cards",
+                id: "assetViewGrid",
+                label: "Grid",
                 variant: "outlineDark",
                 className: "btn-sm active",
                 attrs: { type: "button" }
               })}
               ${renderButton({
-                id: "supplierViewList",
+                id: "assetViewList",
                 label: "List",
                 variant: "outlineDark",
                 className: "btn-sm",
                 attrs: { type: "button" }
               })}
             </div>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Assets pagination">
+              ${renderButton({
+                id: "assetsPrevBtn",
+                label: "Prev",
+                variant: "outlineDark",
+                className: "btn-sm",
+                attrs: { type: "button" }
+              })}
+              ${renderButton({
+                id: "assetsNextBtn",
+                label: "Next",
+                variant: "outlineDark",
+                className: "btn-sm",
+                attrs: { type: "button" }
+              })}
+            </div>
+            <div id="assetsPageInfo" class="text-muted small"></div>
+          </div>
+
+          <div id="assetGrid"></div>
+          <div class="card p-3 mb-4 d-none sigam-section" id="assetListView">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th class="text-end">Stock</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="assetListBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <div class="inventory-scroll-body" style="max-height:420px; overflow-y:auto; padding-right:8px;">
-          <div class="row g-3" id="supplierCards"></div>
-          <div class="d-none" id="supplierListView"></div>
-        </div>
-      </div>
+        <div class="tab-pane fade" id="suppliers-tab-pane" role="tabpanel" aria-labelledby="suppliers-tab" tabindex="0">
+          <div class="card p-3 mb-4 inventory-scroll sigam-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Suppliers Comparison</h5>
+              <div class="d-flex align-items-center gap-2">
+                <small class="text-muted">Cards by supplier</small>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Supplier view toggle">
+                  ${renderButton({
+                    id: "supplierViewGrid",
+                    label: "Cards",
+                    variant: "outlineDark",
+                    className: "btn-sm active",
+                    attrs: { type: "button" }
+                  })}
+                  ${renderButton({
+                    id: "supplierViewList",
+                    label: "List",
+                    variant: "outlineDark",
+                    className: "btn-sm",
+                    attrs: { type: "button" }
+                  })}
+                </div>
+              </div>
+            </div>
 
-      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
-        <p id="resultCount" class="text-muted mb-0"></p>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Asset view toggle">
-          ${renderButton({
-            id: "assetViewGrid",
-            label: "Grid",
-            variant: "outlineDark",
-            className: "btn-sm active",
-            attrs: { type: "button" }
-          })}
-          ${renderButton({
-            id: "assetViewList",
-            label: "List",
-            variant: "outlineDark",
-            className: "btn-sm",
-            attrs: { type: "button" }
-          })}
-        </div>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Assets pagination">
-          ${renderButton({
-            id: "assetsPrevBtn",
-            label: "Prev",
-            variant: "outlineDark",
-            className: "btn-sm",
-            attrs: { type: "button" }
-          })}
-          ${renderButton({
-            id: "assetsNextBtn",
-            label: "Next",
-            variant: "outlineDark",
-            className: "btn-sm",
-            attrs: { type: "button" }
-          })}
-        </div>
-        <div id="assetsPageInfo" class="text-muted small"></div>
-      </div>
-
-      <div id="assetGrid"></div>
-      <div class="card p-3 mb-4 d-none sigam-section" id="assetListView">
-        <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Location</th>
-                <th class="text-end">Stock</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="assetListBody"></tbody>
-          </table>
+            <div class="inventory-scroll-body" style="max-height:420px; overflow-y:auto; padding-right:8px;">
+              <div class="row g-3" id="supplierCards"></div>
+              <div class="d-none" id="supplierListView"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -496,6 +511,7 @@ const initInventory = () => {
   const assetsNextBtn = document.getElementById("assetsNextBtn");
   const assetsPageInfo = document.getElementById("assetsPageInfo");
 
+
   const ASSETS_PAGE_SIZE = 50;
   let assetsOffset = 0;
   let assetsFetchTimer = null;
@@ -621,6 +637,47 @@ const initInventory = () => {
         : []
     };
   };
+
+  const handleAssetNavigation = (assetId) => {
+    if (!assetId) return;
+    const encoded = encodeURIComponent(assetId);
+    router.navigateTo(`/asset-history?id=${encoded}`);
+  };
+
+  const handleAssetCardClick = (event) => {
+    const card = event.target.closest("[data-asset-history-id]");
+    if (!card) return;
+    if (event.target.closest(".asset-edit")) {
+      return;
+    }
+    handleAssetNavigation(card.dataset.assetHistoryId);
+  };
+
+  const handleAssetCardKey = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    handleAssetCardClick(event);
+  };
+
+  if (grid) {
+    grid.addEventListener("click", handleAssetCardClick);
+    grid.addEventListener("keydown", handleAssetCardKey);
+  }
+
+  const handleAssetRowClick = (event) => {
+    const row = event.target.closest("[data-asset-id]");
+    if (!row) return;
+    handleAssetNavigation(row.dataset.assetId);
+  };
+
+  const handleAssetRowKey = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    handleAssetRowClick(event);
+  };
+
+  if (assetListBody) {
+    assetListBody.addEventListener("click", handleAssetRowClick);
+    assetListBody.addEventListener("keydown", handleAssetRowKey);
+  }
 
   const applyAssetsView = (displayList, referenceList = null) => {
     const normalizedDisplay = normalizeAssets(displayList);
@@ -884,7 +941,7 @@ const initInventory = () => {
         : '<span class="badge bg-success">Active</span>';
       const statusClass = asset.status === "maintenance" ? "status-warning" : "status-ok";
       rows.push(`
-        <tr class="asset-row ${statusClass}">
+        <tr class="asset-row ${statusClass}" data-asset-id="${asset.id}" tabindex="0" role="button" aria-label="Abrir hoja de vida del activo ${asset.name}">
           <td>${asset.name}</td>
           <td class="text-muted">${asset.type}</td>
           <td class="text-muted">${asset.location}</td>
@@ -1024,17 +1081,22 @@ const initInventory = () => {
         ? Math.round(supplier.leadTimes.reduce((a, b) => a + b, 0) / supplier.leadTimes.length)
         : 0;
 
-      const assetRows = supplier.assets
+      const sortedAssets = supplier.assets
         .slice()
-        .sort((a, b) => (a.price || 0) - (b.price || 0))
-        .map(item => `
+        .sort((a, b) => (a.price || 0) - (b.price || 0));
+      const visibleAssets = sortedAssets.slice(0, 5);
+      const extraCount = Math.max(0, sortedAssets.length - visibleAssets.length);
+
+      const assetRows = visibleAssets.map(item => `
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="text-muted">${item.assetName}</span>
             <span class="fw-semibold ${item.isBest ? "text-success" : ""}">
               $${item.price}${item.isBest ? " best" : ""}
             </span>
           </div>
-        `).join("");
+        `).join("") + (extraCount
+        ? `<div class="text-muted small">+${extraCount} more</div>`
+        : "");
 
       cards.push(`
         <div class="col-md-4">

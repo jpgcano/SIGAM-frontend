@@ -15,9 +15,12 @@ const SIGAM_CONFIG = {
   TICKETS_ENDPOINT: '/api/tickets',
   ACTIVOS_ENDPOINT: '/api/activos',
   REPUESTOS_ENDPOINT: '/api/repuestos',
+  SOFTWARE_ENDPOINT: '/api/software',
+  LICENCIAS_ENDPOINT: '/api/licencias',
   CATEGORIAS_ENDPOINT: '/api/categorias',
   CATEGORIAS_TICKET_ENDPOINT: '/api/tickets/categorias',
   PROVEEDORES_ENDPOINT: '/api/proveedores',
+  UBICACIONES_ENDPOINT: '/api/ubicaciones',
   USUARIOS_ENDPOINT: '/api/usuarios',
   MANTENIMIENTOS_ENDPOINT: '/api/mantenimientos'
 };

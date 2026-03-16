@@ -314,7 +314,7 @@ body.page-inventory .badge {
   font-weight: var(--font-medium);
 }
 
-body.page-inventory .active {
+body.page-inventory .status-active {
   background: var(--color-success-light);
   color: var(--color-success-dark);
 }

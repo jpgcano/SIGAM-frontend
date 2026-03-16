@@ -694,3 +694,58 @@ Bitácora obligatoria para registrar el trabajo realizado por IA en el frontend.
   - `test/profile-password-update-2026-03-15.md`
 - Commit(s):
   - (Pendiente de aplicacion)
+
+### 2026-03-15 - IA: Codex
+- Issue: Calendar asset metadata y filtros (seguimiento)
+- Rama: developer (feature/task)
+- Objetivo: Mantener los metadatos del ticket/activo dentro del objeto de mantenimiento para que el calendario no pierda eventos, no muestre `[object Object]` y los filtros de activos sigan funcionando luego de cada refresh.
+- Cambios:
+  - `src/pages/Calendar.page.js`: se añadieron helpers para leer campos de ticket/activo (tanto del payload anidado como de los alias SQL), `normalizeMaintenance` construye un `asset` enriquecido con `assetId`, se actualizó el formulario para crear mantenimientos con `asset` como objeto y se refactorizó `mergeMaintenanceItem` para mantener los metadatos existentes al sincronizar con el API.
+- Evidencia: Prueba manual creando/actualizando mantenimientos con activos; el calendario sigue mostrando los eventos y los filtros de activos siguen aplicándose correctamente.
+- Commit(s): pendiente de redondear cambios.
+
+### 2026-03-16 - IA: Codex
+- Issue: Hoja de vida del activo
+- Rama: developer (feature/task)
+- Objetivo: Crear una vista dedicada que reúna la trazabilidad, el ciclo de vida, el historial de mantenimiento y métricas de confiabilidad necesarias para auditoría.
+- Cambios:
+  - `src/components/AssetCard.js`: cada tarjeta ahora incluye un identificador y puede abrir la hoja de vida cuando se hace clic fuera del botón de edición.
+  - `src/pages/Inventory.page.js`: se agregó navegación hacia `/asset-history?id=<activo>` y detección por teclado/ratón para mantener accesibilidad.
+  - `src/pages/AssetHistory.page.js`: nueva vista con soporte para cargar datos del activo, listar mantenimientos, calcular MTTR/MTBF y mostrar el certificado de borrado.
+  - `src/css/pages/asset-history.css`: estilos nuevos para la hoja de vida.
+  - `src/main.js`: registro de la nueva ruta y orden para el router SPA.
+  - `test/asset-history-2026-03-16.md`: evidencia manual de la funcionalidad.
+- Evidencia: navegación desde inventario al detalle, carga de mantenimientos y métricas visibles en la vista.
+- Commit(s): pendiente de aplicar.
+
+### 2026-03-16 - IA: Codex
+- Issue: Hoja de vida del activo (completar endpoints y consumos)
+- Rama: developer (feature/task)
+- Objetivo: Completar la hoja de vida con historial, asignaciones, documentos ISO 27001 y consumos de mantenimiento bajo demanda.
+- Cambios:
+  - `src/pages/AssetHistory.page.js`: carga paralela de `/activos/:id`, `/activos/:id/historial`, `/activos/:id/asignaciones`, `/activos/:id/documentos` y `/mantenimientos`; render de eventos, asignaciones, obsolescencia y consumos bajo demanda.
+  - `src/pages/Inventory.page.js`: navegación desde filas de lista hacia hoja de vida con accesibilidad básica.
+  - `src/components/AssetCard.js`: tarjetas navegables con `tabindex`.
+  - `src/css/pages/asset-history.css`: estilos para asignaciones, eventos y consumos.
+  - `test/asset-history-2026-03-16.md`: evidencia actualizada.
+- Evidencia: se documentó en `test/asset-history-2026-03-16.md`.
+- Commit(s): pendiente de aplicar.
+
+### 2026-03-16 - IA: Codex
+- Issue: Hoja de vida del activo (CRUD operativo)
+- Rama: developer (feature/task)
+- Objetivo: Habilitar acciones de administración desde la hoja de vida: asignar usuario, cambiar ubicación, gestionar software/licencias, subir documentos y dar de baja.
+- Cambios:
+  - `src/pages/AssetHistory.page.js`: se añadieron formularios y controles para asignaciones, ubicación, software, licencias, documentos y baja del activo.
+  - `src/css/pages/asset-history.css`: estilos para nuevas secciones de gestión, formularios y listados.
+- Evidencia: pendiente de validación manual.
+- Commit(s): pendiente de aplicar.
+
+### 2026-03-16 - IA: Codex
+- Issue: Duplicados en acciones de hoja de vida
+- Rama: developer (feature/task)
+- Objetivo: Evitar envíos duplicados en asignación de usuario, documentos, licencias y software; deduplicar listas en UI.
+- Cambios:
+  - `src/pages/AssetHistory.page.js`: se añadieron guards de binding, dedupe y mensajes de error detallados.
+- Evidencia: pendiente de validación manual.
+- Commit(s): pendiente de aplicar.
