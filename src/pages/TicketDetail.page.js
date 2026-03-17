@@ -9,7 +9,7 @@ import "../css/pages/tickets.css";
 
 const ROLE_ALLOWLIST = ["Gerente", "Analista", "Tecnico", "Usuario"];
 const ROLE_CAN_UPDATE_STATUS = ["Gerente", "Tecnico"];
-const ROLE_CAN_ASSIGN = ["Gerente"];
+
 
 const render = async () => {
   const navbarHTML = Navbar.render();
