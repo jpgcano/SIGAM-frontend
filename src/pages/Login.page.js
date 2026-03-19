@@ -14,21 +14,35 @@ const render = () => {
     // Extraemos el contenido del body del antiguo login.html
     return `
         <div class="page-login">
-            <div class="container">
-                <h2>Login</h2>
-                <form id="loginForm" novalidate>
-                    <input type="email" id="email" placeholder="Email" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    <div id="loginStatus" class="form-status" aria-live="polite"></div>
-                    ${renderButton({
-                        id: "loginBtn",
-                        label: "Enter",
-                        type: "submit"
-                    })}
-                </form>
-                <p>Don't you have an account?
-                <a href="/register" id="navigateToRegister">Register</a>
-                </p>
+            <div class="login-shell">
+                <div class="login-card">
+                    <div class="login-brand">
+                        <img src="/logo_circular.png" alt="J-AXON" class="login-logo" />
+                        <div class="login-brand-text">
+                            <h1>Welcome to J-AXON</h1>
+                            <p>Enter to manage your assets and services.</p>
+                        </div>
+                    </div>
+                    <form id="loginForm" novalidate>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="tu@empresa.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" placeholder="••••••••" required>
+                        </div>
+                        <div id="loginStatus" class="form-status" aria-live="polite"></div>
+                        ${renderButton({
+                            id: "loginBtn",
+                            label: "Sign In",
+                            type: "submit"
+                        })}
+                    </form>
+                    <p class="login-footer">Don't have an account?
+                    <a href="/register" id="navigateToRegister">Sign up</a>
+                    </p>
+                </div>
             </div>
         </div>
     `;

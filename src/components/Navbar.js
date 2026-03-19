@@ -11,6 +11,14 @@ const ROLE_LABELS = {
   usuario: 'User'
 };
 
+const ROLE_MENU = {
+  gerente: ['dashboard', 'inventory', 'reports', 'calendar', 'profile', 'admin'],
+  analista: ['dashboard', 'inventory', 'tickets', 'calendar', 'reports', 'profile'],
+  tecnico: ['dashboard', 'tickets', 'inventory', 'calendar', 'profile'],
+  auditor: ['dashboard', 'inventory', 'reports', 'profile'],
+  usuario: ['dashboard', 'tickets', 'profile']
+};
+
 const normalizeRole = (role) => {
   return String(role || '')
     .normalize('NFD')
@@ -21,10 +29,11 @@ const normalizeRole = (role) => {
 
 const render = () => {
   return `
-    <nav class="navbar sigam-navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <nav class="navbar sigam-navbar navbar-expand-lg navbar-dark">
       <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard">
-          <div class="bg-primary text-white rounded d-flex justify-content-center align-items-center" style="width: 35px; height: 35px">
+          <div class="navbar-logo">
+            <img src="/logo_circular.png" alt="SIGAM" />
           </div>
           <div>
             <strong>J-AXON</strong><br />
@@ -37,7 +46,7 @@ const render = () => {
         <div class="collapse navbar-collapse" id="menu">
           <ul class="navbar-nav ms-4">
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard">
+              <a class="nav-link d-flex align-items-center gap-2" href="/dashboard" data-route="/dashboard" data-role="dashboard">
                 <i class="bi bi-speedometer2"></i>
                 Dashboard
               </a>
@@ -102,21 +111,37 @@ const render = () => {
 const init = () => {
   const links = document.querySelectorAll('[data-route]');
   const path = window.location.pathname;
+  const user = getUser();
+  const roleRaw = user ? (user.rol || user.role || user.Rol || user.ROLE || '') : '';
+  const roleKey = user ? normalizeRole(roleRaw) : '';
+
+  if (roleKey === 'usuario') {
+    const dashboardLinks = document.querySelectorAll('[data-role="dashboard"]');
+    dashboardLinks.forEach((link) => {
+      link.setAttribute('href', '/user-dashboard');
+      link.setAttribute('data-route', '/user-dashboard');
+    });
+    const brandLink = document.querySelector('.navbar-brand');
+    if (brandLink) {
+      brandLink.setAttribute('href', '/user-dashboard');
+      brandLink.setAttribute('data-route', '/user-dashboard');
+    }
+  }
 
   links.forEach((link) => {
     const route = link.getAttribute('data-route');
     if (route && route === path) {
-      link.classList.add('active', 'fw-bold', 'text-primary');
+      link.classList.add('active');
     }
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      if (route) {
-        router.navigateTo(route);
+      const nextRoute = link.getAttribute('data-route');
+      if (nextRoute) {
+        router.navigateTo(nextRoute);
       }
     });
   });
 
-  const user = getUser();
   if (!user) {
     return;
   }
@@ -126,17 +151,11 @@ const init = () => {
   const roleEl = document.querySelector('#navbar-user-role');
   const userBox = document.querySelector('#navbar-user');
   const logoutBtn = document.querySelector('#navbar-logout');
-  const adminLink = document.querySelector('[data-role="admin"]');
-  const inventoryLink = document.querySelector('[data-role="inventory"]');
-  const ticketsLink = document.querySelector('[data-role="tickets"]');
-  const calendarLink = document.querySelector('[data-role="calendar"]');
-  const reportsLink = document.querySelector('[data-role="reports"]');
-  const profileLink = document.querySelector('[data-role="profile"]');
+  const roleLinks = document.querySelectorAll('[data-role]');
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
-  const roleRaw = user.rol || user.role || user.Rol || user.ROLE || '';
-  const roleKey = normalizeRole(roleRaw);
+  const allowed = ROLE_MENU[roleKey] || ROLE_MENU.usuario || [];
 
   if (userBox && (name || email)) {
     userBox.classList.remove('d-none');
@@ -149,29 +168,15 @@ const init = () => {
     roleEl.textContent = ROLE_LABELS[roleKey] || roleRaw;
   }
 
-  if (adminLink && !['gerente', 'administrador', 'admin'].includes(roleKey)) {
-    adminLink.classList.add('d-none');
-  }
-
-  if (inventoryLink && !['gerente', 'analista'].includes(roleKey)) {
-    inventoryLink.classList.add('d-none');
-  }
-
-  if (ticketsLink && !['gerente', 'analista', 'tecnico', 'usuario'].includes(roleKey)) {
-    ticketsLink.classList.add('d-none');
-  }
-
-  if (calendarLink && !['gerente', 'tecnico'].includes(roleKey)) {
-    calendarLink.classList.add('d-none');
-  }
-
-  if (reportsLink && !['gerente', 'analista', 'auditor'].includes(roleKey)) {
-    reportsLink.classList.add('d-none');
-  }
-
-  if (profileLink && !['gerente', 'analista', 'tecnico', 'usuario', 'auditor'].includes(roleKey)) {
-    profileLink.classList.add('d-none');
-  }
+  roleLinks.forEach((link) => {
+    const key = link.getAttribute('data-role');
+    if (!key) return;
+    if (allowed.includes(key)) {
+      link.classList.remove('d-none');
+    } else {
+      link.classList.add('d-none');
+    }
+  });
 
   if (logoutBtn) {
     logoutBtn.classList.remove('d-none');
