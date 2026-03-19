@@ -111,21 +111,37 @@ const render = () => {
 const init = () => {
   const links = document.querySelectorAll('[data-route]');
   const path = window.location.pathname;
+  const user = getUser();
+  const roleRaw = user ? (user.rol || user.role || user.Rol || user.ROLE || '') : '';
+  const roleKey = user ? normalizeRole(roleRaw) : '';
+
+  if (roleKey === 'usuario') {
+    const dashboardLinks = document.querySelectorAll('[data-role="dashboard"]');
+    dashboardLinks.forEach((link) => {
+      link.setAttribute('href', '/user-dashboard');
+      link.setAttribute('data-route', '/user-dashboard');
+    });
+    const brandLink = document.querySelector('.navbar-brand');
+    if (brandLink) {
+      brandLink.setAttribute('href', '/user-dashboard');
+      brandLink.setAttribute('data-route', '/user-dashboard');
+    }
+  }
 
   links.forEach((link) => {
     const route = link.getAttribute('data-route');
     if (route && route === path) {
-      link.classList.add('active', 'fw-bold', 'text-primary');
+      link.classList.add('active');
     }
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      if (route) {
-        router.navigateTo(route);
+      const nextRoute = link.getAttribute('data-route');
+      if (nextRoute) {
+        router.navigateTo(nextRoute);
       }
     });
   });
 
-  const user = getUser();
   if (!user) {
     return;
   }
@@ -139,8 +155,6 @@ const init = () => {
 
   const name = user.nombre || user.name || user.fullName || user.full_name || '';
   const email = user.email || user.correo || '';
-  const roleRaw = user.rol || user.role || user.Rol || user.ROLE || '';
-  const roleKey = normalizeRole(roleRaw);
   const allowed = ROLE_MENU[roleKey] || ROLE_MENU.usuario || [];
 
   if (userBox && (name || email)) {

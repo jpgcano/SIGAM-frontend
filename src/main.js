@@ -31,6 +31,7 @@ import { router } from './router.js';
 import { LoginPage } from './pages/Login.page.js';
 import { RegisterPage } from './pages/Register.page.js';
 import { DashboardPage } from './pages/Dashboard.page.js';
+import { UserDashboardPage } from './pages/UserDashboard.page.js';
 import { AdminPage } from './pages/Admin.page.js';
 import { InventoryPage } from './pages/Inventory.page.js';
 import { TicketsPage } from './pages/Tickets.page.js';
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         analista: '/dashboard',
         tecnico: '/dashboard',
         auditor: '/dashboard',
-        usuario: '/dashboard'
+        usuario: '/user-dashboard'
     };
 
     router.setDefaultRouteResolver((user) => {
@@ -89,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dashboard Real
     router.addRoute('/dashboard', DashboardPage);
+    router.addRoute('/user-dashboard', UserDashboardPage);
 
     // Inventario (restringido por rol)
     router.addRoute('/inventory', InventoryPage);

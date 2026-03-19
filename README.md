@@ -158,8 +158,9 @@ En Vite, solo variables con prefijo `VITE_` estan disponibles en el frontend.
 Para uso local puedes definir `window.SIGAM_API` en consola del navegador o guardar `SIGAM_API` en localStorage.
 
 ## Uso local rapido
-1. Ejecuta `pnpm install` y luego `pnpm dev`.
-2. Abre `http://localhost:5173`.
+1. Copia `.env.example` a `.env.local` y ajusta `VITE_SIGAM_API` con la URL del backend.
+2. Ejecuta `pnpm install` y luego `pnpm dev`.
+3. Abre `http://localhost:5173`.
 
 ## Rutas
 Las rutas se resuelven en el cliente con el router SPA. En Vercel se reescribe todo a `index.html`.
